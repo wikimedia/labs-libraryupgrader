@@ -17,17 +17,16 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from collections import defaultdict
 import json
-import os
 import requests
 import subprocess
 
-GERRIT = 'https://gerrit.wikimedia.org/r/{0}.git'
-MW_CS = 'mediawiki/mediawiki-codesniffer'
 DOCKER_IMAGE = 'phpcs-dashboard'
 
 
 s = requests.session()
+
 
 def get_extension_list():
     r = s.get('https://www.mediawiki.org/w/api.php?action=query&list=extdistrepos&formatversion=2&format=json')
@@ -48,7 +47,8 @@ def has_codesniffer(ext_name):
     d = get_phab_file('mediawiki/extensions/' + ext_name, 'composer.json')
     return d and d.get('require-dev', {}).get('mediawiki/mediawiki-codesniffer')
 
-def run(ext_name, version='dev-master'):
+
+def run(ext_name, version):
     subprocess.check_call([
         'docker', 'run',
         '--name=' + ext_name,
@@ -68,11 +68,13 @@ def run(ext_name, version='dev-master'):
     subprocess.check_call(['docker', 'rm', ext_name])
     return j
 
+
 def main():
-    data = {}
+    version = 'dev-master'
+    data = defaultdict(dict)
     for ext in get_extension_list():
         if has_codesniffer(ext):
-            data[ext] = run(ext, version='dev-master')
+            data[ext][version] = run(ext, version=version)
         else:
             print('Skipping ' + ext)
     with open('output.json', 'w') as f:
