@@ -72,7 +72,7 @@ def main():
     data = {}
     for ext in get_extension_list():
         if has_codesniffer(ext):
-            data['ext'] = run(ext, version='dev-master')
+            data[ext] = run(ext, version='dev-master')
         else:
             print('Skipping ' + ext)
     with open('output.json', 'w') as f:
