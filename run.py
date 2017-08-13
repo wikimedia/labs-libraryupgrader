@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from collections import defaultdict
-import functools
 import json
 import requests
 import subprocess
@@ -48,7 +47,6 @@ def get_phab_file(gerrit_name, path):
         return None
 
 
-@functools.lru_cache(maxsize=1000)
 def has_codesniffer(ext_name):
     d = get_phab_file('mediawiki/extensions/' + ext_name, 'composer.json')
     return d and d.get('require-dev', {}).get('mediawiki/mediawiki-codesniffer')
