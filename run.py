@@ -21,6 +21,7 @@ from collections import defaultdict
 import json
 import requests
 import subprocess
+import sys
 
 DOCKER_IMAGE = 'phpcs-dashboard'
 
@@ -81,4 +82,7 @@ def main():
         json.dump(data, f)
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) > 1:
+        run(sys.argv[1], version='dev-master')
+    else:
+        main()
