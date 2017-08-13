@@ -22,7 +22,9 @@ import json
 import requests
 import subprocess
 import sys
+import time
 
+CONCURRENT = 5
 DOCKER_IMAGE = 'phpcs-dashboard'
 
 
@@ -55,8 +57,12 @@ def run(ext_name, version):
         '--name=' + ext_name,
         '--env', 'EXT=' + ext_name,
         '--env', 'VERSION=' + version,
+        '-d',
         DOCKER_IMAGE,
     ])
+
+
+def check_logs(ext_name):
     out = subprocess.check_output(['docker', 'logs', ext_name]).decode()
     data = out.split('------------')[1]
     try:
@@ -70,14 +76,34 @@ def run(ext_name, version):
     return j
 
 
+def get_running_containers():
+    out = subprocess.check_output(['docker', 'ps', '-q']).decode().strip()
+    if not out:
+        return []
+    return out.split('\n')
+
+
+def wait_for_containers(count):
+    while len(get_running_containers()) > count:
+        print('Waiting...')
+        time.sleep(2)
+
 def main():
     version = 'dev-master'
     data = defaultdict(dict)
+    cleanup = set()
     for ext in get_extension_list():
         if has_codesniffer(ext):
-            data[ext][version] = run(ext, version=version)
+            run(ext, version=version)
+            cleanup.add(ext)
         else:
             print('Skipping ' + ext)
+        # If more than max containers running, pause
+        wait_for_containers(count=CONCURRENT)
+    # Wait for all containers to finish...
+    wait_for_containers(count=0)
+    for ext in cleanup:
+        data[ext][version] = check_logs(ext)
     with open('output.json', 'w') as f:
         json.dump(data, f)
 
