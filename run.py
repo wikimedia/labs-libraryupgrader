@@ -64,7 +64,7 @@ def run(ext_name, version):
     except ValueError:
         print(out)
         print('Couldnt get JSON data...')
-        return None
+        j = None
     subprocess.check_call(['docker', 'rm', ext_name])
     return j
 
