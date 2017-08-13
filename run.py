@@ -38,7 +38,8 @@ def get_extension_list():
 
 
 def get_phab_file(gerrit_name, path):
-    url = 'https://phabricator.wikimedia.org/r/p/{};browse/master/{}?view=raw'.format(gerrit_name, path)
+    #url = 'https://phabricator.wikimedia.org/r/p/{};browse/master/{}?view=raw'.format(gerrit_name, path)
+    url = 'https://raw.githubusercontent.com/wikimedia/{}/master/{}'.format(gerrit_name.replace('/', '-'), path)
     print('Fetching ' + url)
     r = s.get(url)
     try:
