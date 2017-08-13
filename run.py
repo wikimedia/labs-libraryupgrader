@@ -26,6 +26,7 @@ import time
 
 CONCURRENT = 5
 DOCKER_IMAGE = 'phpcs-dashboard'
+VERSIONS = ['same', 'dev-master']
 
 
 s = requests.session()
@@ -52,18 +53,19 @@ def has_codesniffer(ext_name):
 
 
 def run(ext_name, version):
-    subprocess.check_call([
+    args = [
         'docker', 'run',
-        '--name=' + ext_name,
+        '--name=' + ext_name + version,
         '--env', 'EXT=' + ext_name,
-        '--env', 'VERSION=' + version,
-        '-d',
-        DOCKER_IMAGE,
-    ])
+    ]
+    if version != 'same':
+        args.extend(['--env', 'VERSION=' + version])
+    args.extend(['-d', DOCKER_IMAGE])
+    subprocess.check_call(args)
 
 
-def check_logs(ext_name):
-    out = subprocess.check_output(['docker', 'logs', ext_name]).decode()
+def check_logs(ext_name, version):
+    out = subprocess.check_output(['docker', 'logs', ext_name + version]).decode()
     data = out.split('------------')[1]
     try:
         j = json.loads(data)
@@ -72,7 +74,7 @@ def check_logs(ext_name):
         print(out)
         print('Couldnt get JSON data...')
         j = None
-    subprocess.check_call(['docker', 'rm', ext_name])
+    subprocess.check_call(['docker', 'rm', ext_name + version])
     return j
 
 
@@ -88,27 +90,34 @@ def wait_for_containers(count):
         print('Waiting...')
         time.sleep(2)
 
+
 def main():
-    version = 'dev-master'
-    data = defaultdict(dict)
-    cleanup = set()
-    for ext in get_extension_list():
-        if has_codesniffer(ext):
-            run(ext, version=version)
-            cleanup.add(ext)
-        else:
-            print('Skipping ' + ext)
-        # If more than max containers running, pause
-        wait_for_containers(count=CONCURRENT)
-    # Wait for all containers to finish...
-    wait_for_containers(count=0)
-    for ext in cleanup:
-        data[ext][version] = check_logs(ext)
-    with open('output.json', 'w') as f:
-        json.dump(data, f)
+    for version in VERSIONS:
+        data = defaultdict(dict)
+        cleanup = set()
+        for ext in get_extension_list():
+            if has_codesniffer(ext):
+                run(ext, version=version)
+                cleanup.add(ext)
+            else:
+                print('Skipping ' + ext)
+            # If more than max containers running, pause
+            wait_for_containers(count=CONCURRENT)
+        # Wait for all containers to finish...
+        wait_for_containers(count=0)
+        for ext in cleanup:
+            data[ext][version] = check_logs(ext, version)
+        with open('output.json', 'w') as f:
+            json.dump(data, f)
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        run(sys.argv[1], version='dev-master')
+        try:
+            version = sys.argv[2]
+        except IndexError:
+            version = 'dev-master'
+        run(sys.argv[1], version=version)
+        wait_for_containers(0)
+        check_logs(sys.argv[1], version=version)
     else:
         main()
