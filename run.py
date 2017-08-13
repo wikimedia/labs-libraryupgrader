@@ -24,7 +24,7 @@ import subprocess
 import sys
 import time
 
-CONCURRENT = 5
+CONCURRENT = 10
 DOCKER_IMAGE = 'phpcs-dashboard'
 VERSIONS = ['same', 'dev-master']
 
