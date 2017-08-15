@@ -124,6 +124,9 @@ if __name__ == '__main__':
             version = sys.argv[2]
         except IndexError:
             version = 'dev-master'
+        if not has_codesniffer(sys.argv[1]):
+            print('Doesnt have codesniffer.')
+            sys.exit(1)
         run(sys.argv[1], version=version)
         wait_for_containers(0)
         check_logs(sys.argv[1], version=version)

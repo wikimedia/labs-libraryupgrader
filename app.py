@@ -52,5 +52,6 @@ def index():
 
 
 if __name__ == '__main__':
-    # app.run(debug=True)
-    pass
+    with open('index.html', 'w') as f:
+        f.write(index())
+    print('Wrote to index.html')
