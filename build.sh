@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build . --tag=phpcs-dashboard
+docker build . --tag=phpcs-dashboard --rm=false
