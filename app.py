@@ -19,10 +19,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from collections import defaultdict
-from flask import Flask, render_template
+import jinja2
 import json
+import os
 
-app = Flask(__name__)
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
+
+
+def render_template(fname, **kwargs):
+    with open(os.path.join(TEMPLATE_DIR, fname)) as f:
+        temp = jinja2.Template(f.read())
+    return temp.render(**kwargs)
 
 
 def read():
@@ -40,10 +47,10 @@ def read():
     return new
 
 
-@app.route('/')
 def index():
     return render_template('index.html', data=read())
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    pass

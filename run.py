@@ -24,6 +24,8 @@ import subprocess
 import sys
 import time
 
+import app
+
 CONCURRENT = 10
 DOCKER_IMAGE = 'phpcs-dashboard'
 VERSIONS = ['same', 'dev-master']
@@ -110,6 +112,11 @@ def main():
             data[ext][version] = check_logs(ext, version)
         with open('output.json', 'w') as f:
             json.dump(data, f)
+
+    out = app.index()
+    with open('/var/www/html/index.html', 'w') as f:
+        f.write(out)
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
