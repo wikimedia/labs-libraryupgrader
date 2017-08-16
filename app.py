@@ -59,7 +59,9 @@ def read():
     for ext in data:
         for version in data[ext]:
             info = data[ext][version]
-            if not info:
+            if version == 'PHPCS':
+                new[ext][version] = info
+            elif not info:
                 new[ext][version] = 'Error'
             else:
                 new[ext][version] = info['totals']['errors'] + info['totals']['warnings']

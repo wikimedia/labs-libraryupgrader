@@ -53,7 +53,9 @@ def get_phab_file(gerrit_name, path):
 
 def has_codesniffer(ext_name):
     d = get_phab_file('mediawiki/extensions/' + ext_name, 'composer.json')
-    return d and d.get('require-dev', {}).get('mediawiki/mediawiki-codesniffer')
+    if d:
+        return d.get('require-dev', {}).get('mediawiki/mediawiki-codesniffer', False)
+    return False
 
 
 def run(ext_name, version):
@@ -100,7 +102,10 @@ def main():
     for version in VERSIONS:
         cleanup = set()
         for ext in get_extension_list():
-            if has_codesniffer(ext):
+            cs = has_codesniffer(ext)
+            if cs:
+                # Save PHPCS version
+                data[ext]['PHPCS'] = cs
                 run(ext, version=version)
                 cleanup.add(ext)
             else:

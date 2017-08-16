@@ -11,11 +11,13 @@
     <tr>
         <th>Extension</th>
         <th>Current</th>
+        <th>Suppressed</th>
         <th>dev-master</th>
     </tr>
     {% for ext in data|sort %}
     <tr>
         <td>{{ ext }}</td>
+        <td>{{ data[ext].PHPCS }}</td>
         <td>{{ data[ext].get('same', '&mdash;') }}</td>
         <td><a href="extensions/{{ext}}.html">{{ data[ext]['dev-master'] }}</a></td>
     </tr>
