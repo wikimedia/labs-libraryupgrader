@@ -32,23 +32,57 @@ def render_template(fname, **kwargs):
     return temp.render(**kwargs)
 
 
-def read():
+def read_raw():
     with open('output.json') as f:
-        data = json.load(f)
+        return json.load(f)
+
+
+def read_by_ext(version='dev-master'):
+    new = {}
+    data = read_raw()
+    for ext in data:
+        info = data[ext][version]
+        count = defaultdict(int)
+        if not info:
+            continue
+        for fname, finfo in info['files'].items():
+            for message in finfo['messages']:
+                count[message['source']] += 1
+        new[ext] = count
+
+    return new
+
+
+def read():
     new = defaultdict(dict)
+    data = read_raw()
     for ext in data:
         for version in data[ext]:
             info = data[ext][version]
             if not info:
                 new[ext][version] = 'Error'
             else:
-                new[ext][version] = sum(info['totals'].values())
+                new[ext][version] = info['totals']['errors'] + info['totals']['warnings']
 
     return new
 
 
 def index():
     return render_template('index.html', data=read())
+
+
+def make(path):
+    with open(os.path.join(path, 'index.html'), 'w') as f:
+        f.write(render_template('index.html', data=read()))
+
+    by_ext = read_by_ext()
+    ext_path = os.path.join(path, 'extensions')
+    if not os.path.isdir(ext_path):
+        os.mkdir(ext_path)
+
+    for ext, data in by_ext.items():
+        with open(os.path.join(ext_path, ext + '.html'), 'w') as f:
+            f.write(render_template('extension.html', ext=ext, data=data))
 
 
 if __name__ == '__main__':

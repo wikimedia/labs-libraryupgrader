@@ -1,5 +1,7 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>PHPCS Dashboard</title>
 </head>
 <body>
@@ -8,12 +10,14 @@
 <table>
     <tr>
         <th>Extension</th>
+        <th>Current</th>
         <th>dev-master</th>
     </tr>
     {% for ext in data|sort %}
     <tr>
         <td>{{ ext }}</td>
-        <td>{{ data[ext]['dev-master'] }}</td>
+        <td>{{ data[ext].get('same', '&mdash;') }}</td>
+        <td><a href="extensions/{{ext}}.html">{{ data[ext]['dev-master'] }}</a></td>
     </tr>
     {% endfor %}
 </table>

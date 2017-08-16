@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import defaultdict
 import json
+import os
 import requests
 import subprocess
 import sys
@@ -112,14 +113,23 @@ def main():
             data[ext][version] = check_logs(ext, version)
         with open('output.json', 'w') as f:
             json.dump(data, f)
+    make_index()
 
-    out = app.index()
-    with open('/var/www/html/index.html', 'w') as f:
-        f.write(out)
 
+def make_index():
+    try:
+        app.make('/var/www/html/')
+        print('Wrote to /var/www/html/')
+    except PermissionError:
+        print('Cant write to /var/www/html')
+        path = os.path.dirname(__file__)
+        app.make(path)
+        print('Wrote to ' + path)
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
+    if '--make-index' in sys.argv:
+        make_index()
+    elif len(sys.argv) > 1:
         try:
             version = sys.argv[2]
         except IndexError:
