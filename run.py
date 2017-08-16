@@ -41,7 +41,7 @@ def get_extension_list():
 
 
 def get_phab_file(gerrit_name, path):
-    #url = 'https://phabricator.wikimedia.org/r/p/{};browse/master/{}?view=raw'.format(gerrit_name, path)
+    # url = 'https://phabricator.wikimedia.org/r/p/{};browse/master/{}?view=raw'.format(gerrit_name, path)
     url = 'https://raw.githubusercontent.com/wikimedia/{}/master/{}'.format(gerrit_name.replace('/', '-'), path)
     print('Fetching ' + url)
     r = s.get(url)
@@ -130,6 +130,7 @@ def make_index():
         path = os.path.dirname(__file__)
         app.make(path)
         print('Wrote to ' + path)
+
 
 if __name__ == '__main__':
     if '--make-index' in sys.argv:
