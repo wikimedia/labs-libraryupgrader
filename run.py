@@ -95,8 +95,8 @@ def wait_for_containers(count):
 
 
 def main():
+    data = defaultdict(dict)
     for version in VERSIONS:
-        data = defaultdict(dict)
         cleanup = set()
         for ext in get_extension_list():
             if has_codesniffer(ext):
