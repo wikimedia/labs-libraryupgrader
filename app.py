@@ -22,6 +22,7 @@ from collections import defaultdict
 import jinja2
 import json
 import os
+import shutil
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
@@ -103,8 +104,9 @@ def make(path):
 
     by_sniff = read_by_sniff()
     sniff_path = os.path.join(path, 'sniffs')
-    if not os.path.isdir(sniff_path):
-        os.mkdir(sniff_path)
+    if os.path.isdir(sniff_path):
+        shutil.rmtree(sniff_path)
+    os.mkdir(sniff_path)
 
     for sniff, data in by_sniff.items():
         with open(os.path.join(sniff_path, sniff + '.html'), 'w') as f:
