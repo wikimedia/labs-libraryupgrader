@@ -37,6 +37,21 @@ def read_raw():
         return json.load(f)
 
 
+def read_by_sniff(version='dev-master'):
+    new = defaultdict(lambda: defaultdict(int))
+    data = read_raw()
+    for ext in data:
+        info = data[ext][version]
+        if not info:
+            continue
+        for name, finfo in info['files'].items():
+            for message in finfo['messages']:
+                sniff = message['source']
+                new[sniff][ext] += 1
+
+    return new
+
+
 def read_by_ext(version='dev-master'):
     new = {}
     data = read_raw()
@@ -85,6 +100,15 @@ def make(path):
     for ext, data in by_ext.items():
         with open(os.path.join(ext_path, ext + '.html'), 'w') as f:
             f.write(render_template('extension.html', ext=ext, data=data))
+
+    by_sniff = read_by_sniff()
+    sniff_path = os.path.join(path, 'sniffs')
+    if not os.path.isdir(sniff_path):
+        os.mkdir(sniff_path)
+
+    for sniff, data in by_sniff.items():
+        with open(os.path.join(sniff_path, sniff + '.html'), 'w') as f:
+            f.write(render_template('sniff.html', sniff=sniff, data=data))
 
 
 if __name__ == '__main__':

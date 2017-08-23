@@ -2,10 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ code }} - PHPCS Dashboard</title>
+    <title>{{ sniff }} - PHPCS Dashboard</title>
 </head>
 <body>
-<h1 class="title">{{ code }}</h1>
+<h1 class="title">{{ sniff }}</h1>
+
+{% if data %}
+The following extensions are failing on this sniff:
+
+<ul>
+    {% for extension in data|sort %}
+    <li>{{extension}} - {{data[extension]}}</li>
+    {% endfor %}
+</ul>
+{% else %}
+There are no failing extensions!
+{% endif %}
+
 
 </body>
 </html>
