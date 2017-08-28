@@ -116,8 +116,8 @@ def main():
         wait_for_containers(count=0)
         for ext in cleanup:
             data[ext][version] = check_logs(ext, version)
-        with open('output.json', 'w') as f:
-            json.dump(data, f)
+    with open('output.json', 'w') as f:
+        json.dump(data, f)
     make_index()
 
 
