@@ -4,6 +4,7 @@ composer update
 if [ -n "$VERSION" ]; then
     composer require mediawiki/mediawiki-codesniffer $VERSION --prefer-dist;
 fi;
+cp /usr/src/myapp/phpcs.xml.sample phpcs.xml
 echo '------------'
 php ./vendor/bin/phpcs --report=json
 echo -e "\n"

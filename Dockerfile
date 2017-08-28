@@ -1,6 +1,6 @@
 FROM debian:stretch-slim
 COPY . /usr/src/myapp
-RUN apt-get update && apt-get install -y composer git php-xml php-zip php-gd php-mbstring php-curl python3 --no-install-recommends && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y composer git php-xml php-zip php-gd php-mbstring php-curl --no-install-recommends && rm -rf /var/lib/apt/lists/*
 RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer 0.10.0 && rm -rf *
 RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer 0.10.1 && rm -rf *
 RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer 0.11.0 && rm -rf *
