@@ -20,12 +20,59 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # == NOTE ==
 # This script runs *inside* a Docker container
 
+import functools
 import os
+import requests
+import semver
 import shutil
 import subprocess
+import tempfile
 
 CODESNIFFER = 'mediawiki/mediawiki-codesniffer'
 GERRIT_URL = 'https://gerrit.wikimedia.org/r/mediawiki/extensions/%s.git'
+
+s = requests.Session()
+
+
+@functools.lru_cache()
+def get_packagist_version(package):
+    r = s.get('https://packagist.org/packages/%s.json?1' % package)
+    resp = r.json()['package']['versions']
+    normalized = set()
+    for ver in resp:
+        if not (ver.startswith('dev-') or ver.endswith('-dev')):
+            if ver.startswith('v'):
+                normalized.add(ver[1:])
+            else:
+                normalized.add(ver)
+    print(normalized)
+    version = max(normalized)
+    for normal in normalized:
+        try:
+            if semver.compare(version, normal) == -1:
+                version = normal
+        except ValueError:
+            pass
+    print('Latest %s: %s' % (package, version))
+    return version
+
+
+def commit_and_push(files, msg, branch, topic, plus2=False, push=True):
+    f = tempfile.NamedTemporaryFile(delete=False)
+    f.write(bytes(msg, 'utf-8'))
+    f.close()
+    subprocess.check_call(['git', 'add'] + files)
+    subprocess.check_call(['git', 'commit', '-F', f.name])
+    per = '%topic={0}'.format(topic)
+    if plus2:
+        per += ',l=Code-Review+2'
+    push_cmd = ['git', 'push', 'origin',
+                'HEAD:refs/for/{0}'.format(branch) + per]
+    if push:
+        subprocess.check_call(push_cmd)
+    else:
+        print(' '.join(push_cmd))
+    os.unlink(f.name)
 
 
 def test():
