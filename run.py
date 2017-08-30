@@ -28,7 +28,7 @@ import time
 import app
 
 CONCURRENT = 10
-DOCKER_IMAGE = 'phpcs-dashboard'
+DOCKER_IMAGE = 'libraryupgrader'
 VERSIONS = ['same', 'dev-master']
 
 
