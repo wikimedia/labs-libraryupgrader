@@ -79,10 +79,12 @@ def test():
     ext = os.environ['EXT']
     subprocess.check_call(['git', 'clone', GERRIT_URL % ext, '--depth=1'])
     os.chdir(ext)
-    subprocess.check_call(['composer', 'update'])
     version = os.environ.get('VERSION')
     if version:
-        subprocess.check_call(['composer', 'require', CODESNIFFER, version, '--prefer-dist'])
+        # Also runs composer install
+        subprocess.check_call(['composer', 'require', CODESNIFFER, version, '--prefer-dist', '--dev'])
+    else:
+        subprocess.check_call(['composer', 'install'])
     shutil.copy('/usr/src/myapp/phpcs.xml.sample', 'phpcs.xml')
     print('------------')
     # Don't use check_call since we expect this to fail
