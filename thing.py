@@ -41,7 +41,7 @@ def main():
     # Don't use check_call since we expect this to fail
     out = subprocess.run(['vendor/bin/phpcs', '--report=json'], stdout=subprocess.PIPE)
     print(out.stdout.decode())
-    print('\n------------')
+    print('------------')
 
 
 if __name__ == '__main__':
