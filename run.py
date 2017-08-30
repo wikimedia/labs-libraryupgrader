@@ -62,6 +62,7 @@ def run(ext_name, version):
     args = [
         'docker', 'run',
         '--name=' + ext_name + version,
+        '--env', 'MODE=test',
         '--env', 'EXT=' + ext_name,
     ]
     if version != 'same':

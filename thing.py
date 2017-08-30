@@ -28,7 +28,7 @@ CODESNIFFER = 'mediawiki/mediawiki-codesniffer'
 GERRIT_URL = 'https://gerrit.wikimedia.org/r/mediawiki/extensions/%s.git'
 
 
-def main():
+def test():
     ext = os.environ['EXT']
     subprocess.check_call(['git', 'clone', GERRIT_URL % ext, '--depth=1'])
     os.chdir(ext)
@@ -42,6 +42,14 @@ def main():
     out = subprocess.run(['vendor/bin/phpcs', '--report=json'], stdout=subprocess.PIPE)
     print(out.stdout.decode())
     print('------------')
+
+
+def main():
+    mode = os.environ['MODE']
+    if mode == 'test':
+        test()
+    else:
+        raise ValueError('Unknown mode: ' + mode)
 
 
 if __name__ == '__main__':
