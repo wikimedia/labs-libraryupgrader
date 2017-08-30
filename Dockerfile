@@ -8,6 +8,8 @@ RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer dev-master --pre
 RUN cd /tmp && composer require jakub-onderka/php-parallel-lint && rm -rf *
 RUN cd /tmp && composer require jakub-onderka/php-console-color && rm -rf *
 RUN cd /tmp && composer require jakub-onderka/php-console-highlighter && rm -rf *
+RUN git config --global user.name "libraryupgrader"
+RUN git config --global user.email "tools.libraryupgrader@tools.wmflabs.org"
 WORKDIR /usr/src/myapp
 CMD [ "bash", "./thing.sh" ]
 
