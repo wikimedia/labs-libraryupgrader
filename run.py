@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from collections import defaultdict
 import json
 import os
+import prefetch_generator
 import requests
 import sys
 
@@ -39,9 +40,15 @@ else:
 s = requests.session()
 
 
-def get_extension_list():
+@prefetch_generator.background()
+def get_extension_list(library):
     r = s.get('https://www.mediawiki.org/w/api.php?action=query&list=extdistrepos&formatversion=2&format=json')
-    yield from r.json()['query']['extdistrepos']['extensions']
+    for ext in r.json()['query']['extdistrepos']['extensions']:
+        phab = get_phab_file('mediawiki/extensions/' + ext, 'composer.json')
+        if phab:
+            version = phab.get('require-dev', {}).get(library)
+            if version:
+                yield {'ext': ext, 'version': version}
 
 
 def get_phab_file(gerrit_name, path):
@@ -94,15 +101,11 @@ def main():
     data = defaultdict(dict)
     for version in VERSIONS:
         cleanup = set()
-        for ext in get_extension_list():
-            cs = has_codesniffer(ext)
-            if cs:
-                # Save PHPCS version
-                data[ext]['PHPCS'] = cs
-                run(ext, version=version, mode='test')
-                cleanup.add(ext)
-            else:
-                print('Skipping ' + ext)
+        for info in get_extension_list('mediawiki/mediawiki-codesniffer'):
+            # Save PHPCS version
+            data[info['ext']]['PHPCS'] = info['version']
+            run(info['ext'], version=version, mode='test')
+            cleanup.add(info['ext'])
             # If more than max containers running, pause
             docker.wait_for_containers(count=CONCURRENT)
         # Wait for all containers to finish...
