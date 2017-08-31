@@ -20,13 +20,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from collections import defaultdict
 import json
 import os
-import prefetch_generator
-import requests
 import sys
 
 import app
 import docker
+import mw
 
+CODESNIFFER = 'mediawiki/mediawiki-codesniffer'
 CONCURRENT = 10
 DOCKER_IMAGE = 'libraryupgrader'
 VERSIONS = ['same', 'dev-master']
@@ -36,37 +36,6 @@ if os.path.exists('config.json'):
         CONFIG = json.load(f)
 else:
     CONFIG = {}
-
-s = requests.session()
-
-
-@prefetch_generator.background()
-def get_extension_list(library):
-    r = s.get('https://www.mediawiki.org/w/api.php?action=query&list=extdistrepos&formatversion=2&format=json')
-    for ext in r.json()['query']['extdistrepos']['extensions']:
-        phab = get_phab_file('mediawiki/extensions/' + ext, 'composer.json')
-        if phab:
-            version = phab.get('require-dev', {}).get(library)
-            if version:
-                yield {'ext': ext, 'version': version}
-
-
-def get_phab_file(gerrit_name, path):
-    url = 'https://phabricator.wikimedia.org/r/p/{};browse/master/{}?view=raw'.format(gerrit_name, path)
-    # url = 'https://raw.githubusercontent.com/wikimedia/{}/master/{}'.format(gerrit_name.replace('/', '-'), path)
-    print('Fetching ' + url)
-    r = s.get(url)
-    try:
-        return r.json()
-    except:
-        return None
-
-
-def has_codesniffer(ext_name):
-    d = get_phab_file('mediawiki/extensions/' + ext_name, 'composer.json')
-    if d:
-        return d.get('require-dev', {}).get('mediawiki/mediawiki-codesniffer', False)
-    return False
 
 
 def run(ext_name, version, mode):
@@ -101,7 +70,7 @@ def main():
     data = defaultdict(dict)
     for version in VERSIONS:
         cleanup = set()
-        for info in get_extension_list('mediawiki/mediawiki-codesniffer'):
+        for info in mw.get_extension_list(CODESNIFFER):
             # Save PHPCS version
             data[info['ext']]['PHPCS'] = info['version']
             run(info['ext'], version=version, mode='test')
@@ -140,7 +109,9 @@ if __name__ == '__main__':
             version = sys.argv[2]
         except IndexError:
             version = 'dev-master'
-        if not has_codesniffer(sys.argv[1]):
+
+        info = mw.repo_info('mediawiki/extensions/' + sys.argv[1], CODESNIFFER)
+        if not info:
             print('Doesnt have codesniffer.')
             sys.exit(1)
         run(sys.argv[1], version=version, mode=mode)
