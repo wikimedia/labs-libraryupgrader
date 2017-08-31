@@ -21,11 +21,10 @@ from collections import defaultdict
 import json
 import os
 import requests
-import subprocess
 import sys
-import time
 
 import app
+import docker
 
 CONCURRENT = 10
 DOCKER_IMAGE = 'libraryupgrader'
@@ -64,24 +63,21 @@ def has_codesniffer(ext_name):
 
 
 def run(ext_name, version, mode):
-    args = [
-        'docker', 'run',
-        '--name=' + ext_name + version,
-        '--env', 'MODE=' + mode,
-        '--env', 'EXT=' + ext_name,
-        '--env', 'PACKAGE=mediawiki/mediawiki-codesniffer',
-    ]
+    env = {
+        'MODE': mode,
+        'EXT': ext_name,
+        'PACKAGE': 'mediawiki/mediawiki-codesniffer'
+    }
     if version != 'same':
-        args.extend(['--env', 'VERSION=' + version])
+        env['VERSION'] = version
     if mode == 'upgrade':
         for var in ('GERRIT_USER', 'GERRIT_PW'):
-            args.extend(['--env', '%s=%s' % (var, CONFIG.get(var))])
-    args.extend(['-d', DOCKER_IMAGE])
-    subprocess.check_call(args)
+            env[var] = CONFIG.get(var)
+    docker.run(ext_name + version, env)
 
 
 def check_logs(ext_name, version):
-    out = subprocess.check_output(['docker', 'logs', ext_name + version]).decode()
+    out = docker.logs(ext_name + version)
     try:
         data = out.split('------------')[1]
         j = json.loads(data)
@@ -90,21 +86,8 @@ def check_logs(ext_name, version):
         print(out)
         print('Couldnt get JSON data...')
         j = None
-    subprocess.check_call(['docker', 'rm', ext_name + version])
+    docker.remove_container(ext_name + version)
     return j
-
-
-def get_running_containers():
-    out = subprocess.check_output(['docker', 'ps', '-q']).decode().strip()
-    if not out:
-        return []
-    return out.split('\n')
-
-
-def wait_for_containers(count):
-    while len(get_running_containers()) > count:
-        print('Waiting...')
-        time.sleep(2)
 
 
 def main():
@@ -121,9 +104,9 @@ def main():
             else:
                 print('Skipping ' + ext)
             # If more than max containers running, pause
-            wait_for_containers(count=CONCURRENT)
+            docker.wait_for_containers(count=CONCURRENT)
         # Wait for all containers to finish...
-        wait_for_containers(count=0)
+        docker.wait_for_containers(count=0)
         for ext in cleanup:
             data[ext][version] = check_logs(ext, version)
     with open('output.json', 'w') as f:
@@ -158,7 +141,7 @@ if __name__ == '__main__':
             print('Doesnt have codesniffer.')
             sys.exit(1)
         run(sys.argv[1], version=version, mode=mode)
-        wait_for_containers(0)
+        docker.wait_for_containers(0)
         check_logs(sys.argv[1], version=version)
     else:
         main()
