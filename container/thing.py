@@ -246,7 +246,7 @@ def upgrade(env):
         msg=msg,
         branch='master',
         remote=gerrit_url(
-            'mediawiki/extensions/' + env['ext'],
+            env['repo'],
             user=env['gerrit_user'],
             pw=env['gerrit_pw']
         ),
@@ -257,7 +257,7 @@ def upgrade(env):
 
 def build_env():
     return {
-        'ext': os.environ['EXT'],
+        'repo': os.environ['REPO'],
         'version': os.environ.get('VERSION'),
         'package': os.environ['PACKAGE'],
         'gerrit_user': os.environ.get('GERRIT_USER'),
@@ -266,9 +266,9 @@ def build_env():
 
 
 def setup(env):
-    gerrit = gerrit_url('mediawiki/extensions/' + env['ext'])
-    subprocess.check_call(['git', 'clone', gerrit, '--depth=1'])
-    os.chdir(env['ext'])
+    gerrit = gerrit_url(env['repo'])
+    subprocess.check_call(['git', 'clone', gerrit, 'repo', '--depth=1'])
+    os.chdir('repo')
     subprocess.check_call(['grr', 'init'])  # Install commit-msg hook
     if env['version']:
         # Also runs composer install

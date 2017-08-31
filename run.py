@@ -65,7 +65,7 @@ def has_codesniffer(ext_name):
 def run(ext_name, version, mode):
     env = {
         'MODE': mode,
-        'EXT': ext_name,
+        'REPO': 'mediawiki/extensions/' + ext_name,
         'PACKAGE': 'mediawiki/mediawiki-codesniffer'
     }
     if version != 'same':
