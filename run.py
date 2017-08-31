@@ -31,6 +31,11 @@ CONCURRENT = 10
 DOCKER_IMAGE = 'libraryupgrader'
 VERSIONS = ['same', 'dev-master']
 
+if os.path.exists('config.json'):
+    with open('config.json') as f:
+        CONFIG = json.load(f)
+else:
+    CONFIG = {}
 
 s = requests.session()
 
@@ -58,26 +63,30 @@ def has_codesniffer(ext_name):
     return False
 
 
-def run(ext_name, version):
+def run(ext_name, version, mode):
     args = [
         'docker', 'run',
         '--name=' + ext_name + version,
-        '--env', 'MODE=test',
+        '--env', 'MODE=' + mode,
         '--env', 'EXT=' + ext_name,
+        '--env', 'PACKAGE=mediawiki/mediawiki-codesniffer',
     ]
     if version != 'same':
         args.extend(['--env', 'VERSION=' + version])
+    if mode == 'upgrade':
+        for var in ('GERRIT_USER', 'GERRIT_PW'):
+            args.extend(['--env', '%s=%s' % (var, CONFIG.get(var))])
     args.extend(['-d', DOCKER_IMAGE])
     subprocess.check_call(args)
 
 
 def check_logs(ext_name, version):
     out = subprocess.check_output(['docker', 'logs', ext_name + version]).decode()
-    data = out.split('------------')[1]
     try:
+        data = out.split('------------')[1]
         j = json.loads(data)
         print(j)
-    except ValueError:
+    except (IndexError, ValueError):
         print(out)
         print('Couldnt get JSON data...')
         j = None
@@ -107,7 +116,7 @@ def main():
             if cs:
                 # Save PHPCS version
                 data[ext]['PHPCS'] = cs
-                run(ext, version=version)
+                run(ext, version=version, mode='test')
                 cleanup.add(ext)
             else:
                 print('Skipping ' + ext)
@@ -134,6 +143,10 @@ def make_index():
 
 
 if __name__ == '__main__':
+    mode = 'test'
+    for arg in sys.argv:
+        if arg.startswith('--mode='):
+            mode = arg.split('=', 1)[1]
     if '--make-index' in sys.argv:
         make_index()
     elif len(sys.argv) > 1:
@@ -144,7 +157,7 @@ if __name__ == '__main__':
         if not has_codesniffer(sys.argv[1]):
             print('Doesnt have codesniffer.')
             sys.exit(1)
-        run(sys.argv[1], version=version)
+        run(sys.argv[1], version=version, mode=mode)
         wait_for_containers(0)
         check_logs(sys.argv[1], version=version)
     else:
