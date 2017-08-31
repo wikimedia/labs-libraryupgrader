@@ -10,7 +10,7 @@ RUN cd /tmp && composer require jakub-onderka/php-console-highlighter && rm -rf 
 RUN pip3 install semver grr
 RUN git config --global user.name "libraryupgrader"
 RUN git config --global user.email "tools.libraryupgrader@tools.wmflabs.org"
-COPY . /usr/src/myapp
+COPY ./container /usr/src/myapp
 WORKDIR /usr/src/myapp
 CMD [ "python3", "thing.py" ]
 
