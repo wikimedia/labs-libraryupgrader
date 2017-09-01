@@ -96,13 +96,14 @@ if __name__ == '__main__':
         except IndexError:
             version = 'dev-master'
 
-        repo = 'mediawiki/extensions/' + sys.argv[1]
+        repo = sys.argv[1]
+        ext = sys.argv[1].split('/')[-1]
         info = mw.repo_info(repo, CODESNIFFER)
         if not info:
             print('Doesnt have codesniffer.')
             sys.exit(1)
-        run(repo, sys.argv[1], version=version)
+        run(repo, ext, version=version)
         docker.wait_for_containers(0)
-        check_logs(sys.argv[1], version=version)
+        check_logs(ext, version=version)
     else:
         main()
