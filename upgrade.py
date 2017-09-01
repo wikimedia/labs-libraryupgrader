@@ -56,6 +56,11 @@ def get_safe_logs(name):
     return logs
 
 
+def get_extension_list(library, version_match):
+    for info in mw.get_extension_list(library, version_match):
+        yield info['repo']
+
+
 def main():
     if len(sys.argv) < 3:
         print('Usage: upgrade.py library version repo')
@@ -64,7 +69,7 @@ def main():
     version = sys.argv[2]
     repo = sys.argv[3]
     if repo == 'extensions':
-        repos = mw.get_extension_list(library, version_match=version)
+        repos = get_extension_list(library, version_match=version)
     else:
         repos = [repo]
     processed = set()
