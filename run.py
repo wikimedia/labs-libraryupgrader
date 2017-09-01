@@ -28,7 +28,6 @@ import mw
 
 CODESNIFFER = 'mediawiki/mediawiki-codesniffer'
 CONCURRENT = 10
-DOCKER_IMAGE = 'libraryupgrader'
 VERSIONS = ['same', 'dev-master']
 
 if os.path.exists('config.json'):
