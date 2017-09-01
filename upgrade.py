@@ -31,6 +31,14 @@ if os.path.exists('config.json'):
 else:
     CONFIG = {}
 
+CANARIES = [
+    'mediawiki/extensions/Linter',
+    'mediawiki/extensions/MassMessage',
+    'mediawiki/extensions/VisualEditor',
+    'mediawiki/skins/MonoBook',
+    'oojs/ui',
+]
+
 
 def run(repo, library, version):
     env = {
@@ -70,6 +78,8 @@ def main():
     repo = sys.argv[3]
     if repo == 'extensions':
         repos = get_extension_list(library, version_match=version)
+    elif repo == 'canaries':
+        repos = CANARIES
     else:
         repos = [repo]
     processed = set()
