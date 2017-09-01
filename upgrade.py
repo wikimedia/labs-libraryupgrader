@@ -40,7 +40,7 @@ CANARIES = [
 ]
 
 
-def run(repo, library, version):
+def run(repo: str, library: str, version: str) -> str:
     env = {
         'MODE': 'upgrade',
         'REPO': repo,
@@ -55,7 +55,7 @@ def run(repo, library, version):
     return name
 
 
-def get_safe_logs(name):
+def get_safe_logs(name: str) -> str:
     logs = docker.logs(name)
     if CONFIG.get('GERRIT_PW'):
         # Prevent the password from accidentally leaking

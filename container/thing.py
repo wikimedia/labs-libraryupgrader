@@ -45,7 +45,7 @@ FIND_RULE = re.compile(
 s = requests.Session()
 
 
-def gerrit_url(repo, user=None, pw=None):
+def gerrit_url(repo: str, user=None, pw=None) -> str:
     host = ''
     if user:
         if pw:
@@ -58,7 +58,7 @@ def gerrit_url(repo, user=None, pw=None):
 
 
 @functools.lru_cache()
-def get_packagist_version(package):
+def get_packagist_version(package: str) -> str:
     r = s.get('https://packagist.org/packages/%s.json?1' % package)
     resp = r.json()['package']['versions']
     normalized = set()
@@ -80,7 +80,7 @@ def get_packagist_version(package):
     return version
 
 
-def commit_and_push(files, msg, branch, topic, remote='origin', plus2=False, push=True):
+def commit_and_push(files, msg: str, branch: str, topic: str, remote='origin', plus2=False, push=True):
     f = tempfile.NamedTemporaryFile(delete=False)
     f.write(bytes(msg, 'utf-8'))
     f.close()
@@ -119,7 +119,7 @@ def rename_old_sniff_codes():
         f.write(new)
 
 
-def upgrade(env):
+def upgrade(env: dict):
     setup(env)
     with open('composer.json', 'r') as f:
         j = json.load(f, object_pairs_hook=OrderedDict)
@@ -255,7 +255,7 @@ def upgrade(env):
     )
 
 
-def build_env():
+def build_env() -> dict:
     return {
         'repo': os.environ['REPO'],
         'version': os.environ.get('VERSION'),
@@ -265,7 +265,7 @@ def build_env():
     }
 
 
-def setup(env):
+def setup(env: dict):
     gerrit = gerrit_url(env['repo'])
     subprocess.check_call(['git', 'clone', gerrit, 'repo', '--depth=1'])
     os.chdir('repo')

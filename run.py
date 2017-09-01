@@ -30,7 +30,7 @@ CODESNIFFER = 'mediawiki/mediawiki-codesniffer'
 VERSIONS = ['same', 'dev-master']
 
 
-def run(repo, ext_name, version):
+def run(repo: str, ext_name: str, version: str):
     env = {
         'MODE': 'test',
         'REPO': repo,
@@ -41,7 +41,7 @@ def run(repo, ext_name, version):
     docker.run(ext_name + version, env)
 
 
-def check_logs(ext_name, version):
+def check_logs(ext_name: str, version: str):
     out = docker.logs(ext_name + version)
     try:
         data = out.split('------------')[1]

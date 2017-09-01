@@ -45,7 +45,7 @@ def repo_info(repo: str, library: str):
     return None
 
 
-def get_phab_file(gerrit_name, path):
+def get_phab_file(gerrit_name: str, path: str):
     url = 'https://phabricator.wikimedia.org/r/p/{};browse/master/{}?view=raw'.format(gerrit_name, path)
     # url = 'https://raw.githubusercontent.com/wikimedia/{}/master/{}'.format(gerrit_name.replace('/', '-'), path)
     print('Fetching ' + url)

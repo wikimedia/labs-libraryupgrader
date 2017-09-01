@@ -37,7 +37,7 @@ def run(name: str, env: dict):
     subprocess.check_call(args)
 
 
-def get_running_containers():
+def get_running_containers() -> list:
     out = subprocess.check_output(['docker', 'ps', '-q']).decode().strip()
     if not out:
         return []
@@ -50,7 +50,7 @@ def wait_for_containers(count: int):
         time.sleep(2)
 
 
-def logs(name: str):
+def logs(name: str) -> str:
     return subprocess.check_output(['docker', 'logs', name]).decode()
 
 
