@@ -27,7 +27,6 @@ import docker
 import mw
 
 CODESNIFFER = 'mediawiki/mediawiki-codesniffer'
-CONCURRENT = 10
 VERSIONS = ['same', 'dev-master']
 
 if os.path.exists('config.json'):
@@ -75,7 +74,7 @@ def main():
             run(info['ext'], version=version, mode='test')
             cleanup.add(info['ext'])
             # If more than max containers running, pause
-            docker.wait_for_containers(count=CONCURRENT)
+            docker.wait_for_containers(count=docker.CONCURRENT)
         # Wait for all containers to finish...
         docker.wait_for_containers(count=0)
         for ext in cleanup:

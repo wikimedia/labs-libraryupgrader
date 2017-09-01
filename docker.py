@@ -21,6 +21,7 @@ import subprocess
 import time
 
 
+CONCURRENT = 10
 DOCKER_IMAGE = 'libraryupgrader'
 
 
