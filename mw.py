@@ -25,12 +25,15 @@ s = requests.session()
 
 
 @prefetch_generator.background()
-def get_extension_list(library):
+def get_extension_list(library: str, version_match=None):
     r = s.get('https://www.mediawiki.org/w/api.php?action=query&list=extdistrepos&formatversion=2&format=json')
-    for ext in r.json()['query']['extdistrepos']['extensions']:
-        version = repo_info('mediawiki/extensions/' + ext, library)
-        if version:
-            yield {'ext': ext, 'version': version}
+    for type_ in ('extensions', 'skins'):
+        for ext in r.json()['query']['extdistrepos'][type_]:
+            repo = 'mediawiki/' + type_ + '/' + ext
+            version = repo_info(repo, library)
+            if version:
+                if not version_match or version_match != version:
+                    yield {'repo': repo, 'version': version}
 
 
 def repo_info(repo: str, library: str):

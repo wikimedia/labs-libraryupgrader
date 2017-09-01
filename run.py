@@ -29,24 +29,15 @@ import mw
 CODESNIFFER = 'mediawiki/mediawiki-codesniffer'
 VERSIONS = ['same', 'dev-master']
 
-if os.path.exists('config.json'):
-    with open('config.json') as f:
-        CONFIG = json.load(f)
-else:
-    CONFIG = {}
 
-
-def run(ext_name, version, mode):
+def run(repo, ext_name, version):
     env = {
-        'MODE': mode,
-        'REPO': 'mediawiki/extensions/' + ext_name,
+        'MODE': 'test',
+        'REPO': repo,
         'PACKAGE': 'mediawiki/mediawiki-codesniffer'
     }
     if version != 'same':
         env['VERSION'] = version
-    if mode == 'upgrade':
-        for var in ('GERRIT_USER', 'GERRIT_PW'):
-            env[var] = CONFIG.get(var)
     docker.run(ext_name + version, env)
 
 
@@ -70,9 +61,10 @@ def main():
         cleanup = set()
         for info in mw.get_extension_list(CODESNIFFER):
             # Save PHPCS version
-            data[info['ext']]['PHPCS'] = info['version']
-            run(info['ext'], version=version, mode='test')
-            cleanup.add(info['ext'])
+            ext = info['repo'].split('/')[-1]
+            data[ext]['PHPCS'] = info['version']
+            run(info['repo'], ext, version=version)
+            cleanup.add(ext)
             # If more than max containers running, pause
             docker.wait_for_containers(count=docker.CONCURRENT)
         # Wait for all containers to finish...
@@ -96,10 +88,6 @@ def make_index():
 
 
 if __name__ == '__main__':
-    mode = 'test'
-    for arg in sys.argv:
-        if arg.startswith('--mode='):
-            mode = arg.split('=', 1)[1]
     if '--make-index' in sys.argv:
         make_index()
     elif len(sys.argv) > 1:
@@ -108,11 +96,12 @@ if __name__ == '__main__':
         except IndexError:
             version = 'dev-master'
 
-        info = mw.repo_info('mediawiki/extensions/' + sys.argv[1], CODESNIFFER)
+        repo = 'mediawiki/extensions/' + sys.argv[1]
+        info = mw.repo_info(repo, CODESNIFFER)
         if not info:
             print('Doesnt have codesniffer.')
             sys.exit(1)
-        run(sys.argv[1], version=version, mode=mode)
+        run(repo, sys.argv[1], version=version)
         docker.wait_for_containers(0)
         check_logs(sys.argv[1], version=version)
     else:
