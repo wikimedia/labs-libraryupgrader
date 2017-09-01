@@ -71,7 +71,7 @@ def main():
     for repo in repos:
         name = run(repo, library, version)
         processed.add(name)
-        docker.wait_for_containers(docker.CONCURRENT)
+        docker.wait_for_containers(count=2)
 
     docker.wait_for_containers(0)
     for name in processed:
