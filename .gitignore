@@ -2,3 +2,4 @@ output.json
 extensions/*.html
 index.html
 sniffs/*.html
+logs/*.log
