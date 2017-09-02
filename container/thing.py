@@ -28,6 +28,7 @@ import requests
 import shutil
 import subprocess
 import tempfile
+import urllib.parse
 import xml.etree.ElementTree as ET
 
 RULE = '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">'
@@ -47,7 +48,7 @@ def gerrit_url(repo: str, user=None, pw=None) -> str:
     host = ''
     if user:
         if pw:
-            host = user + ':' + pw + '@'
+            host = user + ':' + urllib.parse.quote_plus(pw) + '@'
         else:
             host = user + '@'
 
