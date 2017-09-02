@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import json
+import getpass
 import os
 import sys
 
@@ -25,12 +25,7 @@ import docker
 import mw
 
 
-if os.path.exists('config.json'):
-    with open('config.json') as f:
-        CONFIG = json.load(f)
-else:
-    CONFIG = {}
-
+GERRIT_USER = 'libraryupgrader'
 CANARIES = [
     'mediawiki/extensions/Linter',
     'mediawiki/extensions/MassMessage',
@@ -40,14 +35,14 @@ CANARIES = [
 ]
 
 
-def run(repo: str, library: str, version: str) -> str:
+def run(repo: str, library: str, version: str, pw: str) -> str:
     env = {
         'MODE': 'upgrade',
         'REPO': repo,
         'PACKAGE': library,
         'VERSION': version,
-        'GERRIT_USER': CONFIG.get('GERRIT_USER'),
-        'GERRIT_PW': CONFIG.get('GERRIT_PW'),
+        'GERRIT_USER': GERRIT_USER,
+        'GERRIT_PW': pw,
     }
     name = repo.split('/')[-1] + library.split('/')[-1]
     docker.run(name, env)
@@ -55,11 +50,10 @@ def run(repo: str, library: str, version: str) -> str:
     return name
 
 
-def get_safe_logs(name: str) -> str:
+def get_safe_logs(name: str, pw: str) -> str:
     logs = docker.logs(name)
-    if CONFIG.get('GERRIT_PW'):
-        # Prevent the password from accidentally leaking
-        logs = logs.replace(CONFIG.get('GERRIT_PW'), '<password>')
+    # Prevent the password from accidentally leaking
+    logs = logs.replace(pw, '<password>')
 
     return logs
 
@@ -76,6 +70,7 @@ def main():
     library = sys.argv[1]
     version = sys.argv[2]
     repo = sys.argv[3]
+    pw = getpass.getpass('HTTP Password for %s: ' % GERRIT_USER)
     if repo == 'extensions':
         repos = get_extension_list(library, version_match=version)
     elif repo == 'canaries':
@@ -84,13 +79,13 @@ def main():
         repos = [repo]
     processed = set()
     for repo in repos:
-        name = run(repo, library, version)
+        name = run(repo, library, version, pw)
         processed.add(name)
         docker.wait_for_containers(count=2)
 
     docker.wait_for_containers(0)
     for name in processed:
-        logs = get_safe_logs(name)
+        logs = get_safe_logs(name, pw)
         with open(os.path.join('logs', name + '.log'), 'w') as f:
             f.write(logs)
         print('Saved logs to %s.log' % name)
