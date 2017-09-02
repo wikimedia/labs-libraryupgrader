@@ -7,7 +7,7 @@ RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer dev-master --pre
 RUN cd /tmp && composer require jakub-onderka/php-parallel-lint && rm -rf *
 RUN cd /tmp && composer require jakub-onderka/php-console-color && rm -rf *
 RUN cd /tmp && composer require jakub-onderka/php-console-highlighter && rm -rf *
-RUN pip3 install semver grr
+RUN pip3 install grr
 RUN git config --global user.name "libraryupgrader"
 RUN git config --global user.email "tools.libraryupgrader@tools.wmflabs.org"
 COPY ./container /usr/src/myapp

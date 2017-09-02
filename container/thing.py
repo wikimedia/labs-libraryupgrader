@@ -21,12 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # This script runs *inside* a Docker container
 
 from collections import OrderedDict
-import functools
 import json
 import os
 import re
 import requests
-import semver
 import shutil
 import subprocess
 import tempfile
@@ -55,29 +53,6 @@ def gerrit_url(repo: str, user=None, pw=None) -> str:
 
     host += 'gerrit.wikimedia.org'
     return 'https://%s/r/%s.git' % (host, repo)
-
-
-@functools.lru_cache()
-def get_packagist_version(package: str) -> str:
-    r = s.get('https://packagist.org/packages/%s.json?1' % package)
-    resp = r.json()['package']['versions']
-    normalized = set()
-    for ver in resp:
-        if not (ver.startswith('dev-') or ver.endswith('-dev')):
-            if ver.startswith('v'):
-                normalized.add(ver[1:])
-            else:
-                normalized.add(ver)
-    print(normalized)
-    version = max(normalized)
-    for normal in normalized:
-        try:
-            if semver.compare(version, normal) == -1:
-                version = normal
-        except ValueError:
-            pass
-    print('Latest %s: %s' % (package, version))
-    return version
 
 
 def commit_and_push(files, msg: str, branch: str, topic: str, remote='origin', plus2=False, push=True):
