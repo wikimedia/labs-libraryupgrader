@@ -33,6 +33,10 @@ CANARIES = [
     'mediawiki/skins/MonoBook',
     'oojs/ui',
 ]
+BLACKLIST = [
+    # Per https://gerrit.wikimedia.org/r/375513
+    'mediawiki/extensions/MediaWikiFarm',
+]
 
 
 def run(repo: str, library: str, version: str, pw: str) -> str:
@@ -60,7 +64,8 @@ def get_safe_logs(name: str, pw: str) -> str:
 
 def get_extension_list(library, version_match):
     for info in mw.get_extension_list(library, version_match):
-        yield info['repo']
+        if info['repo'] not in BLACKLIST:
+            yield info['repo']
 
 
 def main():
