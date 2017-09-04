@@ -80,7 +80,8 @@ def run(repo: str, library: str, version: str, pw: str) -> str:
 def get_safe_logs(name: str, pw: str) -> str:
     logs = docker.logs(name)
     # Prevent the password from accidentally leaking
-    logs = logs.replace(pw, '<password>')
+    if pw:
+        logs = logs.replace(pw, '<password>')
 
     return logs
 
