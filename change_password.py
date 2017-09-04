@@ -23,28 +23,22 @@ import requests
 from requests.auth import HTTPDigestAuth
 import sys
 
+import gerrit
 import upgrade
 
 s = requests.Session()
-
-
-def gerrit_request(method, path, **kwargs):
-    r = s.request(method, 'https://gerrit.wikimedia.org/r/a/' + path, **kwargs)
-    r.raise_for_status()
-
-    return json.loads(r.text[4:])
 
 
 def main():
     pw = getpass.getpass('HTTP Password for %s: ' % upgrade.GERRIT_USER)
     auth = HTTPDigestAuth('libraryupgrader', pw)
     # Check that we're logged in as the right user
-    account = gerrit_request('GET', path='accounts/self', auth=auth)
+    account = gerrit.make_request('GET', path='accounts/self', auth=auth)
     if account['username'] != upgrade.GERRIT_USER:
         print('Error, logged in as %(username)s (%(email)s)??' % account)
         sys.exit(1)
     print('Successfully logged in as %(username)s' % account)
-    new_password = gerrit_request(
+    new_password = gerrit.make_request(
         'PUT',
         path='accounts/self/password.http',
         auth=auth,

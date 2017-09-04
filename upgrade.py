@@ -22,6 +22,7 @@ import os
 import sys
 
 import docker
+import gerrit
 import mw
 
 
@@ -36,6 +37,28 @@ CANARIES = [
 BLACKLIST = [
     # Per https://gerrit.wikimedia.org/r/375513
     'mediawiki/extensions/MediaWikiFarm',
+]
+# Gerrit repos not under mediawiki/libs/
+OTHER_LIBRARIES = [
+    'AhoCorasick',
+    'CLDRPluralRuleParser',
+    'HtmlFormatter',
+    'IPSet',
+    'RelPath',
+    'RunningStat',
+    'VisualEditor/VisualEditor',
+    'WrappedString',
+    'at-ease',
+    'base-convert',
+    'cdb',
+    'css-sanitizer',
+    'oojs',
+    'oojs/ui',
+    'php-session-serializer',
+    'purtle',
+    'testing-access-wrapper',
+    'unicodejs',
+    'utfnormal',
 ]
 
 
@@ -62,10 +85,15 @@ def get_safe_logs(name: str, pw: str) -> str:
     return logs
 
 
-def get_extension_list(library, version_match):
-    for info in mw.get_extension_list(library, version_match):
+def preprocess_filter(gen):
+    for info in gen:
         if info['repo'] not in BLACKLIST:
             yield info['repo']
+
+
+def get_library_list():
+    yield from gerrit.list_projects('mediawiki/libs/')
+    yield from OTHER_LIBRARIES
 
 
 def main():
@@ -77,9 +105,17 @@ def main():
     repo = sys.argv[3]
     pw = getpass.getpass('HTTP Password for %s: ' % GERRIT_USER)
     if repo == 'extensions':
-        repos = get_extension_list(library, version_match=version)
+        repos = preprocess_filter(
+            mw.get_extension_list(library, version_match=version)
+        )
     elif repo == 'canaries':
-        repos = CANARIES
+        repos = preprocess_filter(
+            mw.filter_repo_list(CANARIES, library, version_match=version)
+        )
+    elif repo == 'libraries':
+        repos = preprocess_filter(
+            mw.filter_repo_list(get_library_list(), library, version_match=version)
+        )
     else:
         repos = [repo]
     processed = set()
