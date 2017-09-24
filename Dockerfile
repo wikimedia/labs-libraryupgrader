@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y composer git php-xml php-zip php-gd php
 RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer 0.11.0 && rm -rf *
 RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer 0.11.1 && rm -rf *
 RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer 0.12.0 && rm -rf *
+RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer 13.0.0 && rm -rf *
 RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer dev-master --prefer-dist && rm -rf *
 RUN cd /tmp && composer require jakub-onderka/php-parallel-lint && rm -rf *
 RUN cd /tmp && composer require jakub-onderka/php-console-color && rm -rf *
