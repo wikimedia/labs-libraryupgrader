@@ -31,6 +31,11 @@ import tempfile
 import urllib.parse
 import xml.etree.ElementTree as ET
 
+AUTO_APPROVE_FILES = {
+    'composer.json',
+    'package.json',
+    'phpcs.xml',
+}
 RULE = '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">'
 RULE_NO_EXCLUDE = '<rule ref="(\./)?vendor/mediawiki/mediawiki-codesniffer/MediaWiki"( )?/>'
 
@@ -215,8 +220,9 @@ def upgrade(env: dict):
         msg += 'Also added "composer fix" command.'
     print(msg)
     subprocess.call(['git', 'diff'])
-    # changed = subprocess.check_output(['git', 'status', '-s', '--porcelain']).decode()
-    # auto_approve = changed == ' M composer.json\n'
+    changed = subprocess.check_output(['git', 'status', '--porcelain']).decode().splitlines()
+    changed_files = {x.strip().split(' ', 1)[1] for x in changed}
+    auto_approve = changed_files.issubset(AUTO_APPROVE_FILES)
     commit_and_push(
         files=['.'],
         msg=msg,
@@ -227,6 +233,7 @@ def upgrade(env: dict):
             pw=env['gerrit_pw']
         ),
         topic='bump-dev-deps',
+        plus2=auto_approve,
         push=True
     )
 
