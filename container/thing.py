@@ -35,6 +35,7 @@ AUTO_APPROVE_FILES = {
     'composer.json',
     'package.json',
     'phpcs.xml',
+    '.phpcs.xml',
 }
 RULE = '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">'
 RULE_NO_EXCLUDE = '<rule ref="(\./)?vendor/mediawiki/mediawiki-codesniffer/MediaWiki"( )?/>'
@@ -79,10 +80,10 @@ def commit_and_push(files, msg: str, branch: str, topic: str, remote='origin', p
     os.unlink(f.name)
 
 
-def rename_old_sniff_codes():
-    with open('phpcs.xml', 'r') as f:
+def rename_old_sniff_codes(phpcs_xml):
+    with open(phpcs_xml, 'r') as f:
         old = f.read()
-    with open('phpcs.xml', 'w') as f:
+    with open(phpcs_xml, 'w') as f:
         new = old.replace(
             'MediaWiki.FunctionComment.Missing.Protected',
             'MediaWiki.Commenting.FunctionComment.MissingDocumentationProtected'
@@ -104,6 +105,10 @@ def upgrade(env: dict):
     setup(env)
     with open('composer.json', 'r') as f:
         j = json.load(f, object_pairs_hook=OrderedDict)
+    if os.path.exists('.phpcs.xml'):
+        phpcs_xml = '.phpcs.xml'
+    else:
+        phpcs_xml = 'phpcs.xml'
     added_fix = False
     if 'fix' not in j['scripts']:
         j['scripts']['fix'] = ['phpcbf']
@@ -113,16 +118,17 @@ def upgrade(env: dict):
         out = json.dumps(j, indent='\t', ensure_ascii=False)
         f.write(out + '\n')
 
-    rename_old_sniff_codes()
+    moved_phpcs = False
+    rename_old_sniff_codes(phpcs_xml)
 
     failing = set()
     now_failing = set()
     now_pass = set()
 
-    with open('phpcs.xml', 'r') as f:
+    with open(phpcs_xml, 'r') as f:
         old = f.read()
 
-    tree = ET.parse('phpcs.xml')
+    tree = ET.parse(phpcs_xml)
     root = tree.getroot()
     previously_failing = set()
     for child in root:
@@ -133,7 +139,7 @@ def upgrade(env: dict):
     print(previously_failing)
 
     # Re-enable all disabled rules
-    with open('phpcs.xml', 'w') as f:
+    with open(phpcs_xml, 'w') as f:
         new = FIND_RULE.sub(
             '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki" />',
             old
@@ -167,9 +173,9 @@ def upgrade(env: dict):
         for sniff in failing:
             if sniff not in previously_failing:
                 now_failing.add(sniff)
-        subprocess.check_call(['git', 'checkout', 'phpcs.xml'])
-        rename_old_sniff_codes()
-        with open('phpcs.xml') as f:
+        subprocess.check_call(['git', 'checkout', phpcs_xml])
+        rename_old_sniff_codes(phpcs_xml)
+        with open(phpcs_xml) as f:
             text = f.read()
         for sniff in now_pass:
             text = re.sub(
@@ -191,8 +197,11 @@ def upgrade(env: dict):
                         '<exclude name="{}" />\n\t\t<exclude name="{}" />'.format(failing[i - 1], sniff),
                         text
                     )
-        with open('phpcs.xml', 'w') as f:
+        with open(phpcs_xml, 'w') as f:
             f.write(text)
+        if phpcs_xml == 'phpcs.xml':
+            subprocess.call(['git', 'mv', 'phpcs.xml', '.phpcs.xml'])
+            moved_phpcs = True
         try:
             subprocess.check_call(['composer', 'test'])
         except subprocess.CalledProcessError:
@@ -215,6 +224,9 @@ def upgrade(env: dict):
         for sniff_name in sorted(now_pass):
             msg += '* ' + sniff_name + '\n'
         msg += '\n'
+
+    if moved_phpcs:
+        msg += 'And moved phpcs.xml to .phpcs.xml (T177256).\n\n'
 
     if added_fix:
         msg += 'Also added "composer fix" command.'
