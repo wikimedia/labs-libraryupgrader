@@ -36,6 +36,7 @@ AUTO_APPROVE_FILES = {
     'package.json',
     'phpcs.xml',
     '.phpcs.xml',
+    'phpcs.xml -> .phpcs.xml',
 }
 RULE = '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">'
 RULE_NO_EXCLUDE = '<rule ref="(\./)?vendor/mediawiki/mediawiki-codesniffer/MediaWiki"( )?/>'
@@ -233,7 +234,7 @@ def upgrade(env: dict):
     print(msg)
     subprocess.call(['git', 'diff'])
     changed = subprocess.check_output(['git', 'status', '--porcelain']).decode().splitlines()
-    changed_files = {x.strip().split(' ', 1)[1] for x in changed}
+    changed_files = {x.strip().split(' ', 1)[1].strip() for x in changed}
     auto_approve = changed_files.issubset(AUTO_APPROVE_FILES)
     commit_and_push(
         files=['.'],
