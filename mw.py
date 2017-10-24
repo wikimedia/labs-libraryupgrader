@@ -60,5 +60,5 @@ def get_phab_file(gerrit_name: str, path: str):
     r = s.get(url)
     try:
         return r.json()
-    except:
+    except ValueError:
         return None
