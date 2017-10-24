@@ -51,12 +51,11 @@ def wait_for_containers(count: int):
 
 
 def logs(name: str) -> str:
-    out = subprocess.run(
+    out = subprocess.check_output(
         ['docker', 'logs', name],
-        stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT
     )
-    return out.stdout.decode()
+    return out.decode()
 
 
 def remove_container(name: str):
