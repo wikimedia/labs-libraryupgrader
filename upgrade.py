@@ -52,6 +52,7 @@ OTHER_LIBRARIES = [
     'base-convert',
     'cdb',
     'css-sanitizer',
+    'integration/docroot',
     'oojs',
     'oojs/ui',
     'php-session-serializer',
