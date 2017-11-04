@@ -111,7 +111,20 @@ def upgrade(env: dict):
     else:
         phpcs_xml = 'phpcs.xml'
     added_fix = False
-    if 'fix' not in j['scripts']:
+    if 'fix' in j['scripts']:
+        if isinstance(j['scripts']['fix'], list):
+            if 'phpcbf' not in j['scripts']['fix']:
+                j['scripts']['fix'].append('phpcbf')
+                added_fix = True
+            else:
+                pass
+        else:
+            j['scripts']['fix'] = [
+                j['scripts']['fix'],
+                'phpcbf'
+            ]
+            added_fix = True
+    else:
         j['scripts']['fix'] = ['phpcbf']
         added_fix = True
     with open('composer.json', 'w') as f:
@@ -230,7 +243,7 @@ def upgrade(env: dict):
         msg += 'And moved phpcs.xml to .phpcs.xml (T177256).\n\n'
 
     if added_fix:
-        msg += 'Also added "composer fix" command.'
+        msg += 'Also added phpcbf to "composer fix" command.'
     print(msg)
     subprocess.call(['git', 'diff'])
     changed = subprocess.check_output(['git', 'status', '--porcelain']).decode().splitlines()
