@@ -235,7 +235,7 @@ def upgrade(env: dict):
     subprocess.call(['git', 'diff'])
     changed = subprocess.check_output(['git', 'status', '--porcelain']).decode().splitlines()
     changed_files = {x.strip().split(' ', 1)[1].strip() for x in changed}
-    auto_approve = changed_files.issubset(AUTO_APPROVE_FILES)
+    auto_approve = changed_files.issubset(AUTO_APPROVE_FILES) and env['repo'].startswith('mediawiki/')
     commit_and_push(
         files=['.'],
         msg=msg,
