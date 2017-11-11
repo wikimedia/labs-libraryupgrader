@@ -53,6 +53,7 @@ OTHER_LIBRARIES = [
     'cdb',
     'css-sanitizer',
     'integration/docroot',
+    'labs/tools/stewardbots',
     'oojs',
     'oojs/ui',
     'php-session-serializer',
