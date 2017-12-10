@@ -104,6 +104,44 @@ def rename_old_sniff_codes(phpcs_xml):
 
 def upgrade(env: dict):
     setup(env)
+    if env['package'] == 'mediawiki/mediawiki-codesniffer':
+        success = update_codesniffer()
+        if success is False:
+            return False
+    else:
+        success = update_package()
+    with open('composer.json', 'r') as f:
+        new_version = json.load(f)['require-dev'][env['package']]
+
+    msg = 'build: Updating %s to %s\n\n' % (env['package'], new_version)
+    if success:
+        msg += success
+    print(msg)
+    subprocess.call(['git', 'diff'])
+    changed = subprocess.check_output(['git', 'status', '--porcelain']).decode().splitlines()
+    changed_files = {x.strip().split(' ', 1)[1].strip() for x in changed}
+    auto_approve = changed_files.issubset(AUTO_APPROVE_FILES) and env['repo'].startswith('mediawiki/')
+    commit_and_push(
+        files=['.'],
+        msg=msg,
+        branch='master',
+        remote=gerrit_url(
+            env['repo'],
+            user=env['gerrit_user'],
+            pw=env['gerrit_pw']
+        ),
+        topic='bump-dev-deps',
+        plus2=auto_approve,
+        push=True
+    )
+
+
+def update_package():
+    subprocess.run(['composer', 'test'])
+    return ''
+
+
+def update_codesniffer():
     with open('composer.json', 'r') as f:
         j = json.load(f, object_pairs_hook=OrderedDict)
     if os.path.exists('.phpcs.xml'):
@@ -170,7 +208,7 @@ def upgrade(env: dict):
         except json.decoder.JSONDecodeError:
             print('Error, invalid JSON, skipping')
             print(e.output.decode())
-            return
+            return False
         run_fix = False
         for fname, value in phpcs_j['files'].items():
             for message in value['messages']:
@@ -220,13 +258,9 @@ def upgrade(env: dict):
             subprocess.check_call(['composer', 'test'])
         except subprocess.CalledProcessError:
             print('Tests still failing. Skipping')
-            return
+            return False
 
-    with open('composer.json', 'r') as f:
-        new_version = json.load(f)['require-dev'][env['package']]
-
-    msg = 'build: Updating %s to %s\n\n' % (env['package'], new_version)
-
+    msg = ''
     if now_failing:
         msg += 'The following sniffs are failing and were disabled:\n'
         for sniff_name in sorted(now_failing):
@@ -244,24 +278,8 @@ def upgrade(env: dict):
 
     if added_fix:
         msg += 'Also added phpcbf to "composer fix" command.'
-    print(msg)
-    subprocess.call(['git', 'diff'])
-    changed = subprocess.check_output(['git', 'status', '--porcelain']).decode().splitlines()
-    changed_files = {x.strip().split(' ', 1)[1].strip() for x in changed}
-    auto_approve = changed_files.issubset(AUTO_APPROVE_FILES) and env['repo'].startswith('mediawiki/')
-    commit_and_push(
-        files=['.'],
-        msg=msg,
-        branch='master',
-        remote=gerrit_url(
-            env['repo'],
-            user=env['gerrit_user'],
-            pw=env['gerrit_pw']
-        ),
-        topic='bump-dev-deps',
-        plus2=auto_approve,
-        push=True
-    )
+
+    return msg
 
 
 def build_env() -> dict:
