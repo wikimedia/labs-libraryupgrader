@@ -102,11 +102,16 @@ def get_library_list():
 
 def main():
     if len(sys.argv) < 3:
-        print('Usage: upgrade.py library version repo')
+        print('Usage: upgrade.py library version repo [limit]')
         sys.exit(1)
     library = sys.argv[1]
     version = sys.argv[2]
     repo = sys.argv[3]
+    try:
+        limit = int(sys.argv[4])
+    except IndexError:
+        limit = None
+
     pw = getpass.getpass('HTTP Password for %s: ' % GERRIT_USER)
     if repo == 'extensions':
         repos = preprocess_filter(
@@ -127,6 +132,9 @@ def main():
         name = run(repo, library, version, pw)
         processed.add(name)
         docker.wait_for_containers(count=2)
+        if limit is not None and len(processed) > limit:
+            print('Passed limit of %s, breaking' % limit)
+            break
 
     docker.wait_for_containers(0)
     for name in processed:
