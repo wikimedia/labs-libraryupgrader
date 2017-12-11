@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
 import requests
+import time
 
 s = requests.Session()
 
@@ -45,3 +46,31 @@ def list_projects(prefix=None):
         repos.add(repo)
 
     yield from sorted(repos)
+
+
+def zuul_queue_length(q='gate-and-submit'):
+    # ?time is for cache busting, just like jQuery does
+    r = s.get('https://integration.wikimedia.org/zuul/status.json?' + str(time.time()))
+    r.raise_for_status()
+
+    data = r.json()
+    for pipeline in data['pipelines']:
+        if pipeline['name'] != 'gate-and-submit':
+            continue
+        count = 0
+        for change_q in pipeline['change_queues']:
+            if change_q['heads']:
+                count += sum(len(head) for head in change_q['heads'])
+
+        return count
+
+    # We never found the gate-and-submit queue?
+    return 0
+
+
+def wait_for_zuul_gate(count: int):
+    zuul = zuul_queue_length()
+    while zuul > count:
+        print('gate-and-submit has %s jobs, waiting...' % zuul)
+        time.sleep(10)
+        zuul = zuul_queue_length()
