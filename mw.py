@@ -20,6 +20,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import prefetch_generator
 import requests
 
+BLACKLIST = [
+    # Per https://gerrit.wikimedia.org/r/375513
+    'mediawiki/extensions/MediaWikiFarm',
+]
 
 s = requests.session()
 
@@ -30,6 +34,8 @@ def get_extension_list(library: str, version_match=None):
     for type_ in ('extensions', 'skins'):
         for ext in r.json()['query']['extdistrepos'][type_]:
             repo = 'mediawiki/' + type_ + '/' + ext
+            if repo in BLACKLIST:
+                continue
             repos.add(repo)
 
     yield from filter_repo_list(sorted(repos), library, version_match=version_match)

@@ -34,10 +34,6 @@ CANARIES = [
     'mediawiki/skins/MonoBook',
     'oojs/ui',
 ]
-BLACKLIST = [
-    # Per https://gerrit.wikimedia.org/r/375513
-    'mediawiki/extensions/MediaWikiFarm',
-]
 # Gerrit repos not under mediawiki/libs/
 OTHER_LIBRARIES = [
     'AhoCorasick',
@@ -91,8 +87,7 @@ def get_safe_logs(name: str, pw: str) -> str:
 
 def preprocess_filter(gen):
     for info in gen:
-        if info['repo'] not in BLACKLIST:
-            yield info['repo']
+        yield info['repo']
 
 
 def get_library_list():
