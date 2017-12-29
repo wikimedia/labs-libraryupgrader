@@ -55,7 +55,7 @@ def zuul_queue_length(q='gate-and-submit'):
 
     data = r.json()
     for pipeline in data['pipelines']:
-        if pipeline['name'] != 'gate-and-submit':
+        if pipeline['name'] != q:
             continue
         count = 0
         for change_q in pipeline['change_queues']:
@@ -68,9 +68,9 @@ def zuul_queue_length(q='gate-and-submit'):
     return 0
 
 
-def wait_for_zuul_gate(count: int):
-    zuul = zuul_queue_length()
+def wait_for_zuul_test_gate(count: int):
+    zuul = zuul_queue_length('gate-and-submit') + zuul_queue_length('test')
     while zuul > count:
-        print('gate-and-submit has %s jobs, waiting...' % zuul)
+        print('test+gate-and-submit has %s jobs, waiting...' % zuul)
         time.sleep(10)
-        zuul = zuul_queue_length()
+        zuul = zuul_queue_length('gate-and-submit') + zuul_queue_length('test')

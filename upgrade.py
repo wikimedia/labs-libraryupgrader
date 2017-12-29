@@ -127,7 +127,7 @@ def main():
         name = run(repo, library, version, pw)
         processed.add(name)
         docker.wait_for_containers(count=2)
-        gerrit.wait_for_zuul_gate(count=5)
+        gerrit.wait_for_zuul_test_gate(count=5)
         if limit is not None and len(processed) > limit:
             print('Passed limit of %s, breaking' % limit)
             break
