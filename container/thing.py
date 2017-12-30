@@ -156,7 +156,7 @@ def update_codesniffer():
                 added_fix = True
             else:
                 pass
-        else:
+        elif j['scripts']['fix'] != 'phpcbf':
             j['scripts']['fix'] = [
                 j['scripts']['fix'],
                 'phpcbf'
