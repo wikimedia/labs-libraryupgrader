@@ -50,6 +50,7 @@ OTHER_LIBRARIES = [
     'css-sanitizer',
     'integration/docroot',
     'labs/tools/stewardbots',
+    'mediawiki/tools/minus-x',
     'mediawiki/tools/phan/SecurityCheckPlugin',
     'oojs',
     'oojs/ui',
