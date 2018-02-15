@@ -12,7 +12,7 @@ RUN cd /tmp && composer require jakub-onderka/php-console-highlighter && rm -rf 
 RUN pip3 install grr
 RUN git config --global user.name "libraryupgrader"
 RUN git config --global user.email "tools.libraryupgrader@tools.wmflabs.org"
+ENV COMPOSER_PROCESS_TIMEOUT 1800
 COPY ./container /usr/src/myapp
 WORKDIR /usr/src/myapp
 CMD [ "python3", "thing.py" ]
-
