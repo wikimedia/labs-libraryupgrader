@@ -66,6 +66,6 @@ def get_gerrit_file(gerrit_name: str, path: str):
     print('Fetching ' + url)
     r = s.get(url)
     try:
-        return json.loads(base64.b64decode(r.text))
+        return json.loads(base64.b64decode(r.text).decode())
     except ValueError:
         return None
