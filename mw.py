@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Common functions for MediaWiki stuff things.
-Copyright (C) 2017 Kunal Mehta <legoktm@member.fsf.org>
+Copyright (C) 2017-2018 Kunal Mehta <legoktm@member.fsf.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -17,6 +17,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import base64
+import json
 import prefetch_generator
 import requests
 
@@ -51,7 +53,7 @@ def filter_repo_list(repos, library, version_match=None):
 
 
 def repo_info(repo: str, library: str):
-    phab = get_phab_file(repo, 'composer.json')
+    phab = get_gerrit_file(repo, 'composer.json')
     if phab:
         version = phab.get('require-dev', {}).get(library)
         if version:
@@ -59,12 +61,11 @@ def repo_info(repo: str, library: str):
     return None
 
 
-def get_phab_file(gerrit_name: str, path: str):
-    url = 'https://phabricator.wikimedia.org/r/p/{};browse/master/{}?view=raw'.format(gerrit_name, path)
-    # url = 'https://raw.githubusercontent.com/wikimedia/{}/master/{}'.format(gerrit_name.replace('/', '-'), path)
+def get_gerrit_file(gerrit_name: str, path: str):
+    url = 'https://gerrit.wikimedia.org/r/plugins/gitiles/{}/+/master/{}?format=TEXT'.format(gerrit_name, path)
     print('Fetching ' + url)
     r = s.get(url)
     try:
-        return r.json()
+        return json.loads(base64.b64decode(r.text))
     except ValueError:
         return None
