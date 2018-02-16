@@ -59,6 +59,8 @@ OTHER_LIBRARIES = [
     'testing-access-wrapper',
     'unicodejs',
     'utfnormal',
+    'wikimedia/lucene-explain-parser',
+    'wikimedia/textcat',
 ]
 
 
