@@ -133,6 +133,7 @@ def main():
     for repo in repos:
         name = run(repo, library, version, pw)
         processed.add(name)
+        docker.wait_for_containers(count=0)
         logs = get_safe_logs(name, pw)
         with open(os.path.join(log_dir, name + '.log'), 'w') as f:
             f.write(logs)
