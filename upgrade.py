@@ -51,6 +51,7 @@ OTHER_LIBRARIES = [
     'css-sanitizer',
     'integration/docroot',
     'labs/tools/stewardbots',
+    'mediawiki/oauthclient-php',
     'mediawiki/tools/minus-x',
     'mediawiki/tools/phan/SecurityCheckPlugin',
     'oojs',
