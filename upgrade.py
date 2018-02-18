@@ -133,13 +133,11 @@ def main():
     for repo in repos:
         name = run(repo, library, version, pw)
         processed.add(name)
-        docker.wait_for_containers(count=0)
-        for name in processed:
-            logs = get_safe_logs(name, pw)
-            with open(os.path.join(log_dir, name + '.log'), 'w') as f:
-                f.write(logs)
-            print('Saved logs to %s.log' % name)
-            docker.remove_container(name)
+        logs = get_safe_logs(name, pw)
+        with open(os.path.join(log_dir, name + '.log'), 'w') as f:
+            f.write(logs)
+        print('Saved logs to %s.log' % name)
+        docker.remove_container(name)
         gerrit.wait_for_zuul_test_gate(count=3)
         if limit is not None and len(processed) > limit:
             print('Passed limit of %s, breaking' % limit)
