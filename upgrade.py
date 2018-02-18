@@ -17,6 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import datetime
 import getpass
 import os
 import sys
@@ -126,22 +127,23 @@ def main():
     else:
         repos = [repo]
     processed = set()
+    log_dir = os.path.join('logs', datetime.datetime.utcnow().strftime('%Y-%m-%d'))
+    if not os.path.isdir(log_dir):
+        os.mkdir(log_dir)
     for repo in repos:
         name = run(repo, library, version, pw)
         processed.add(name)
-        docker.wait_for_containers(count=2)
+        docker.wait_for_containers(count=0)
+        for name in processed:
+            logs = get_safe_logs(name, pw)
+            with open(os.path.join(log_dir, name + '.log'), 'w') as f:
+                f.write(logs)
+            print('Saved logs to %s.log' % name)
+            docker.remove_container(name)
         gerrit.wait_for_zuul_test_gate(count=3)
         if limit is not None and len(processed) > limit:
             print('Passed limit of %s, breaking' % limit)
             break
-
-    docker.wait_for_containers(0)
-    for name in processed:
-        logs = get_safe_logs(name, pw)
-        with open(os.path.join('logs', name + '.log'), 'w') as f:
-            f.write(logs)
-        print('Saved logs to %s.log' % name)
-        docker.remove_container(name)
 
 
 if __name__ == '__main__':
