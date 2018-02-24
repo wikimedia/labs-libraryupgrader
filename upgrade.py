@@ -53,6 +53,7 @@ OTHER_LIBRARIES = [
     'labs/tools/stewardbots',
     'mediawiki/oauthclient-php',
     'mediawiki/tools/minus-x',
+    'mediawiki/tools/phan',
     'mediawiki/tools/phan/SecurityCheckPlugin',
     'oojs',
     'oojs/ui',
