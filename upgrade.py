@@ -78,7 +78,7 @@ def run(repo: str, library: str, version: str, pw: str) -> str:
         'GERRIT_USER': GERRIT_USER,
         'GERRIT_PW': pw,
     }
-    name = repo.split('/')[-1] + library.split('/')[-1]
+    name = repo.replace('/', '_') + library.split('/')[-1]
     docker.run(name, env)
 
     return name
