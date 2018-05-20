@@ -58,6 +58,11 @@ def repo_info(repo: str, library: str):
         version = phab.get('require-dev', {}).get(library)
         if version:
             return version
+        if 'extra' in phab:
+            suffix = library.split('/')[-1]
+            version = phab['extra'].get(suffix)
+            if version:
+                return version
     return None
 
 

@@ -110,8 +110,9 @@ def upgrade(env: dict):
             return False
     else:
         success = update_package()
-    with open('composer.json', 'r') as f:
-        new_version = json.load(f)['require-dev'][env['package']]
+
+    j = ComposerJson('composer.json')
+    new_version = j.get_version(env['package'])
 
     msg = 'build: Updating %s to %s\n\n' % (env['package'], new_version)
     if success:
@@ -141,9 +142,43 @@ def update_package():
     return ''
 
 
+class ComposerJson:
+    def __init__(self, fname):
+        self.fname = fname
+        with open(fname, 'r') as f:
+            self.data = json.load(f, object_pairs_hook=OrderedDict)
+
+    def get_version(self, package):
+        if package in self.data['require-dev']:
+            return self.data['require-dev'][package]
+        if 'extra' in self.data:
+            suffix = package.split('/')[-1]
+            if suffix in self.data['extra']:
+                return self.data['extra']['suffix']
+
+        return None
+
+    def set_version(self, package, version):
+        if package in self.data['require-dev']:
+            self.data['require-dev'][package] = version
+            return
+        if 'extra' in self.data:
+            suffix = package.split('/')[-1]
+            if suffix in self.data['extra']:
+                self.data['extra']['suffix'] = version
+                return
+
+        raise RuntimeError('Unable to set version for %s to %s' % (package, version))
+
+    def save(self):
+        with open(self.fname, 'w') as f:
+            out = json.dumps(self.data, indent='\t', ensure_ascii=False)
+            f.write(out + '\n')
+
+
 def update_codesniffer():
-    with open('composer.json', 'r') as f:
-        j = json.load(f, object_pairs_hook=OrderedDict)
+    composerjson = ComposerJson('composer.json')
+    j = composerjson.data
     if os.path.exists('.phpcs.xml'):
         phpcs_xml = '.phpcs.xml'
     else:
@@ -165,10 +200,8 @@ def update_codesniffer():
     else:
         j['scripts']['fix'] = ['phpcbf']
         added_fix = True
-    with open('composer.json', 'w') as f:
-        # Even if nothing changed, this enforces the file uses tabs
-        out = json.dumps(j, indent='\t', ensure_ascii=False)
-        f.write(out + '\n')
+    composerjson.data = j
+    composerjson.save()
 
     moved_phpcs = False
     rename_old_sniff_codes(phpcs_xml)
@@ -298,10 +331,10 @@ def setup(env: dict):
     os.chdir('repo')
     subprocess.check_call(['grr', 'init'])  # Install commit-msg hook
     if env['version']:
-        # Also runs composer install
-        subprocess.check_call(['composer', 'require', env['package'], env['version'], '--prefer-dist', '--dev'])
-    else:
-        subprocess.check_call(['composer', 'install'])
+        j = ComposerJson('composer.json')
+        j.set_version(env['package'], env['version'])
+        j.save()
+    subprocess.check_call(['composer', 'install'])
 
 
 def test(env):
