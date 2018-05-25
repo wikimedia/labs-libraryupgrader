@@ -17,27 +17,20 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import base64
 import json
 import prefetch_generator
-import requests
+import wikimediaci_utils as ci
 
 BLACKLIST = [
     # Per https://gerrit.wikimedia.org/r/375513
     'mediawiki/extensions/MediaWikiFarm',
 ]
 
-s = requests.session()
-
 
 def get_extension_list(library: str, version_match=None):
-    r = s.get('https://www.mediawiki.org/w/api.php?action=query&list=extdistrepos&formatversion=2&format=json')
     repos = set()
-    for type_ in ('extensions', 'skins'):
-        for ext in r.json()['query']['extdistrepos'][type_]:
-            repo = 'mediawiki/' + type_ + '/' + ext
-            if repo in BLACKLIST:
-                continue
+    for repo in ci.mw_things_repos():
+        if repo not in BLACKLIST:
             repos.add(repo)
 
     yield from filter_repo_list(sorted(repos), library, version_match=version_match)
@@ -67,10 +60,8 @@ def repo_info(repo: str, library: str):
 
 
 def get_gerrit_file(gerrit_name: str, path: str):
-    url = 'https://gerrit.wikimedia.org/r/plugins/gitiles/{}/+/master/{}?format=TEXT'.format(gerrit_name, path)
-    print('Fetching ' + url)
-    r = s.get(url)
+    content = ci.get_gerrit_file(gerrit_name, path)
     try:
-        return json.loads(base64.b64decode(r.text).decode())
+        return json.loads(content)
     except ValueError:
         return None
