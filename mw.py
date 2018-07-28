@@ -27,10 +27,11 @@ BLACKLIST = [
 ]
 
 
-def get_extension_list(library: str, version_match=None):
+def get_extension_list(library: str, version_match=None, exclude=[]):
     repos = set()
+    skip = BLACKLIST + exclude
     for repo in ci.mw_things_repos():
-        if repo not in BLACKLIST:
+        if repo not in skip:
             repos.add(repo)
 
     yield from filter_repo_list(sorted(repos), library, version_match=version_match)

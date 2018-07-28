@@ -118,7 +118,7 @@ def main():
     pw = getpass.getpass('HTTP Password for %s: ' % GERRIT_USER)
     if repo == 'extensions':
         repos = preprocess_filter(
-            mw.get_extension_list(library, version_match=version)
+            mw.get_extension_list(library, version_match=version, exclude=CANARIES)
         )
     elif repo == 'canaries':
         repos = preprocess_filter(
