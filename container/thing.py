@@ -175,7 +175,7 @@ class ComposerJson:
         if 'extra' in self.data:
             suffix = package.split('/')[-1]
             if suffix in self.data['extra']:
-                return self.data['extra']['suffix']
+                return self.data['extra'][suffix]
 
         return None
 
@@ -186,7 +186,7 @@ class ComposerJson:
         if 'extra' in self.data:
             suffix = package.split('/')[-1]
             if suffix in self.data['extra']:
-                self.data['extra']['suffix'] = version
+                self.data['extra'][suffix] = version
                 return
 
         raise RuntimeError('Unable to set version for %s to %s' % (package, version))
