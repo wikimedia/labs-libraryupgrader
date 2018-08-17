@@ -37,6 +37,7 @@ AUTO_APPROVE_FILES = {
     'phpcs.xml',
     '.phpcs.xml',
     'phpcs.xml -> .phpcs.xml',
+    'CODE_OF_CONDUCT.md',
 }
 RULE = '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">'
 RULE_NO_EXCLUDE = '<rule ref="(\./)?vendor/mediawiki/mediawiki-codesniffer/MediaWiki"( )?/>'
@@ -102,6 +103,22 @@ def rename_old_sniff_codes(phpcs_xml):
         f.write(new)
 
 
+def update_coc():
+    if not os.path.exists('CODE_OF_CONDUCT.md'):
+        return ''
+
+    with open('CODE_OF_CONDUCT.md') as f:
+        old = f.read()
+    new = old.replace(
+        'https://www.mediawiki.org/wiki/Code_of_Conduct',
+        'https://www.mediawiki.org/wiki/Special:MyLanguage/Code_of_Conduct'
+    )
+    with open('CODE_OF_CONDUCT.md', 'w') as f:
+        f.write(new)
+
+    return 'And updating CoC link to use Special:MyLanguage (T202047).\n'
+
+
 def upgrade(env: dict):
     setup(env)
     if env['package'] == 'mediawiki/mediawiki-codesniffer':
@@ -111,12 +128,16 @@ def upgrade(env: dict):
     else:
         success = update_package()
 
+    part2 = update_coc()
+
     j = ComposerJson('composer.json')
     new_version = j.get_version(env['package'])
 
     msg = 'build: Updating %s to %s\n\n' % (env['package'], new_version)
     if success:
         msg += success
+    if part2:
+        msg += part2
     print(msg)
     subprocess.call(['git', 'diff'])
     changed = subprocess.check_output(['git', 'status', '--porcelain']).decode().splitlines()
