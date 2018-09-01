@@ -113,6 +113,10 @@ def update_coc():
         'https://www.mediawiki.org/wiki/Code_of_Conduct',
         'https://www.mediawiki.org/wiki/Special:MyLanguage/Code_of_Conduct'
     )
+    if new == old:
+        # No changes made
+        return ''
+
     with open('CODE_OF_CONDUCT.md', 'w') as f:
         f.write(new)
 
