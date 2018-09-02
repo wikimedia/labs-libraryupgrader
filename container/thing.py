@@ -70,16 +70,24 @@ def commit_and_push(files, msg: str, branch: str, topic: str, remote='origin', p
     f.close()
     subprocess.check_call(['git', 'add'] + files)
     subprocess.check_call(['git', 'commit', '-F', f.name])
+    os.unlink(f.name)
     per = '%topic={0}'.format(topic)
     if plus2:
         per += ',l=Code-Review+2'
     push_cmd = ['git', 'push', remote,
                 'HEAD:refs/for/{0}'.format(branch) + per]
     if push:
-        subprocess.check_call(push_cmd)
+        try:
+            subprocess.check_call(push_cmd)
+        except subprocess.CalledProcessError:
+            if plus2:
+                # Try again without CR+2
+                push_cmd[-1] = push_cmd[-1].replace(',l=Code-Review+2', '')
+                subprocess.check_call(push_cmd)
+            else:
+                raise
     else:
         print(' '.join(push_cmd))
-    os.unlink(f.name)
 
 
 def rename_old_sniff_codes(phpcs_xml):
@@ -146,7 +154,7 @@ def upgrade(env: dict):
     subprocess.call(['git', 'diff'])
     changed = subprocess.check_output(['git', 'status', '--porcelain']).decode().splitlines()
     changed_files = {x.strip().split(' ', 1)[1].strip() for x in changed}
-    auto_approve = changed_files.issubset(AUTO_APPROVE_FILES) and env['repo'].startswith('mediawiki/')
+    auto_approve = changed_files.issubset(AUTO_APPROVE_FILES)
     commit_and_push(
         files=['.'],
         msg=msg,
