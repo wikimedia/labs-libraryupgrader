@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Automatically updates library dependencies
-Copyright (C) 2017 Kunal Mehta <legoktm@member.fsf.org>
+Copyright (C) 2017-2018 Kunal Mehta <legoktm@member.fsf.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -131,21 +131,78 @@ def update_coc():
     return 'And updating CoC link to use Special:MyLanguage (T202047).\n'
 
 
+def npm_audit_fix():
+    rm_lock = False
+    if not os.path.exists('package-lock.json'):
+        rm_lock = True
+        subprocess.check_call(['npm', 'i', '--package-lock-only'])
+    try:
+        subprocess.check_output(['npm', 'audit', '--json'])
+        # If npm audit didn't fail, there are no vulnerable packages
+        return False
+    except subprocess.CalledProcessError as e:
+        try:
+            audit = json.loads(e.output.decode())
+        except json.decoder.JSONDecodeError:
+            print('Error, invalid JSON, skipping')
+            print(e.output.decode())
+            return False
+    prior = PackageJson('package.json')
+    subprocess.check_call(['npm', 'audit', 'fix'])
+    current = PackageJson('package.json')
+    for pkg in current.get_packages():
+        new_version = current.get_version(pkg)
+        if new_version.startswith('^'):
+            old_version = prior.get_version(pkg)
+            if old_version and not old_version.startswith('^'):
+                # If the old version didn't start with ^, then strip
+                # it when npm audit fix adds it.
+                current.set_version(pkg, new_version[1:])
+    current.save()
+
+    # Verify that tests still pass
+    subprocess.check_call(['npm', 't'])
+
+    if rm_lock:
+        os.unlink('package-lock.json')
+
+    msg = 'build: Updating npm dependencies for security issues\n\n'
+    for action in audit['actions']:
+        msg += '* Updated %s to %s, addressing:\n' % (action['module'], action['target'])
+        resolves = set(r['id'] for r in action['resolves'])
+        for npm_id in sorted(resolves):
+            msg += '  * https://npmjs.com/advisories/%s\n' % npm_id
+
+    return msg
+
+
 def upgrade(env: dict):
     setup(env)
+    # Whether auto approving is OK
+    auto_ok = False
     if env['package'] == 'mediawiki/mediawiki-codesniffer':
+        auto_ok = True
         success = update_codesniffer()
         if success is False:
             return False
+    elif env['package'] == 'npm-audit-fix':
+        success = npm_audit_fix()
+        if success is False:
+            return False
     else:
+        auto_ok = True
         success = update_package()
 
     part2 = update_coc()
 
-    j = ComposerJson('composer.json')
-    new_version = j.get_version(env['package'])
+    if env['package'] != 'npm-audit-fix':
+        j = ComposerJson('composer.json')
+        new_version = j.get_version(env['package'])
 
-    msg = 'build: Updating %s to %s\n\n' % (env['package'], new_version)
+        msg = 'build: Updating %s to %s\n\n' % (env['package'], new_version)
+    else:
+        msg = ''
+
     if success:
         msg += success
     if part2:
@@ -154,7 +211,7 @@ def upgrade(env: dict):
     subprocess.call(['git', 'diff'])
     changed = subprocess.check_output(['git', 'status', '--porcelain']).decode().splitlines()
     changed_files = {x.strip().split(' ', 1)[1].strip() for x in changed}
-    auto_approve = changed_files.issubset(AUTO_APPROVE_FILES)
+    auto_approve = auto_ok and changed_files.issubset(AUTO_APPROVE_FILES)
     commit_and_push(
         files=['.'],
         msg=msg,
@@ -200,6 +257,34 @@ class ComposerJson:
             if suffix in self.data['extra']:
                 self.data['extra'][suffix] = version
                 return
+
+        raise RuntimeError('Unable to set version for %s to %s' % (package, version))
+
+    def save(self):
+        with open(self.fname, 'w') as f:
+            out = json.dumps(self.data, indent='\t', ensure_ascii=False)
+            f.write(out + '\n')
+
+
+class PackageJson:
+    def __init__(self, fname):
+        self.fname = fname
+        with open(fname, 'r') as f:
+            self.data = json.load(f, object_pairs_hook=OrderedDict)
+
+    def get_packages(self):
+        return list(self.data['devDependencies'])
+
+    def get_version(self, package):
+        if package in self.data['devDependencies']:
+            return self.data['devDependencies'][package]
+
+        return None
+
+    def set_version(self, package, version):
+        if package in self.data['devDependencies']:
+            self.data['devDependencies'][package] = version
+            return
 
         raise RuntimeError('Unable to set version for %s to %s' % (package, version))
 
