@@ -33,7 +33,10 @@ def run(name: str, env: dict):
     args = ['docker', 'run', '--name=' + name]
     for key, value in env.items():
         args.extend(['--env', '%s=%s' % (key, value)])
-    args.extend(['-d', DOCKER_IMAGE])
+    args.extend([
+        '-v', '/srv/libraryupgrader/cache:/cache',
+        '-d', DOCKER_IMAGE
+    ])
     subprocess.check_call(args)
 
 

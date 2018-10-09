@@ -11,18 +11,13 @@ RUN gem install --no-rdoc --no-ri jsduck
 RUN git clone --depth 1 https://gerrit.wikimedia.org/r/p/integration/npm.git /srv/npm \
     && rm -rf /srv/npm/.git \
     && ln -s /srv/npm/bin/npm-cli.js /usr/bin/npm
-RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer 22.0.0 && rm -rf *
-RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer 18.0.0 && rm -rf *
-RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer 20.0.0 && rm -rf *
-RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer 21.0.0 && rm -rf *
-RUN cd /tmp && composer require mediawiki/mediawiki-codesniffer dev-master --prefer-dist && rm -rf *
-RUN cd /tmp && composer require jakub-onderka/php-parallel-lint && rm -rf *
-RUN cd /tmp && composer require jakub-onderka/php-console-color && rm -rf *
-RUN cd /tmp && composer require jakub-onderka/php-console-highlighter && rm -rf *
 RUN pip3 install grr
 RUN git config --global user.name "libraryupgrader"
 RUN git config --global user.email "tools.libraryupgrader@tools.wmflabs.org"
 ENV COMPOSER_PROCESS_TIMEOUT 1800
+# Shared cache
+ENV NPM_CONFIG_CACHE=/cache
+ENV XDG_CACHE_HOME=/cache
 COPY ./container /usr/src/myapp
 WORKDIR /usr/src/myapp
 CMD [ "python3", "thing.py" ]
