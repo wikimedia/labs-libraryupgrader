@@ -1,4 +1,4 @@
-FROM debian:stretch-slim
+FROM docker-registry.wikimedia.org/wikimedia-stretch:latest
 ENV LANG C.UTF-8
 RUN apt-get update && apt-get install -y \
     composer git \
