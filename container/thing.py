@@ -452,7 +452,7 @@ def setup(env: dict):
         j = ComposerJson('composer.json')
         j.set_version(env['package'], env['version'])
         j.save()
-    subprocess.check_call(['composer', 'install'])
+        subprocess.check_call(['composer', 'install'])
 
 
 def test(env):
