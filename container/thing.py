@@ -448,7 +448,7 @@ def setup(env: dict):
     subprocess.check_call(['git', 'clone', gerrit, 'repo', '--depth=1'])
     os.chdir('repo')
     subprocess.check_call(['grr', 'init'])  # Install commit-msg hook
-    if env['version']:
+    if env['version'] and env['version'] != 'none':
         j = ComposerJson('composer.json')
         j.set_version(env['package'], env['version'])
         j.save()
