@@ -151,7 +151,7 @@ def npm_audit_fix():
             print(e.output.decode())
             return False
     prior = PackageJson('package.json')
-    subprocess.check_call(['npm', 'audit', 'fix'])
+    subprocess.check_call(['npm', 'audit', 'fix', '--only=dev'])
     current = PackageJson('package.json')
     for pkg in current.get_packages():
         new_version = current.get_version(pkg)
