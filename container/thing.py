@@ -181,6 +181,10 @@ def npm_audit_fix():
         resolves = set(r['id'] for r in action['resolves'])
         for npm_id in sorted(resolves):
             msg += '  * https://npmjs.com/advisories/%s\n' % npm_id
+            advisory_info = audit['advisories'][str(npm_id)]
+            # TODO: line wrapping?
+            if advisory_info.get('cves'):
+                msg += ' * ' + ', '.join(advisory_info['cves'])
 
     return msg
 
