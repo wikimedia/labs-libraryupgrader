@@ -50,6 +50,8 @@ def filter_repo_list(repos, library, version_match=None):
 
 
 def repo_info(repo: str, library: str):
+    if library == 'npm-audit-fix':
+        return get_gerrit_file(repo, 'package.json') is not None
     phab = get_gerrit_file(repo, 'composer.json')
     if phab:
         version = phab.get('require-dev', {}).get(library)
