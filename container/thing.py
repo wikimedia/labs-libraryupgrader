@@ -48,6 +48,9 @@ FIND_RULE = re.compile(
     ')',
     re.DOTALL
 )
+# Can have up to 2-4 number parts, and can't have any
+# text like dev-master or -next
+VALID_NPM_VERSION = re.compile('^(\d+?\.?){2,4}$')
 
 s = requests.Session()
 
@@ -158,6 +161,12 @@ def npm_audit_fix():
                 # If the old version didn't start with ^, then strip
                 # it when npm audit fix adds it.
                 current.set_version(pkg, new_version[1:])
+                # If there's no old version / or the old version is valid, the new version
+                # must be valid too
+                if (not old_version or VALID_NPM_VERSION.match(old_version)) \
+                        and not VALID_NPM_VERSION.match(current.get_version(pkg)):
+                    print('Error: %s version is not valid: %s' % (pkg, current.get_version(pkg)))
+                    return False
     current.save()
 
     # Verify that tests still pass
