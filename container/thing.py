@@ -177,6 +177,9 @@ def npm_audit_fix():
 
     msg = 'build: Updating npm dependencies for security issues\n\n'
     for action in audit['actions']:
+        if action['isMajor']:
+            # We don't auto-update major versions
+            continue
         msg += '* Updated %s to %s, addressing:\n' % (action['module'], action['target'])
         resolves = set(r['id'] for r in action['resolves'])
         for npm_id in sorted(resolves):
