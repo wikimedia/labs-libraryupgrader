@@ -170,7 +170,7 @@ def npm_audit_fix():
     current.save()
 
     # Verify that tests still pass
-    subprocess.check_call(['npm', 't'])
+    subprocess.check_call(['npm', 'it'])
 
     if rm_lock:
         os.unlink('package-lock.json')
