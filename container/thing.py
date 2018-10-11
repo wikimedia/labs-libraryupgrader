@@ -184,7 +184,9 @@ def npm_audit_fix():
             advisory_info = audit['advisories'][str(npm_id)]
             # TODO: line wrapping?
             if advisory_info.get('cves'):
-                msg += '  * ' + ', '.join(advisory_info['cves'])
+                msg += '  * ' + ', '.join(advisory_info['cves']) + '\n'
+
+    msg += '\n'
 
     return msg
 
