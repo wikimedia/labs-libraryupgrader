@@ -42,8 +42,8 @@ def filter_repo_list(repos, library, version_match=None):
     for repo in repos:
         version = repo_info(repo, library)
         if version:
-            # Skip codesniffer 19.0.0
-            if library == 'mediawiki/mediawiki-codesniffer' and version == '19.0.0':
+            # Skip codesniffer 19.x.0
+            if library == 'mediawiki/mediawiki-codesniffer' and version.startswith('19.'):
                 continue
             if not version_match or version_match != version:
                 yield {'repo': repo, 'version': version}
