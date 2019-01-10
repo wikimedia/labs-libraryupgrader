@@ -1,4 +1,5 @@
 FROM docker-registry.wikimedia.org/releng/node10-test:latest
+USER root
 ENV LANG C.UTF-8
 RUN apt-get update && apt-get install -y \
     composer git build-essential \
