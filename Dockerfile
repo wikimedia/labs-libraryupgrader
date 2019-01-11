@@ -1,9 +1,10 @@
 FROM debian:stretch
 ENV LANG C.UTF-8
-RUN apt-get update && apt-get install -y \
-    composer git \
+ADD backports.list /etc/apt/sources.list.d/backports.list
+RUN apt-get update && apt-get install -y nodejs -t stretch-backports && \
+    apt-get install -y composer git \
     ruby ruby2.3 ruby2.3-dev rubygems-integration \
-    nodejs nodejs-legacy python-minimal build-essential \
+    python-minimal build-essential \
     php-ast php-xml php-zip php-gd php-gmp php-mbstring php-curl \
     python3 python3-pip python3-setuptools python3-wheel python3-requests \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
