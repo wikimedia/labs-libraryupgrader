@@ -52,6 +52,7 @@ OTHER_LIBRARIES = [
     'integration/docroot',
     'labs/tools/stewardbots',
     'mediawiki/oauthclient-php',
+    'mediawiki/services/parsoid',
     'mediawiki/tools/codesniffer',
     'mediawiki/tools/minus-x',
     'mediawiki/tools/phan',
