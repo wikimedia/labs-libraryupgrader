@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import json
-import prefetch_generator
 import wikimediaci_utils as ci
 
 BLACKLIST = [
@@ -37,7 +36,6 @@ def get_extension_list(library: str, version_match=None, exclude=[]):
     yield from filter_repo_list(sorted(repos), library, version_match=version_match)
 
 
-@prefetch_generator.background()
 def filter_repo_list(repos, library, version_match=None):
     for repo in repos:
         version = repo_info(repo, library)

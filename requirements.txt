@@ -1,3 +1,2 @@
-prefetch_generator
 requests
 wikimediaci-utils
