@@ -414,7 +414,7 @@ def update_codesniffer():
                     )
                 else:
                     text = re.sub(
-                        r'<exclude name="{}"( )?/>'.format(failing[i - 1]),
+                        r'<exclude name="{}"( )?/>'.format(re.escape(failing[i - 1])),
                         '<exclude name="{}" />\n\t\t<exclude name="{}" />'.format(failing[i - 1], sniff),
                         text
                     )
