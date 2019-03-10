@@ -43,6 +43,9 @@ def filter_repo_list(repos, library, version_match=None):
             # Skip codesniffer 19.x.0
             if library == 'mediawiki/mediawiki-codesniffer' and version.startswith('19.'):
                 continue
+            elif library == 'mediawiki/mediawiki-phan-config' and version == '0.3.0':
+                # Requires manual intervention to upgrade
+                continue
             if not version_match or version_match != version:
                 yield {'repo': repo, 'version': version}
 
