@@ -398,6 +398,13 @@ def update_codesniffer():
         rename_old_sniff_codes(phpcs_xml)
         with open(phpcs_xml) as f:
             text = f.read()
+        # Before we apply all of our regexs, let's get everything into a mostly standardized form
+        # <exclude name="Foo"></exclude> -> <exclude name="Foo" />
+        text = re.sub(
+            r'<exclude name="(.*?)"></exclude>',
+            r'<exclude name="\g<1>" />',
+            text
+        )
         for sniff in now_pass:
             text = re.sub(
                 '\t\t<exclude name="{}"( )?/>\n'.format(re.escape(sniff)),
