@@ -213,6 +213,7 @@ def upgrade(env: dict):
         if success is False:
             return False
     elif env['package'] == 'npm-audit-fix':
+        auto_ok = True
         success = npm_audit_fix()
         if success is False:
             return False
