@@ -135,10 +135,18 @@ def update_coc():
 
 
 def npm_audit_fix():
-    rm_lock = False
+    added_lock = False
     if not os.path.exists('package-lock.json'):
-        rm_lock = True
+        added_lock = True
         subprocess.check_call(['npm', 'i', '--package-lock-only'])
+        # We want to commit these now, so remove it from gitignore if it's in there
+        if os.path.exists('.gitignore'):
+            with open('.gitignore') as f:
+                ignore = f.read()
+            if 'package-lock.json' in ignore:
+                ignore = re.sub(r'/?package-lock\.json\n', '', ignore)
+                with open('.gitignore', 'w') as f:
+                    f.write(ignore)
     try:
         subprocess.check_output(['npm', 'audit', '--json'])
         # If npm audit didn't fail, there are no vulnerable packages
@@ -170,10 +178,8 @@ def npm_audit_fix():
     current.save()
 
     # Verify that tests still pass
-    subprocess.check_call(['npm', 'it'])
-
-    if rm_lock:
-        os.unlink('package-lock.json')
+    subprocess.check_call(['npm', 'ci'])
+    subprocess.check_call(['npm', 'test'])
 
     msg = 'build: Updating npm dependencies for security issues\n\n'
     for action in audit['actions']:
@@ -190,6 +196,8 @@ def npm_audit_fix():
                 msg += '  * ' + ', '.join(advisory_info['cves']) + '\n'
 
     msg += '\n'
+    if added_lock:
+        msg += 'Committed package-lock.json (T179229) too.\n\n'
 
     return msg
 
