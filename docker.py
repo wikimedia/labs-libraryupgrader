@@ -17,26 +17,34 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
 import subprocess
 import time
 
-
+__dir__ = os.path.dirname(__file__)
 CONCURRENT = 10
 DOCKER_IMAGE = 'libraryupgrader'
 
 
-def run(name: str, env: dict):
+def run(name: str, env: dict, entrypoint=None, extra_args=None):
     """
     :param name: Name of container
     :param env: Environment values
+    :param entrypoint: Entrypoint to use
+    :param extra_args: Args to pass onto the command
     """
     args = ['docker', 'run', '--name=' + name]
     for key, value in env.items():
         args.extend(['--env', '%s=%s' % (key, value)])
+    if entrypoint is not None:
+        args.extend(['--entrypoint', entrypoint])
     args.extend([
-        '-v', '/srv/libraryupgrader/cache:/cache',
+        '-v', __dir__ + '/cache:/cache',
+        '-v', __dir__ + '/out:/out',
         '-d', DOCKER_IMAGE
     ])
+    if extra_args is not None:
+        args.extend(extra_args)
     subprocess.check_call(args)
 
 

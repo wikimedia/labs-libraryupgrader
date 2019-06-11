@@ -20,5 +20,6 @@ ENV COMPOSER_PROCESS_TIMEOUT 1800
 ENV NPM_CONFIG_CACHE=/cache
 ENV XDG_CACHE_HOME=/cache
 COPY ./container /usr/src/myapp
+COPY container/ng.py /usr/bin/libup-ng
 WORKDIR /usr/src/myapp
 CMD [ "python3", "thing.py" ]
