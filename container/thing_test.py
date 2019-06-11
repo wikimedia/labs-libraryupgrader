@@ -15,7 +15,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-
 import thing
 
 
@@ -26,3 +25,21 @@ def test_gerrit_url():
         == 'https://foo@gerrit.wikimedia.org/r/repo/name.git'
     assert thing.gerrit_url('repo/name', user='foo', pw='bar!!+/') \
         == 'https://foo:bar%21%21%2B%2F@gerrit.wikimedia.org/r/repo/name.git'
+
+
+def test_update_coc(fs):
+    # No CoC.md
+    assert thing.update_coc() == ''
+    # Already correct CoC.md
+    fs.create_file('CODE_OF_CONDUCT.md',
+                   contents='The development of this software is covered by a [Code of Conduct]'
+                            '(https://www.mediawiki.org/wiki/Special:MyLanguage/Code_of_Conduct).\n')
+    assert thing.update_coc() == ''
+
+
+def test_actually_update_coc(fs):
+    # The wrong CoC.md
+    fs.create_file('CODE_OF_CONDUCT.md',
+                   contents='The development of this software is covered by a [Code of Conduct]'
+                            '(https://www.mediawiki.org/wiki/Code_of_Conduct).\n')
+    assert thing.update_coc() == 'And updating CoC link to use Special:MyLanguage (T202047).\n'
