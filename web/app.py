@@ -23,6 +23,7 @@ from markdown import markdown
 import os
 import re
 
+LOGS = '/srv/logs/'
 RE_CODE = re.compile('`(.*?)`')
 
 app = Flask(__name__)
@@ -43,6 +44,38 @@ def get_data():
 def index():
     count = len(get_data())
     return render_template('index.html', count=count)
+
+
+@app.route('/r/<path:repo>')
+def r(repo):
+    # FIXME: do some validation on repo name
+    return render_template('r.html', repo=repo, logs=find_logs(repo))
+
+
+@app.route('/logs')
+def logs():
+    return 'Not yet implemented'
+
+
+def find_logs(repo):
+    for date in os.listdir(LOGS):
+        path = os.path.join(LOGS, date)
+        files = os.listdir(path)
+        old_repo = repo.replace('/', '_')
+        yield from [os.path.join(path, x)
+                    for x in files if x.startswith(old_repo)]
+        yield from _new_log_search(
+            repo,
+            [os.path.join(path, x)
+             for x in files if x.endswith('.json')]
+        )
+
+
+def _new_log_search(repo, files):
+    for fname in files:
+        with open(fname) as f:
+            if json.load(f)['repo'] == repo:
+                yield fname
 
 
 @app.route('/vulns/npm')

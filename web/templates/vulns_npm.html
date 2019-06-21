@@ -20,7 +20,7 @@
 <h5>Affected repositories ({{len(affected[advisory.id])}})</h5>
 <ul>
 {% for repo in sorted(affected[advisory.id]) %}
-<li>{{repo}}</li>
+    <li><a href="{{url_for('r', repo=repo)}}">{{repo}}</a></li>
 {% endfor %}
 </ul>
 {% endfor %}
