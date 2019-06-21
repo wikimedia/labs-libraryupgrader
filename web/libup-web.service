@@ -1,0 +1,20 @@
+[Unit]
+Description=libup web gunicorn daemon
+After=network.target
+
+[Service]
+PIDFile=/run/gunicorn/pid
+User=www-data
+Group=www-data
+RuntimeDirectory=gunicorn
+WorkingDirectory=/srv/libraryupgrader/web
+ExecStart=/srv/libraryupgrader/venv/bin/gunicorn --pid /run/gunicorn/pid   \
+          -w 4 -b 0.0.0.0:3002 app:app
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+
+
