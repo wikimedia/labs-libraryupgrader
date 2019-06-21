@@ -22,7 +22,7 @@ import subprocess
 import time
 
 __dir__ = os.path.dirname(__file__)
-CONCURRENT = 10
+CONCURRENT = 6
 DOCKER_IMAGE = 'libraryupgrader'
 
 
