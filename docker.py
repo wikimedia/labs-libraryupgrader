@@ -26,7 +26,7 @@ CONCURRENT = 10
 DOCKER_IMAGE = 'libraryupgrader'
 
 
-def run(name: str, env: dict, entrypoint=None, extra_args=None):
+def run(name: str, env: dict, rm=False, entrypoint=None, extra_args=None):
     """
     :param name: Name of container
     :param env: Environment values
@@ -36,6 +36,8 @@ def run(name: str, env: dict, entrypoint=None, extra_args=None):
     args = ['docker', 'run', '--name=' + name]
     for key, value in env.items():
         args.extend(['--env', '%s=%s' % (key, value)])
+    if rm:
+        args.append('--rm')
     if entrypoint is not None:
         args.extend(['--entrypoint', entrypoint])
     args.extend([

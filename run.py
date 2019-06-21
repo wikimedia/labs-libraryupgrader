@@ -37,6 +37,7 @@ def run(repo: str):
     rand = _random_string()
     docker.run(
         rand, {},
+        rm=True,
         extra_args=[repo, '/out/%s.json' % rand],
         entrypoint='/usr/bin/libup-ng'
     )
@@ -60,7 +61,6 @@ def main():
             with open(fname) as f:
                 rdata = json.load(f)
             data[rdata['repo']] = rdata
-            docker.remove_container(ps_name)
         else:
             # ????
             pass
