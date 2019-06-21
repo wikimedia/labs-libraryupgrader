@@ -1,2 +1,5 @@
 requests
 wikimediaci-utils
+Flask
+Flask-Bootstrap
+markdown

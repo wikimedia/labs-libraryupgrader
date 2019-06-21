@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block subtitle %}vulnerabilities in npm dependencies{% endblock %}
+{% block main %}
+<h1>vulnerabilities in npm dependencies</h1>
+<blockquote>
+    <p>
+        ugh, npm.
+    </p>
+</blockquote>
+
+{% for advisory in advisories.values() %}
+<h3>#{{advisory.id}}: {{advisory.module_name}}</h3>
+<p>Severity: {{advisory.severity}}</p>
+<blockquote class="bg-{{COLORS[SEVERITIES.index(advisory.severity)]}}">
+    {{markdown(advisory.overview)|safe}}
+    <footer>
+        <a href="https://npmjs.com/advisories/{{advisory.id}}">npm advisory</a>
+    </footer>
+</blockquote>
+<h5>Affected repositories ({{len(affected[advisory.id])}})</h5>
+<ul>
+{% for repo in sorted(affected[advisory.id]) %}
+<li>{{repo}}</li>
+{% endfor %}
+</ul>
+{% endfor %}
+
+{% endblock %}
