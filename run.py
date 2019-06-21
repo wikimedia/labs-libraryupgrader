@@ -47,7 +47,7 @@ def run(repo: str):
 def main():
     data = {}
     check = []
-    for repo in ci.mw_things_repos():
+    for repo in sorted(ci.mw_things_repos()):
         print(repo)
         check.append(run(repo))
         # If more than max containers running, pause
