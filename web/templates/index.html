@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{% block subtitle %}libraryupgrader{% endblock %} - libup{% endblock %}
+{% block main %}
+<h1>libraryupgrader</h1>
+<blockquote>
+    <p>
+        libraryupgrader aka "libup" tracks dependencies in code we use and bumps them
+        as necessary.
+
+        Currently focusing on PHP and nodejs repositories, with more planned.
+
+        It is currently tracking {{count}} repositories.
+    </p>
+</blockquote>
+
+<ul>
+    <li><a href="{{url_for('vulns_npm')}}">vulnerabilities in npm dependencies</a></li>
+</ul>
+
+{% endblock %}
