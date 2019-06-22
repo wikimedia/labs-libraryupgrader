@@ -42,6 +42,28 @@ def ensure_package_lock():
         yield ['npm', 'i', '--package-lock-only']
 
 
+def npm_deps():
+    if not os.path.exists('package.json'):
+        return None
+    with open('package.json') as f:
+        pkg = json.load(f)
+    return {
+        'deps': pkg['dependencies'],
+        'dev': pkg['devDependencies'],
+    }
+
+
+def composer_deps():
+    if not os.path.exists('composer.json'):
+        return None
+    with open('composer.json') as f:
+        pkg = json.load(f)
+    return {
+        'deps': pkg['require'],
+        'dev': pkg['require-dev'],
+    }
+
+
 def npm_audit():
     run_commands(ensure_package_lock())
     # TODO: move this to command structure?
@@ -89,10 +111,18 @@ def run_commands(gen):
             raise RuntimeError('Unexpected value: ' + repr(command))
 
 
+def sha1():
+    return subprocess.check_output(['git', 'show-ref', 'HEAD']).decode().split(' ')[0]
+
+
 def run(repo, output):
-    data = {'repo': repo}
+    data = {
+        'repo': repo,
+        'sha1': sha1()
+    }
     run_commands(clone_commands(repo))
     data['npm-audit'] = npm_audit()
+    data['npm-deps'] = npm_deps()
     try:
         run_commands(npm_test())
         data['npm-test'] = {'result': True}
@@ -101,6 +131,7 @@ def run(repo, output):
 
     run_commands(git_clean())
 
+    data['composer-deps'] = composer_deps()
     try:
         run_commands(composer_test())
         data['composer-test'] = {'result': True}
