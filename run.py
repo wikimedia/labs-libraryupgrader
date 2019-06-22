@@ -17,6 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from datetime import datetime
 import json
 import os
 import random
@@ -33,10 +34,12 @@ def _random_string():
     return ''.join(random.choice(string.ascii_letters) for _ in range(15))
 
 
-def run(repo: str):
+def run(repo: str, log_dir: str):
     rand = _random_string()
     docker.run(
-        rand, {},
+        name=rand,
+        env={},
+        mounts={log_dir: '/out'},
         rm=True,
         extra_args=[repo, '/out/%s.json' % rand],
         entrypoint='/usr/bin/libup-ng'
@@ -47,16 +50,19 @@ def run(repo: str):
 def main():
     data = {}
     check = []
+    log_dir = os.path.join('/srv/logs', datetime.utcnow().strftime('%Y-%m-%d'))
+    if not os.path.isdir(log_dir):
+        os.mkdir(log_dir)
     for repo in sorted(ci.mw_things_repos()):
         print(repo)
-        check.append(run(repo))
+        check.append(run(repo, log_dir))
         # If more than max containers running, pause
         docker.wait_for_containers(count=docker.CONCURRENT)
 
     # Wait for all containers to finish...
     docker.wait_for_containers(count=0)
     for ps_name in check:
-        fname = os.path.join(os.path.dirname(__file__), 'out', '%s.json' % ps_name)
+        fname = os.path.join(log_dir, '%s.json' % ps_name)
         if os.path.exists(fname):
             with open(fname) as f:
                 rdata = json.load(f)

@@ -26,7 +26,8 @@ CONCURRENT = 6
 DOCKER_IMAGE = 'libraryupgrader'
 
 
-def run(name: str, env: dict, rm=False, entrypoint=None, extra_args=None):
+def run(name: str, env: dict, mounts=None, rm=False, entrypoint=None,
+        extra_args=None):
     """
     :param name: Name of container
     :param env: Environment values
@@ -42,9 +43,11 @@ def run(name: str, env: dict, rm=False, entrypoint=None, extra_args=None):
         args.extend(['--entrypoint', entrypoint])
     args.extend([
         '-v', __dir__ + '/cache:/cache',
-        '-v', __dir__ + '/out:/out',
-        '-d', DOCKER_IMAGE
     ])
+    if mounts is not None:
+        for outside, inside in mounts.items():
+            args.extend(['-v', '%s:%s' % (outside, inside)])
+    args.extend(['-d', DOCKER_IMAGE])
     if extra_args is not None:
         args.extend(extra_args)
     subprocess.check_call(args)
