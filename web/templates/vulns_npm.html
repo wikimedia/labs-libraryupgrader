@@ -19,8 +19,11 @@
 </blockquote>
 <h5>Affected repositories ({{len(affected[advisory.id])}})</h5>
 <ul>
-{% for repo in sorted(affected[advisory.id]) %}
-    <li><a href="{{url_for('r', repo=repo)}}">{{repo}}</a></li>
+{% for repo, info in sorted(affected[advisory.id].items()) %}
+    <li>
+        <a href="{{url_for('r', repo=repo)}}">{{repo}}</a>
+        ({% if dev_all(info.findings) %}dev only{% endif %}, via: {{via(info.findings)}})
+    </li>
 {% endfor %}
 </ul>
 {% endfor %}

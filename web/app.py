@@ -82,12 +82,12 @@ def _new_log_search(repo, files):
 def vulns_npm():
     data = get_data()
     advisories = {}
-    affected = defaultdict(list)
+    affected = defaultdict(dict)
     for repo, info in data.items():
         if not info['npm-audit']:
             continue
         for a_id, a_info in info['npm-audit']['advisories'].items():
-            affected[int(a_id)].append(repo)
+            affected[int(a_id)][repo] = a_info
             if a_id not in advisories:
                 advisories[a_id] = a_info
 
@@ -95,6 +95,15 @@ def vulns_npm():
         advisories.items(),
         key=lambda x: SEVERITIES.index(x[1]['severity'])
     ))
+
+    def via(findings):
+        ret = set()
+        for finding in findings:
+            for path in finding['paths']:
+                ret.add(path.split('>', 1)[0])
+
+        return ', '.join(sorted(ret))
+
     return render_template(
         'vulns_npm.html',
         advisories=advisories,
@@ -104,6 +113,8 @@ def vulns_npm():
         COLORS=COLORS,
         sorted=sorted,
         len=len,
+        dev_all=lambda x: all(y['dev'] for y in x),
+        via=via,
     )
 
 
