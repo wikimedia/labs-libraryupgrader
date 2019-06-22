@@ -48,8 +48,8 @@ def npm_deps():
     with open('package.json') as f:
         pkg = json.load(f)
     return {
-        'deps': pkg['dependencies'],
-        'dev': pkg['devDependencies'],
+        'deps': pkg.get('dependencies', {}),
+        'dev': pkg.get('devDependencies', {}),
     }
 
 
@@ -59,8 +59,8 @@ def composer_deps():
     with open('composer.json') as f:
         pkg = json.load(f)
     return {
-        'deps': pkg['require'],
-        'dev': pkg['require-dev'],
+        'deps': pkg.get('require', {}),
+        'dev': pkg.get('require-dev', {}),
     }
 
 
