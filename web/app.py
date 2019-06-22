@@ -97,7 +97,7 @@ def vulns_npm():
 
     advisories = OrderedDict(sorted(
         advisories.items(),
-        key=lambda x: SEVERITIES.index(x[1]['severity'])
+        key=lambda x: (SEVERITIES.index(x[1]['severity']), x[0])
     ))
 
     def via(findings):
