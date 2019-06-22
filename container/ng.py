@@ -116,11 +116,11 @@ def sha1():
 
 
 def run(repo, output):
+    run_commands(clone_commands(repo))
     data = {
         'repo': repo,
         'sha1': sha1()
     }
-    run_commands(clone_commands(repo))
     data['npm-audit'] = npm_audit()
     data['npm-deps'] = npm_deps()
     try:
