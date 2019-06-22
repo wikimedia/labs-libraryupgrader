@@ -86,6 +86,10 @@ def vulns_npm():
     for repo, info in data.items():
         if not info['npm-audit']:
             continue
+        if 'error' in info['npm-audit']:
+            # TODO: Use proper logging
+            print(repo, info['npm-audit'])
+            continue
         for a_id, a_info in info['npm-audit']['advisories'].items():
             affected[int(a_id)][repo] = a_info
             if a_id not in advisories:
