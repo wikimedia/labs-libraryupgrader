@@ -1,4 +1,3 @@
-output.json
-logs/*.log
-cache/*
-out/*.json
+data/logs/*
+data/cache/*
+data/current/*.json

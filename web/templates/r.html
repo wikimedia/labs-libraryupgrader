@@ -29,10 +29,12 @@
 {% endif %}
 {% endif %}
 {% endfor %}
+{% if logs %}
+<h3>Logs</h3>
 <ul>
 {% for log in logs %}
 <li>{{log}}</li>
 {% endfor %}
 </ul>
-
+{% endif %}
 {% endblock %}

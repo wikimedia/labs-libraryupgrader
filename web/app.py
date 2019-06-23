@@ -26,7 +26,11 @@ import re
 
 from library import Library
 
-LOGS = '/srv/logs/'
+if os.path.exists('/srv/data'):
+    DATA_ROOT = '/srv/data'
+else:
+    DATA_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+LOGS = os.path.join(DATA_ROOT, 'logs')
 MANAGERS = ['composer', 'npm']
 TYPES = ['deps', 'dev']
 RE_CODE = re.compile('`(.*?)`')
@@ -49,9 +53,16 @@ def inject_to_templates():
 
 @functools.lru_cache()
 def get_data():
-    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'output.json')
-    with open(path) as f:
-        return json.load(f)
+    current = os.path.join(DATA_ROOT, 'current')
+    data = {}
+    files = [os.path.join(current, x)
+             for x in os.listdir(current) if x.endswith('.json')]
+    for fname in files:
+        with open(fname) as f:
+            j = json.load(f)
+        data[j['repo']] = j
+
+    return data
 
 
 @app.route('/')
@@ -124,9 +135,9 @@ def logs():
 
 
 def find_logs(repo):
-    if not os.path.exists(LOGS):
-        return
     for date in os.listdir(LOGS):
+        if date.startswith('.'):
+            continue
         path = os.path.join(LOGS, date)
         files = os.listdir(path)
         old_repo = repo.replace('/', '_')

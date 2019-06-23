@@ -11,7 +11,7 @@
 <p><code>{{version}}</code>: {{len(repos)}} repositories</p>
 <ul>
     {% for repo in repos|sort %}
-    <li><code>{{repo}}</code></li>
+    <li><a href="{{url_for('r', repo=repo)}}"><code>{{repo}}</code></a></li>
     {% endfor %}
 </ul>
 {% endfor %}
@@ -23,7 +23,7 @@
 <p><code>{{version}}</code>: {{len(repos)}} repositories</p>
 <ul>
     {% for repo in repos|sort %}
-    <li><code>{{repo}}</code></li>
+    <li><a href="{{url_for('r', repo=repo)}}"><code>{{repo}}</code></a></li>
     {% endfor %}
 </ul>
 {% endfor %}

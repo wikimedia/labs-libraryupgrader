@@ -5,3 +5,4 @@ Flask-Bootstrap
 gunicorn
 markdown
 semver
+celery

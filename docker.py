@@ -21,18 +21,22 @@ import os
 import subprocess
 import time
 
-__dir__ = os.path.dirname(__file__)
 CONCURRENT = 6
 DOCKER_IMAGE = 'libraryupgrader'
+if os.path.exists('/srv/data'):
+    DATA_ROOT = '/srv/data'
+else:
+    DATA_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 
 
 def run(name: str, env: dict, mounts=None, rm=False, entrypoint=None,
-        extra_args=None):
+        extra_args=None, background=True):
     """
     :param name: Name of container
     :param env: Environment values
     :param entrypoint: Entrypoint to use
     :param extra_args: Args to pass onto the command
+    :param background: Run in background or not
     """
     args = ['docker', 'run', '--name=' + name]
     for key, value in env.items():
@@ -42,12 +46,14 @@ def run(name: str, env: dict, mounts=None, rm=False, entrypoint=None,
     if entrypoint is not None:
         args.extend(['--entrypoint', entrypoint])
     args.extend([
-        '-v', __dir__ + '/cache:/cache',
+        '-v', DATA_ROOT + '/cache:/cache',
     ])
     if mounts is not None:
         for outside, inside in mounts.items():
             args.extend(['-v', '%s:%s' % (outside, inside)])
-    args.extend(['-d', DOCKER_IMAGE])
+    if background:
+        args.append('-d')
+    args.append(DOCKER_IMAGE)
     if extra_args is not None:
         args.extend(extra_args)
     subprocess.check_call(args)
