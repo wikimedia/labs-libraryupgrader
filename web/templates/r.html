@@ -2,6 +2,30 @@
 {% block subtitle %}{{repo}}{% endblock %}
 {% block main %}
 <h1>{{repo}}</h1>
+{% for manager, info in deps.items()|sort %}
+{% if info %}
+<h3>{{manager}} dependencies</h3>
+{% if info.deps %}
+<h5>Dependencies</h5>
+<ul>
+    {% for name, version in info.deps.items()|sort %}
+    <li><code>{{name}}</code>: <code>{{version}}</code></li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if info.dev %}
+<h5>Development dependencies</h5>
+<ul>
+    {% for library in info.dev|sort %}
+    <li>
+        <a href="{{library.link}}"><code>{{library.name}}</code></a>: <code>{{library.version}}</code>
+        {% if library.is_newer() %}(<code>{{library.latest_version()}}</code> available){% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endif %}
+{% endfor %}
 <ul>
 {% for log in logs %}
 <li>{{log}}</li>

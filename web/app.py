@@ -16,12 +16,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from collections import defaultdict, OrderedDict
-from flask import Flask, render_template
+from flask import Flask, render_template, make_response
 from flask_bootstrap import Bootstrap
 import json
 from markdown import markdown
 import os
 import re
+
+from library import Library
 
 LOGS = '/srv/logs/'
 RE_CODE = re.compile('`(.*?)`')
@@ -48,8 +50,24 @@ def index():
 
 @app.route('/r/<path:repo>')
 def r(repo):
-    # FIXME: do some validation on repo name
-    return render_template('r.html', repo=repo, logs=find_logs(repo))
+    data = get_data()
+    if repo not in data:
+        return make_response('Sorry, I don\'t know this repository.', 404)
+    info = data[repo]
+    deps = defaultdict(lambda: defaultdict(list))
+    for manager in ['composer', 'npm']:
+        if info['%s-deps' % manager]:
+            minfo = info['%s-deps' % manager]
+            for type_ in ['deps', 'dev']:
+                if minfo[type_]:
+                    for name, version in minfo[type_].items():
+                        deps[manager][type_].append(Library(manager, name, version))
+    return render_template(
+        'r.html',
+        repo=repo,
+        deps=deps,
+        logs=find_logs(repo)
+    )
 
 
 @app.route('/logs')
@@ -58,6 +76,8 @@ def logs():
 
 
 def find_logs(repo):
+    if not os.path.exists(LOGS):
+        return
     for date in os.listdir(LOGS):
         path = os.path.join(LOGS, date)
         files = os.listdir(path)
