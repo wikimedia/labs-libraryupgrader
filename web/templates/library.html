@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block subtitle %}{{repo}}{% endblock %}
+{% block main %}
+<h1>{{manager}}: {{name}}</h1>
+<p><a href="{{library.link}}">{{library.description()}}</a></p>
+<p>Latest version: <code>{{library.latest_version()}}</code></p>
+<h3>Repositories using:</h3>
+{% if used.deps %}
+<h5>Dependencies</h5>
+{% for version, repos in used.deps.items()|sort|reverse %}
+<p><code>{{version}}</code>: {{len(repos)}} repositories</p>
+<ul>
+    {% for repo in repos|sort %}
+    <li><code>{{repo}}</code></li>
+    {% endfor %}
+</ul>
+{% endfor %}
+{% endif %}
+{% if used.dev %}
+<h5>Development dependencies</h5>
+<!-- TODO use a semver sort -->
+{% for version, repos in used.dev.items()|sort|reverse %}
+<p><code>{{version}}</code>: {{len(repos)}} repositories</p>
+<ul>
+    {% for repo in repos|sort %}
+    <li><code>{{repo}}</code></li>
+    {% endfor %}
+</ul>
+{% endfor %}
+{% endif %}
+{% endblock %}

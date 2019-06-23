@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from distutils.version import LooseVersion
 import functools
 import requests
+import semver
 
 
 s = requests.Session()
@@ -40,23 +41,43 @@ class Library:
             'npm': 'https://www.npmjs.com/package/%s',
         }[self.manager] % self.name
 
-    def latest_version(self) -> str:
+    def _metadata(self) -> dict:
         return {
-            'composer': _get_composer_version,
-            'npm': _get_npm_version,
+            'composer': _get_composer_metadata,
+            'npm': _get_npm_metadata,
         }[self.manager](self.name)
+
+    def latest_version(self) -> str:
+        return self._metadata()['latest']
+
+    def description(self) -> str:
+        return self._metadata()['description']
 
     def is_newer(self) -> bool:
         """if a newer version is available"""
+        # Try and detect some operators to see if the current is a constraint
+        # TODO: I don't think semver supports ^
+        if any(True for x in '^><=|' if x in self.version):
+            try:
+                # Split on | since semver doesn't support that
+                if any(
+                        semver.match(self.latest_version(), part)
+                        for part in self.version.split('|')
+                ):
+                    return True
+            except ValueError:
+                pass
+            return False
+        # Just do a safer/more basic semver comparison
         return LooseVersion(self.latest_version()) > LooseVersion(self.version)
 
 
 @functools.lru_cache()
-def _get_composer_version(package: str) -> str:
+def _get_composer_metadata(package: str) -> dict:
     r = s.get('https://packagist.org/packages/%s.json' % package)
-    resp = r.json()['package']['versions']
+    resp = r.json()['package']
     normalized = set()
-    for ver in resp:
+    for ver in resp['versions']:
         if not ver.startswith('dev-') and not ver.endswith('-dev'):
             if ver.startswith('v'):
                 normalized.add(ver[1:])
@@ -70,12 +91,18 @@ def _get_composer_version(package: str) -> str:
         except ValueError:
             pass
     # print('Latest %s: %s' % (package, version))
-    return version
+    return {
+        'latest': version,
+        'description': resp['description'],
+    }
 
 
 @functools.lru_cache()
-def _get_npm_version(package: str) -> str:
+def _get_npm_metadata(package: str) -> dict:
     r = s.get('https://registry.npmjs.org/%s' % package)
-    version = r.json()['dist-tags']['latest']
+    resp = r.json()
     # print('Latest %s: %s' % (package, version))
-    return version
+    return {
+        'latest': resp['dist-tags']['latest'],
+        'description': resp['description'],
+    }

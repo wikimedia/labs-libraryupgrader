@@ -22,7 +22,11 @@
 {% for repo, info in sorted(affected[advisory.id].items()) %}
     <li>
         <a href="{{url_for('r', repo=repo)}}">{{repo}}</a>
-        ({% if dev_all(info.findings) %}dev only{% endif %}, via: {{via(info.findings)}})
+        ({% if dev_all(info.findings) %}dev only{% endif %}, via:
+        {% for pkg in via(info.findings) %}
+        <a href="{{url_for('library_', manager='npm', name=pkg)}}">{{pkg}}</a>,
+        {% endfor %}
+        )
     </li>
 {% endfor %}
 </ul>

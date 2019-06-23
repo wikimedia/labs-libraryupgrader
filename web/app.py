@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from collections import defaultdict, OrderedDict
 from flask import Flask, render_template, make_response
 from flask_bootstrap import Bootstrap
+import functools
 import json
 from markdown import markdown
 import os
@@ -26,6 +27,8 @@ import re
 from library import Library
 
 LOGS = '/srv/logs/'
+MANAGERS = ['composer', 'npm']
+TYPES = ['deps', 'dev']
 RE_CODE = re.compile('`(.*?)`')
 
 app = Flask(__name__)
@@ -36,6 +39,15 @@ SEVERITIES = ['critical', 'high', 'moderate', 'low', 'info']
 COLORS = ['danger', 'danger', 'warning', 'warning', 'info']
 
 
+@app.context_processor
+def inject_to_templates():
+    return {
+        'sorted': sorted,
+        'len': len,
+    }
+
+
+@functools.lru_cache()
 def get_data():
     path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'output.json')
     with open(path) as f:
@@ -48,25 +60,61 @@ def index():
     return render_template('index.html', count=count)
 
 
+def _get_deps(repo):
+    info = get_data()[repo]
+    deps = defaultdict(lambda: defaultdict(list))
+    for manager in MANAGERS:
+        if info['%s-deps' % manager]:
+            minfo = info['%s-deps' % manager]
+            for type_ in TYPES:
+                if minfo[type_]:
+                    for name, version in minfo[type_].items():
+                        deps[manager][type_].append(Library(manager, name, version))
+
+    return deps
+
+
 @app.route('/r/<path:repo>')
 def r(repo):
     data = get_data()
     if repo not in data:
         return make_response('Sorry, I don\'t know this repository.', 404)
-    info = data[repo]
-    deps = defaultdict(lambda: defaultdict(list))
-    for manager in ['composer', 'npm']:
-        if info['%s-deps' % manager]:
-            minfo = info['%s-deps' % manager]
-            for type_ in ['deps', 'dev']:
-                if minfo[type_]:
-                    for name, version in minfo[type_].items():
-                        deps[manager][type_].append(Library(manager, name, version))
+    deps = _get_deps(repo)
     return render_template(
         'r.html',
         repo=repo,
         deps=deps,
         logs=find_logs(repo)
+    )
+
+
+@app.route('/library/<manager>/<path:name>')
+def library_(manager, name):
+    if manager not in MANAGERS:
+        return make_response('Unknown manager.', 404)
+
+    used = {'deps': defaultdict(set), 'dev': defaultdict(set)}
+
+    found = None
+    for repo, info in get_data().items():
+        deps = _get_deps(repo)
+        if manager in deps:
+            mdeps = deps[manager]
+            for type_ in TYPES:
+                for lib in mdeps[type_]:
+                    if lib.name == name:
+                        used[type_][lib.version].add(repo)
+                        found = lib
+
+    if not found:
+        return make_response('Unknown repository.', 404)
+
+    return render_template(
+        'library.html',
+        manager=manager,
+        name=name,
+        used=used,
+        library=found,
     )
 
 
@@ -126,7 +174,7 @@ def vulns_npm():
             for path in finding['paths']:
                 ret.add(path.split('>', 1)[0])
 
-        return ', '.join(sorted(ret))
+        return sorted(ret)
 
     return render_template(
         'vulns_npm.html',
@@ -135,8 +183,6 @@ def vulns_npm():
         markdown=markdown,
         SEVERITIES=SEVERITIES,
         COLORS=COLORS,
-        sorted=sorted,
-        len=len,
         dev_all=lambda x: all(y['dev'] for y in x),
         via=via,
     )
