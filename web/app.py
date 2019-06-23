@@ -18,7 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from collections import defaultdict, OrderedDict
 from flask import Flask, render_template, make_response
 from flask_bootstrap import Bootstrap
-import functools
 import json
 from markdown import markdown
 import os
@@ -51,7 +50,6 @@ def inject_to_templates():
     }
 
 
-@functools.lru_cache()
 def get_data():
     current = os.path.join(DATA_ROOT, 'current')
     data = {}

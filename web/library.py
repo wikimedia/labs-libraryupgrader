@@ -72,6 +72,7 @@ class Library:
         return LooseVersion(self.latest_version()) > LooseVersion(self.version)
 
 
+# FIXME Don't use functools/lru_cache
 @functools.lru_cache()
 def _get_composer_metadata(package: str) -> dict:
     r = s.get('https://packagist.org/packages/%s.json' % package)
