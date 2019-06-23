@@ -33,13 +33,9 @@ def main():
     log_dir = os.path.join(DATA_ROOT, 'logs', datetime.utcnow().strftime('%Y-%m-%d'))
     if not os.path.isdir(log_dir):
         os.mkdir(log_dir)
-    stop = 0
     for repo in sorted(ci.mw_things_repos()):
         print(repo)
         run_check.delay(repo, DATA_ROOT, log_dir)
-        stop += 1
-        if stop > 2:
-            break
 
 
 if __name__ == '__main__':
