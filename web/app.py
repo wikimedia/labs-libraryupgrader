@@ -50,27 +50,40 @@ def inject_to_templates():
     }
 
 
-def get_data():
-    current = os.path.join(DATA_ROOT, 'current')
-    data = {}
-    files = [os.path.join(current, x)
-             for x in os.listdir(current) if x.endswith('.json')]
-    for fname in files:
-        with open(fname) as f:
-            j = json.load(f)
-        data[j['repo']] = j
+class Data:
+    def __init__(self):
+        self.current = os.path.join(DATA_ROOT, 'current')
 
-    return data
+    def find_files(self):
+        for fname in os.listdir(self.current):
+            if fname.endswith('.json'):
+                yield os.path.join(self.current, fname)
+
+    def get_data(self):
+        data = {}
+        for fname in self.find_files():
+            with open(fname) as f:
+                j = json.load(f)
+            data[j['repo']] = j
+
+        return data
+
+    def get_repo_data(self, repo):
+        expected = os.path.join(self.current, repo.replace('/', '_') + '.json')
+        # Sanity check?
+        if expected not in set(self.find_files()):
+            raise ValueError("Didn't find %s" % repo)
+        with open(expected) as f:
+            return json.load(f)
 
 
 @app.route('/')
 def index():
-    count = len(get_data())
+    count = len(set(Data().find_files()))
     return render_template('index.html', count=count)
 
 
-def _get_deps(repo):
-    info = get_data()[repo]
+def _get_deps(info):
     deps = defaultdict(lambda: defaultdict(list))
     for manager in MANAGERS:
         if info['%s-deps' % manager]:
@@ -85,10 +98,12 @@ def _get_deps(repo):
 
 @app.route('/r/<path:repo>')
 def r(repo):
-    data = get_data()
-    if repo not in data:
+    try:
+        info = Data().get_repo_data(repo)
+    except ValueError:
         return make_response('Sorry, I don\'t know this repository.', 404)
-    deps = _get_deps(repo)
+
+    deps = _get_deps(info)
     return render_template(
         'r.html',
         repo=repo,
@@ -105,8 +120,8 @@ def library_(manager, name):
     used = {'deps': defaultdict(set), 'dev': defaultdict(set)}
 
     found = None
-    for repo, info in get_data().items():
-        deps = _get_deps(repo)
+    for repo, info in Data().get_data().items():
+        deps = _get_deps(info)
         if manager in deps:
             mdeps = deps[manager]
             for type_ in TYPES:
@@ -157,7 +172,7 @@ def _new_log_search(repo, files):
 
 @app.route('/vulns/npm')
 def vulns_npm():
-    data = get_data()
+    data = Data().get_data()
     advisories = {}
     affected = defaultdict(dict)
     for repo, info in data.items():
