@@ -39,7 +39,7 @@ def gerrit_url(repo: str, user=None, pw=None) -> str:
 
 def ensure_package_lock():
     if not os.path.exists('package-lock.json'):
-        yield ['npm', 'i', '--package-lock-only']
+        subprocess.check_call(['npm', 'i', '--package-lock-only'])
 
 
 def npm_deps():
@@ -65,8 +65,7 @@ def composer_deps():
 
 
 def npm_audit():
-    run_commands(ensure_package_lock())
-    # TODO: move this to command structure?
+    ensure_package_lock()
     try:
         subprocess.check_output(['npm', 'audit', '--json'])
         # If npm audit didn't fail, there are no vulnerable packages
@@ -80,35 +79,25 @@ def npm_audit():
 
 
 def npm_test():
-    yield from ensure_package_lock()
-    yield ['npm', 'ci']
-    yield ['npm', 'test']
+    ensure_package_lock()
+    subprocess.check_call(['npm', 'ci'])
+    subprocess.check_call(['npm', 'test'])
 
 
 def composer_test():
-    yield ['composer', 'install']
-    yield ['composer', 'test']
+    subprocess.check_call(['composer', 'install'])
+    subprocess.check_call(['composer', 'test'])
 
 
 def git_clean():
-    yield ['git', 'clean', '-fdx']
+    subprocess.check_call(['git', 'clean', '-fdx'])
 
 
 def clone_commands(repo):
     url = gerrit_url(repo)
-    yield ['git', 'clone', url, 'repo', '--depth=1']
-    yield lambda: os.chdir('repo')
-    yield ['grr', 'init']  # Install commit-msg hook
-
-
-def run_commands(gen):
-    for command in gen:
-        if callable(command):
-            command()
-        elif isinstance(command, list):
-            subprocess.check_call(command)
-        else:
-            raise RuntimeError('Unexpected value: ' + repr(command))
+    subprocess.check_call(['git', 'clone', url, 'repo', '--depth=1'])
+    os.chdir('repo')
+    subprocess.check_call(['grr', 'init'])  # Install commit-msg hook
 
 
 def sha1():
@@ -116,7 +105,7 @@ def sha1():
 
 
 def run(repo, output):
-    run_commands(clone_commands(repo))
+    clone_commands(repo)
     data = {
         'repo': repo,
         'sha1': sha1()
@@ -124,16 +113,16 @@ def run(repo, output):
     data['npm-audit'] = npm_audit()
     data['npm-deps'] = npm_deps()
     try:
-        run_commands(npm_test())
+        npm_test()
         data['npm-test'] = {'result': True}
     except subprocess.CalledProcessError as e:
         data['npm-test'] = {'result': False, 'error': e.output.decode()}
 
-    run_commands(git_clean())
+    git_clean()
 
     data['composer-deps'] = composer_deps()
     try:
-        run_commands(composer_test())
+        composer_test()
         data['composer-test'] = {'result': True}
     except subprocess.CalledProcessError as e:
         data['composer-test'] = {'result': False, 'error': e.output.decode()}
