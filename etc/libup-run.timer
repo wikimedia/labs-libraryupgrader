@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the script
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=daily
+RandomizedDelaySec=3600
+
+[Install]
+WantedBy=timers.target
+

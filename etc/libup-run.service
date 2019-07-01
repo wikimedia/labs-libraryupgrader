@@ -1,0 +1,12 @@
+[Unit]
+Description=libup run
+After=rabbitmq-server.target
+
+[Service]
+User=libup
+Group=libup
+WorkingDirectory=/srv/libraryupgrader/
+ExecStart=/srv/libraryupgrader/venv/bin/python run.py
+PrivateTmp=true
+
+
