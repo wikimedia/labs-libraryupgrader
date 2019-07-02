@@ -7,9 +7,9 @@ PIDFile=/run/gunicorn/pid
 User=www-data
 Group=www-data
 RuntimeDirectory=gunicorn
-WorkingDirectory=/srv/libraryupgrader/web
+WorkingDirectory=/srv/libraryupgrader
 ExecStart=/srv/libraryupgrader/venv/bin/gunicorn --pid /run/gunicorn/pid   \
-          -w 4 -b 0.0.0.0:3002 app:app
+          -w 4 -b 0.0.0.0:3002 libup.web:app
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
 PrivateTmp=true

@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
 
-from library import Library
+from .library import Library
 
 
 def test_sort():

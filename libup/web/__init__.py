@@ -23,13 +23,9 @@ from markdown import markdown
 import os
 import re
 
-from library import Library
+from .. import DATA_ROOT, LOGS
+from ..library import Library
 
-if os.path.exists('/srv/data'):
-    DATA_ROOT = '/srv/data'
-else:
-    DATA_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
-LOGS = os.path.join(DATA_ROOT, 'logs')
 MANAGERS = ['composer', 'npm']
 TYPES = ['deps', 'dev']
 RE_CODE = re.compile('`(.*?)`')

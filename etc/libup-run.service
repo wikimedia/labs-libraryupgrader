@@ -6,7 +6,7 @@ After=rabbitmq-server.target
 User=libup
 Group=libup
 WorkingDirectory=/srv/libraryupgrader/
-ExecStart=/srv/libraryupgrader/venv/bin/python run.py
+ExecStart=/srv/libraryupgrader/venv/bin/libup-run
 PrivateTmp=true
 
 

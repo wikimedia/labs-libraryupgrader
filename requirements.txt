@@ -1,8 +1,0 @@
-requests
-wikimediaci-utils
-Flask
-Flask-Bootstrap
-gunicorn
-markdown
-semver
-celery

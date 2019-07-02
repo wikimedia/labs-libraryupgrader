@@ -20,7 +20,7 @@ import os
 import random
 import string
 
-import docker
+from . import docker
 
 app = Celery('tasks', broker='amqp://localhost')
 

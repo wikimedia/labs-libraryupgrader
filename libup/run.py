@@ -21,12 +21,8 @@ from datetime import datetime
 import os
 import wikimediaci_utils as ci
 
-from tasks import run_check
-
-if os.path.exists('/srv/data'):
-    DATA_ROOT = '/srv/data'
-else:
-    DATA_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
+from . import DATA_ROOT
+from .tasks import run_check
 
 
 def main():
