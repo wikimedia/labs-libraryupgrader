@@ -22,7 +22,8 @@ import json
 from markdown import markdown
 import os
 
-from .. import DATA_ROOT, LOGS
+from .. import LOGS
+from ..data import Data
 from ..library import Library
 
 MANAGERS = ['composer', 'npm']
@@ -42,33 +43,6 @@ def inject_to_templates():
         'sorted': sorted,
         'len': len,
     }
-
-
-class Data:
-    def __init__(self):
-        self.current = os.path.join(DATA_ROOT, 'current')
-
-    def find_files(self):
-        for fname in os.listdir(self.current):
-            if fname.endswith('.json'):
-                yield os.path.join(self.current, fname)
-
-    def get_data(self):
-        data = {}
-        for fname in self.find_files():
-            with open(fname) as f:
-                j = json.load(f)
-            data[j['repo']] = j
-
-        return data
-
-    def get_repo_data(self, repo):
-        expected = os.path.join(self.current, repo.replace('/', '_') + '.json')
-        # Sanity check?
-        if expected not in set(self.find_files()):
-            raise ValueError("Didn't find %s" % repo)
-        with open(expected) as f:
-            return json.load(f)
 
 
 @app.route('/')
