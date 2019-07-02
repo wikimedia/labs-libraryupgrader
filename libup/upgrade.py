@@ -17,14 +17,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import datetime
 import getpass
 import os
 import sys
 
-import docker
-import gerrit
-import mw
+from . import date_log_dir
+from . import docker, gerrit, mw
 
 
 GERRIT_USER = 'libraryupgrader'
@@ -132,9 +130,7 @@ def main():
     else:
         repos = [repo]
     processed = set()
-    log_dir = os.path.join('logs', datetime.datetime.utcnow().strftime('%Y-%m-%d'))
-    if not os.path.isdir(log_dir):
-        os.mkdir(log_dir)
+    log_dir = date_log_dir()
     for repo in repos:
         name = run(repo, library, version, pw)
         processed.add(name)

@@ -17,11 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from distutils.version import LooseVersion
 import functools
-import requests
 import semver
 
-
-s = requests.Session()
+from . import session
 
 
 class Library:
@@ -90,7 +88,7 @@ class Library:
 # FIXME Don't use functools/lru_cache
 @functools.lru_cache()
 def _get_composer_metadata(package: str) -> dict:
-    r = s.get('https://packagist.org/packages/%s.json' % package)
+    r = session.get('https://packagist.org/packages/%s.json' % package)
     resp = r.json()['package']
     normalized = set()
     for ver in resp['versions']:
@@ -115,7 +113,7 @@ def _get_composer_metadata(package: str) -> dict:
 
 @functools.lru_cache()
 def _get_npm_metadata(package: str) -> dict:
-    r = s.get('https://registry.npmjs.org/%s' % package)
+    r = session.get('https://registry.npmjs.org/%s' % package)
     resp = r.json()
     # print('Latest %s: %s' % (package, version))
     return {
@@ -126,5 +124,5 @@ def _get_npm_metadata(package: str) -> dict:
 
 @functools.lru_cache()
 def _get_good_releases() -> dict:
-    r = s.get('https://www.mediawiki.org/w/index.php?title=Libraryupgrader/Good_releases.json&action=raw')
+    r = session.get('https://www.mediawiki.org/w/index.php?title=Libraryupgrader/Good_releases.json&action=raw')
     return r.json()

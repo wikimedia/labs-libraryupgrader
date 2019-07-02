@@ -17,21 +17,16 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from datetime import datetime
-import os
 import wikimediaci_utils as ci
 
-from . import DATA_ROOT, LOGS
+from . import DATA_ROOT, date_log_dir
 from .tasks import run_check
 
 
 def main():
-    log_dir = os.path.join(LOGS, datetime.utcnow().strftime('%Y-%m-%d'))
-    if not os.path.isdir(log_dir):
-        os.mkdir(log_dir)
     for repo in sorted(ci.mw_things_repos()):
         print(repo)
-        run_check.delay(repo, DATA_ROOT, log_dir)
+        run_check.delay(repo, DATA_ROOT, date_log_dir())
 
 
 if __name__ == '__main__':

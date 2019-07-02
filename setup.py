@@ -22,7 +22,8 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'libup-run = libup.run:main'
+            'libup-run = libup.run:main',
+            'libup-upgrade = libup.upgrade:main',
         ]
     }
 

@@ -15,7 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from datetime import datetime
 import os
+import requests
 
 if os.path.exists('/srv/data'):
     DATA_ROOT = '/srv/data'
@@ -23,3 +25,14 @@ else:
     DATA_ROOT = os.path.abspath(os.path.join(
         os.path.dirname(os.path.dirname(__file__)), 'data'))
 LOGS = os.path.join(DATA_ROOT, 'logs')
+MANAGERS = ['composer', 'npm']
+TYPES = ['deps', 'dev']
+
+session = requests.Session()
+
+
+def date_log_dir():
+    log_dir = os.path.join(LOGS, datetime.utcnow().strftime('%Y-%m-%d'))
+    if not os.path.isdir(log_dir):
+        os.mkdir(log_dir)
+    return log_dir

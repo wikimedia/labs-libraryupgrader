@@ -17,8 +17,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import json
 import wikimediaci_utils as ci
+
+from .data import Data
 
 BLACKLIST = [
     # Per https://gerrit.wikimedia.org/r/375513
@@ -51,24 +52,17 @@ def filter_repo_list(repos, library, version_match=None):
 
 
 def repo_info(repo: str, library: str):
-    if library == 'npm-audit-fix':
-        return get_gerrit_file(repo, 'package.json') is not None
-    phab = get_gerrit_file(repo, 'composer.json')
-    if phab:
-        version = phab.get('require-dev', {}).get(library)
-        if version:
-            return version
-        if 'extra' in phab:
-            suffix = library.split('/')[-1]
-            version = phab['extra'].get(suffix)
-            if version:
-                return version
-    return None
-
-
-def get_gerrit_file(gerrit_name: str, path: str):
-    content = ci.get_gerrit_file(gerrit_name, path)
+    data = Data()
     try:
-        return json.loads(content)
+        info = data.get_repo_data(repo)
     except ValueError:
         return None
+    deps = data.get_deps(info)
+
+    if library == 'npm-audit-fix':
+        # Any npm deps
+        return bool(deps['npm']['dev'] or deps['npm']['deps'])
+    for lib in (deps['composer']['deps'] + deps['composer']['dev']):
+        if lib.name == library:
+            return lib.version
+    return None

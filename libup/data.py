@@ -15,10 +15,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from collections import defaultdict
 import json
 import os
 
-from . import DATA_ROOT
+from . import DATA_ROOT, MANAGERS, TYPES
+from .library import Library
 
 
 class Data:
@@ -46,3 +48,15 @@ class Data:
             raise ValueError("Didn't find %s" % repo)
         with open(expected) as f:
             return json.load(f)
+
+    def get_deps(self, info):
+        deps = defaultdict(lambda: defaultdict(list))
+        for manager in MANAGERS:
+            if info['%s-deps' % manager]:
+                minfo = info['%s-deps' % manager]
+                for type_ in TYPES:
+                    if minfo[type_]:
+                        for name, version in minfo[type_].items():
+                            deps[manager][type_].append(Library(manager, name, version))
+
+        return deps

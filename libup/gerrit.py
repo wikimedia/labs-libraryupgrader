@@ -18,17 +18,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import json
-import requests
 import time
 
-s = requests.Session()
+from . import session
 
 
 def make_request(method, path, **kwargs):
     base = 'https://gerrit.wikimedia.org/r/'
     if 'auth' in kwargs:
         base += 'a/'
-    r = s.request(method, base + path, **kwargs)
+    r = session.request(method, base + path, **kwargs)
     r.raise_for_status()
 
     return json.loads(r.text[4:])
@@ -50,7 +49,7 @@ def list_projects(prefix=None):
 
 def zuul_queue_length(q='gate-and-submit'):
     # ?time is for cache busting, just like jQuery does
-    r = s.get('https://integration.wikimedia.org/zuul/status.json?' + str(time.time()))
+    r = session.get('https://integration.wikimedia.org/zuul/status.json?' + str(time.time()))
     r.raise_for_status()
 
     data = r.json()

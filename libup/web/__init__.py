@@ -22,12 +22,8 @@ import json
 from markdown import markdown
 import os
 
-from .. import LOGS
+from .. import LOGS, MANAGERS, TYPES
 from ..data import Data
-from ..library import Library
-
-MANAGERS = ['composer', 'npm']
-TYPES = ['deps', 'dev']
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
@@ -51,27 +47,15 @@ def index():
     return render_template('index.html', count=count)
 
 
-def _get_deps(info):
-    deps = defaultdict(lambda: defaultdict(list))
-    for manager in MANAGERS:
-        if info['%s-deps' % manager]:
-            minfo = info['%s-deps' % manager]
-            for type_ in TYPES:
-                if minfo[type_]:
-                    for name, version in minfo[type_].items():
-                        deps[manager][type_].append(Library(manager, name, version))
-
-    return deps
-
-
 @app.route('/r/<path:repo>')
 def r(repo):
+    data = Data()
     try:
-        info = Data().get_repo_data(repo)
+        info = data.get_repo_data(repo)
     except ValueError:
         return make_response('Sorry, I don\'t know this repository.', 404)
 
-    deps = _get_deps(info)
+    deps = data.get_deps(info)
     return render_template(
         'r.html',
         repo=repo,
@@ -88,8 +72,9 @@ def library_(manager, name):
     used = {'deps': defaultdict(set), 'dev': defaultdict(set)}
 
     found = None
-    for repo, info in Data().get_data().items():
-        deps = _get_deps(info)
+    data = Data()
+    for repo, info in data.get_data().items():
+        deps = data.get_deps(info)
         if manager in deps:
             mdeps = deps[manager]
             for type_ in TYPES:
