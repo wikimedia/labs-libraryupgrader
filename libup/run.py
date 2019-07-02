@@ -21,12 +21,12 @@ from datetime import datetime
 import os
 import wikimediaci_utils as ci
 
-from . import DATA_ROOT
+from . import DATA_ROOT, LOGS
 from .tasks import run_check
 
 
 def main():
-    log_dir = os.path.join(DATA_ROOT, 'logs', datetime.utcnow().strftime('%Y-%m-%d'))
+    log_dir = os.path.join(LOGS, datetime.utcnow().strftime('%Y-%m-%d'))
     if not os.path.isdir(log_dir):
         os.mkdir(log_dir)
     for repo in sorted(ci.mw_things_repos()):
