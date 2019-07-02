@@ -17,14 +17,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import wikimediaci_utils as ci
-
 from . import DATA_ROOT, date_log_dir
+from . import mw
 from .tasks import run_check
 
 
 def main():
-    for repo in sorted(ci.mw_things_repos()):
+    for repo in sorted(mw.get_everything()):
         print(repo)
         run_check.delay(repo, DATA_ROOT, date_log_dir())
 

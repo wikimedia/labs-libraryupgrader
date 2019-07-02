@@ -19,12 +19,70 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import wikimediaci_utils as ci
 
+from . import gerrit
 from .data import Data
+
 
 BLACKLIST = [
     # Per https://gerrit.wikimedia.org/r/375513
     'mediawiki/extensions/MediaWikiFarm',
 ]
+
+CANARIES = [
+    'mediawiki/extensions/Linter',
+    'mediawiki/extensions/MassMessage',
+    'mediawiki/extensions/VisualEditor',
+    'mediawiki/skins/MonoBook',
+    'oojs/ui',
+]
+
+# Gerrit repos not under mediawiki/libs/
+OTHER_LIBRARIES = [
+    'AhoCorasick',
+    'CLDRPluralRuleParser',
+    'HtmlFormatter',
+    'IPSet',
+    'RelPath',
+    'RunningStat',
+    'VisualEditor/VisualEditor',
+    'WrappedString',
+    'at-ease',
+    'base-convert',
+    'cdb',
+    'css-sanitizer',
+    'integration/docroot',
+    'labs/tools/stewardbots',
+    'mediawiki/oauthclient-php',
+    'mediawiki/services/parsoid',
+    'mediawiki/tools/codesniffer',
+    'mediawiki/tools/minus-x',
+    'mediawiki/tools/phan',
+    'mediawiki/tools/phan/SecurityCheckPlugin',
+    'mediawiki/tools/phpunit-patch-coverage',
+    'oojs',
+    'oojs/ui',
+    'php-session-serializer',
+    'purtle',
+    'testing-access-wrapper',
+    'unicodejs',
+    'utfnormal',
+    'wikimedia/lucene-explain-parser',
+    'wikimedia/textcat',
+]
+
+
+def get_everything(exclude=BLACKLIST):
+    for x in ci.mw_things_repos():
+        if x not in exclude:
+            yield x
+    for x in get_library_list():
+        if x not in exclude:
+            yield x
+
+
+def get_library_list():
+    yield from gerrit.list_projects('mediawiki/libs/')
+    yield from OTHER_LIBRARIES
 
 
 def get_extension_list(library: str, version_match=None, exclude=[]):

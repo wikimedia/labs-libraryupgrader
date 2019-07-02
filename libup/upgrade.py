@@ -26,46 +26,6 @@ from . import docker, gerrit, mw
 
 
 GERRIT_USER = 'libraryupgrader'
-CANARIES = [
-    'mediawiki/extensions/Linter',
-    'mediawiki/extensions/MassMessage',
-    'mediawiki/extensions/VisualEditor',
-    'mediawiki/skins/MonoBook',
-    'oojs/ui',
-]
-# Gerrit repos not under mediawiki/libs/
-OTHER_LIBRARIES = [
-    'AhoCorasick',
-    'CLDRPluralRuleParser',
-    'HtmlFormatter',
-    'IPSet',
-    'RelPath',
-    'RunningStat',
-    'VisualEditor/VisualEditor',
-    'WrappedString',
-    'at-ease',
-    'base-convert',
-    'cdb',
-    'css-sanitizer',
-    'integration/docroot',
-    'labs/tools/stewardbots',
-    'mediawiki/oauthclient-php',
-    'mediawiki/services/parsoid',
-    'mediawiki/tools/codesniffer',
-    'mediawiki/tools/minus-x',
-    'mediawiki/tools/phan',
-    'mediawiki/tools/phan/SecurityCheckPlugin',
-    'mediawiki/tools/phpunit-patch-coverage',
-    'oojs',
-    'oojs/ui',
-    'php-session-serializer',
-    'purtle',
-    'testing-access-wrapper',
-    'unicodejs',
-    'utfnormal',
-    'wikimedia/lucene-explain-parser',
-    'wikimedia/textcat',
-]
 
 
 def run(repo: str, library: str, version: str, pw: str) -> str:
@@ -97,11 +57,6 @@ def preprocess_filter(gen):
         yield info['repo']
 
 
-def get_library_list():
-    yield from gerrit.list_projects('mediawiki/libs/')
-    yield from OTHER_LIBRARIES
-
-
 def main():
     if len(sys.argv) < 3:
         print('Usage: upgrade.py library version repo [limit]')
@@ -117,15 +72,15 @@ def main():
     pw = getpass.getpass('HTTP Password for %s: ' % GERRIT_USER)
     if repo == 'extensions':
         repos = preprocess_filter(
-            mw.get_extension_list(library, version_match=version, exclude=CANARIES)
+            mw.get_extension_list(library, version_match=version, exclude=mw.CANARIES)
         )
     elif repo == 'canaries':
         repos = preprocess_filter(
-            mw.filter_repo_list(CANARIES, library, version_match=version)
+            mw.filter_repo_list(mw.CANARIES, library, version_match=version)
         )
     elif repo == 'libraries':
         repos = preprocess_filter(
-            mw.filter_repo_list(get_library_list(), library, version_match=version)
+            mw.filter_repo_list(mw.get_library_list(), library, version_match=version)
         )
     else:
         repos = [repo]
