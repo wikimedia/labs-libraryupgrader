@@ -4,6 +4,16 @@
 <h1>{{manager}}: {{name}}</h1>
 <p><a href="{{library.link}}">{{library.description()}}</a></p>
 <p>Latest version: <code>{{library.latest_version()}}</code></p>
+<p>
+    <a href="https://www.mediawiki.org/wiki/Libraryupgrader/Good_releases.json">Good/approved version(s)</a>:
+    {% if library.safe_versions() %}
+    {% for ver in library.safe_versions() %}
+    <code>{{ver}}</code>,
+    {% endfor %}
+    {% else %}
+    none
+    {% endif %}
+</p>
 <h3>Repositories using:</h3>
 {% if used.deps %}
 <h5>Dependencies</h5>

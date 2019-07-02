@@ -53,6 +53,21 @@ class Library:
     def description(self) -> str:
         return self._metadata()['description']
 
+    def safe_versions(self) -> list:
+        safes = _get_good_releases()
+        try:
+            return safes[self.manager][self.name]
+        except KeyError:
+            return []
+
+    def is_safe_upgrade(self, version) -> bool:
+        """whether the specified version is a good release"""
+        return version in self.safe_versions()
+
+    def is_latest_safe(self) -> bool:
+        """is the latest version a good release"""
+        return self.is_safe_upgrade(self.latest_version())
+
     def is_newer(self) -> bool:
         """if a newer version is available"""
         # Try and detect some operators to see if the current is a constraint
@@ -107,3 +122,9 @@ def _get_npm_metadata(package: str) -> dict:
         'latest': resp['dist-tags']['latest'],
         'description': resp['description'],
     }
+
+
+@functools.lru_cache()
+def _get_good_releases() -> dict:
+    r = s.get('https://www.mediawiki.org/w/index.php?title=Libraryupgrader/Good_releases.json&action=raw')
+    return r.json()

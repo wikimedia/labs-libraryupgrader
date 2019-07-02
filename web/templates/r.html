@@ -11,7 +11,7 @@
     {% for library in info.dev|sort %}
     <li>
         <a href="{{url_for('library_', manager=manager, name=library.name)}}"><code>{{library.name}}</code></a>: <code>{{library.version}}</code>
-        {% if library.is_newer() %}(<code>{{library.latest_version()}}</code> available){% endif %}
+        {% if library.is_newer() %}(<code>{{library.latest_version()}}</code> available{% if library.is_latest_safe() %}✔️{% endif %}){% endif %}
     </li>
     {% endfor %}
 </ul>
@@ -22,7 +22,7 @@
     {% for library in info.dev|sort %}
     <li>
         <a href="{{url_for('library_', manager=manager, name=library.name)}}"><code>{{library.name}}</code></a>: <code>{{library.version}}</code>
-        {% if library.is_newer() %}(<code>{{library.latest_version()}}</code> available){% endif %}
+        {% if library.is_newer() %}(<code>{{library.latest_version()}}</code> available{% if library.is_latest_safe() %}✔️{% endif %}){% endif %}
     </li>
     {% endfor %}
 </ul>
