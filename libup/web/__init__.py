@@ -21,14 +21,12 @@ from flask_bootstrap import Bootstrap
 import json
 from markdown import markdown
 import os
-import re
 
 from .. import DATA_ROOT, LOGS
 from ..library import Library
 
 MANAGERS = ['composer', 'npm']
 TYPES = ['deps', 'dev']
-RE_CODE = re.compile('`(.*?)`')
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
