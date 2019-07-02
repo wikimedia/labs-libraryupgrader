@@ -58,10 +58,14 @@ def composer_deps():
         return None
     with open('composer.json') as f:
         pkg = json.load(f)
-    return {
+    ret = {
         'deps': pkg.get('require', {}),
         'dev': pkg.get('require-dev', {}),
     }
+    if 'phan-taint-check-plugin' in pkg.get('extra', {}):
+        ret['dev']['mediawiki/phan-taint-check-plugin'] \
+            = pkg['extra']['phan-taint-check-plugin']
+    return ret
 
 
 def npm_audit():
