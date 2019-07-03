@@ -3,8 +3,7 @@ Description=Run the script
 
 [Timer]
 OnBootSec=10min
-OnUnitActiveSec=daily
-RandomizedDelaySec=3600
+OnUnitActiveSec=1d
 
 [Install]
 WantedBy=timers.target
