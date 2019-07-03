@@ -39,7 +39,6 @@ def run_check(repo: str, data_root: str, log_dir: str):
         mounts={log_dir: '/out'},
         rm=True,
         extra_args=[repo, '/out/%s.json' % rand],
-        entrypoint='/usr/bin/libup-ng'
     )
     output = os.path.join(log_dir, '%s.json' % rand)
     assert os.path.exists(output)

@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import pytest
 import subprocess
 
-from ng import LibraryUpgrader
+from .ng import LibraryUpgrader
 
 
 class MockLibraryUpgrader(LibraryUpgrader):

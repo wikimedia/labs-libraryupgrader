@@ -13,7 +13,7 @@ setup(
     install_requires=[
         'requests',
         'wikimediaci-utils',
-        'flask',
+        # 'Flask',
         'flask-bootstrap',
         'gunicorn',
         'markdown',
@@ -24,6 +24,7 @@ setup(
         'console_scripts': [
             'libup-run = libup.run:main',
             'libup-upgrade = libup.upgrade:main',
+            'libup-ng = libup.ng:main',
         ]
     }
 

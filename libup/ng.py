@@ -38,6 +38,7 @@ class LibraryUpgrader:
     def check_call(self, args: list) -> str:
         res = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         # TODO: log
+        print(res.stdout.decode())
         res.check_returncode()
         return res.stdout.decode()
 
