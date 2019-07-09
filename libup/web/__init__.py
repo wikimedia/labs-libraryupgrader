@@ -64,6 +64,34 @@ def r(repo):
     )
 
 
+@app.route('/r')
+def r_index():
+    data = Data()
+    repos = list(data.get_data())
+    return render_template(
+        'r_index.html',
+        repos=repos
+    )
+
+
+@app.route('/library')
+def library_index():
+    data = Data()
+    used = defaultdict(lambda: defaultdict(set))
+    for repo, info in data.get_data().items():
+        deps = data.get_deps(info)
+        for manager in MANAGERS:
+            mdeps = deps[manager]
+            for type_ in TYPES:
+                for lib in mdeps[type_]:
+                    used[lib.manager][lib.name].add(lib.version)
+
+    return render_template(
+        'library_index.html',
+        used=used
+    )
+
+
 @app.route('/library/<manager>/<path:name>')
 def library_(manager, name):
     if manager not in MANAGERS:

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block subtitle %}tracked repositories{% endblock %}
+{% block main %}
+<h1>tracked repositories</h1>
+<ul>
+    {% for repo in sorted(repos) %}
+    <li><a href="{{url_for('r', repo=repo)}}">{{repo}}</a></li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

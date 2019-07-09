@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block subtitle %}tracked libraries{% endblock %}
+{% block main %}
+<h1>tracked libraries</h1>
+
+{% for manager, deps in sorted(used.items()) %}
+<h3>{{manager}}</h3>
+<ul>
+    {% for lib, versions in sorted(deps.items()) %}
+    <li><a href="{{url_for('library_', manager=manager, name=lib)}}">{{lib}}</a>: {{', '.join(sorted(versions))}}</li>
+    {% endfor %}
+</ul>
+{% endfor %}
+
+
+{% endblock %}
