@@ -164,7 +164,7 @@ class LibraryUpgrader:
                 return {'error': e.output.decode()}
 
     def npm_audit_fix(self, audit: dict):
-        if not audit:
+        if not self.has_npm or not audit:
             return
         prior = PackageJson('package.json')
         self.check_call(['npm', 'audit', 'fix', '--only=dev'])
@@ -257,6 +257,8 @@ class LibraryUpgrader:
             self.msg_fixes.append('And moved phpcs.xml to .phpcs.xml (T177256).')
 
     def fix_composer_fix(self):
+        if not self.has_composer:
+            return
         composerjson = ComposerJson('composer.json')
         if composerjson.get_version('mediawiki/mediawiki-codesniffer') is None:
             return
@@ -290,6 +292,8 @@ class LibraryUpgrader:
         return self.check_call(['git', 'show-ref', 'HEAD']).split(' ')[0]
 
     def composer_upgrade(self, info: dict):
+        if not self.has_composer:
+            return
         # TODO: support non-dev deps
         deps = Data().get_deps(info)['composer']['dev']
         prior = ComposerJson('composer.json')
@@ -438,6 +442,8 @@ class LibraryUpgrader:
         update.reason = msg
 
     def npm_upgrade(self, info: dict):
+        if not self.has_npm:
+            return
         # TODO: support non-dev deps
         deps = Data().get_deps(info)['npm']['dev']
         prior = PackageJson('package.json')
