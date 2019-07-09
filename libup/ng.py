@@ -463,7 +463,7 @@ class LibraryUpgrader:
             # rollback changes
             prior.save()
 
-    def commit_and_push(self, files, msg: str, branch: str,
+    def commit_and_push(self, files: list, msg: str, branch: str,
                         topic: str, remote='origin', plus2=False, push=True):
         self.check_call(['git', 'diff'])
         f = tempfile.NamedTemporaryFile(delete=False)
@@ -588,7 +588,7 @@ class LibraryUpgrader:
         can_autoapprove = self.can_autoapprove()
         msg = self.build_message()
         self.commit_and_push(
-            '.', msg, branch='master',
+            ['.'], msg, branch='master',
             topic='bump-dev-deps',
             plus2=can_autoapprove,
             push=False,  # TODO: enable pushing!
