@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import pytest
+import re
 import subprocess
 
 from .ng import LibraryUpgrader
@@ -23,6 +24,7 @@ from .ng import LibraryUpgrader
 
 class MockLibraryUpgrader(LibraryUpgrader):
     def __init__(self):
+        super().__init__()
         self.called = []
 
     def check_call(self, args: list) -> str:
@@ -70,7 +72,62 @@ def test_ensure_package_lock(fs):
     libup = MockLibraryUpgrader()
     libup.ensure_package_lock()
     assert libup.called == [['npm', 'i', '--package-lock-only']]
+    assert libup.msg_fixes == ['Committed package-lock.json (T179229) too.']
     libup = MockLibraryUpgrader()
     fs.create_file('package-lock.json', contents='{}')
     libup.ensure_package_lock()
     assert libup.called == []
+    assert libup.msg_fixes == []
+    # TODO: .gitignore integration
+
+
+def test_update_coc(fs):
+    libup = LibraryUpgrader()
+    # No CoC.md
+    libup.fix_coc()
+    assert libup.msg_fixes == []
+    # Already correct CoC.md
+    fs.create_file('CODE_OF_CONDUCT.md',
+                   contents='The development of this software is covered by a [Code of Conduct]'
+                            '(https://www.mediawiki.org/wiki/Special:MyLanguage/Code_of_Conduct).\n')
+    libup.fix_coc()
+    assert libup.msg_fixes == []
+
+
+def test_actually_update_coc(fs):
+    # The wrong CoC.md
+    fs.create_file('CODE_OF_CONDUCT.md',
+                   contents='The development of this software is covered by a [Code of Conduct]'
+                            '(https://www.mediawiki.org/wiki/Code_of_Conduct).\n')
+    libup = LibraryUpgrader()
+    libup.fix_coc()
+    # TODO: verify it actually fixed it
+    assert libup.msg_fixes == ['And updating CoC link to use Special:MyLanguage (T202047).']
+
+
+def test_fix_phpcs_xml_location(fs):
+    # No phpcs.xml nor .phpcs.xml
+    libup = MockLibraryUpgrader()
+    libup.fix_phpcs_xml_location()
+    assert libup.called == []
+    assert libup.msg_fixes == []
+    # Now if only phpcs.xml exists
+    fs.create_file('phpcs.xml')
+    libup = MockLibraryUpgrader()
+    libup.fix_phpcs_xml_location()
+    assert libup.called == [['git', 'mv', 'phpcs.xml', '.phpcs.xml']]
+    assert libup.msg_fixes == ['And moved phpcs.xml to .phpcs.xml (T177256).']
+    # Now if a .phpcs.xml exists
+    fs.create_file('.phpcs.xml')
+    libup = MockLibraryUpgrader()
+    libup.fix_phpcs_xml_location()
+    assert libup.called == []
+    assert libup.msg_fixes == []
+
+
+@pytest.mark.skip
+def test_sha1():
+    # Note: integration test, relies on this being a git checkout
+    libup = LibraryUpgrader()
+    sha1 = libup.sha1()
+    assert re.match(r'^[0-9a-f]{40}$', sha1) is not None

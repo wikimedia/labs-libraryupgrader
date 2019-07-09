@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from collections import defaultdict
 import json
 import os
+from typing import Dict, List
 
 from . import DATA_ROOT, MANAGERS, TYPES
 from .library import Library
@@ -32,7 +33,7 @@ class Data:
             if fname.endswith('.json'):
                 yield os.path.join(self.current, fname)
 
-    def get_data(self):
+    def get_data(self) -> dict:
         data = {}
         for fname in self.find_files():
             with open(fname) as f:
@@ -41,7 +42,7 @@ class Data:
 
         return data
 
-    def get_repo_data(self, repo):
+    def get_repo_data(self, repo) -> dict:
         expected = os.path.join(self.current, repo.replace('/', '_') + '.json')
         # Sanity check?
         if expected not in set(self.find_files()):
@@ -49,8 +50,8 @@ class Data:
         with open(expected) as f:
             return json.load(f)
 
-    def get_deps(self, info):
-        deps = defaultdict(lambda: defaultdict(list))
+    def get_deps(self, info) -> Dict[str, Dict[str, List[Library]]]:
+        deps = defaultdict(lambda: defaultdict(list))  # type: Dict[str, Dict[str, List[Library]]]
         for manager in MANAGERS:
             if info['%s-deps' % manager]:
                 minfo = info['%s-deps' % manager]
