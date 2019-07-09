@@ -596,10 +596,11 @@ def main():
     parser = argparse.ArgumentParser(description='next generation of libraryupgrader')
     parser.add_argument('repo', help='Git repository')
     parser.add_argument('output', help='Path to output results to')
-    parser.add_argument('logfile', help='Log file')
+    parser.add_argument('logfile', nargs='?', help='Log file')
     args = parser.parse_args()
     libup = LibraryUpgrader()
-    libup.set_logfile(args.logfile)
+    if args.logfile:
+        libup.set_logfile(args.logfile)
     try:
         libup.run(args.repo, args.output)
     finally:
