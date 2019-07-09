@@ -37,11 +37,13 @@ def test_link():
 
 
 # Integration tests (TODO: mock repository response):
+@pytest.mark.skip
 def test_is_newer_composer():
     lib = Library('composer', 'mediawiki/mediawiki-codesniffer', '24.0.0')
     assert lib.is_newer() is True
 
 
+@pytest.mark.skip
 def test_is_newer_npm():
     lib = Library('npm', 'grunt-banana-checker', '0.6.0')
     assert lib.is_newer() is True
