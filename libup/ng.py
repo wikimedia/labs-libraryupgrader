@@ -454,6 +454,9 @@ class LibraryUpgrader:
         new.save()
         # TODO support upgrade hooks for e.g. eslint
         try:
+            # Update lockfile
+            self.check_call(['npm', 'install'])
+            # Then test
             self.npm_test()
         except subprocess.CalledProcessError:
             # TODO: log something somewhere?
