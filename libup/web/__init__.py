@@ -60,7 +60,7 @@ def r(repo):
         'r.html',
         repo=repo,
         deps=deps,
-        logs=find_logs(repo)
+        logs=sorted(find_logs(repo))
     )
 
 
