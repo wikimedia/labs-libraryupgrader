@@ -587,6 +587,7 @@ class LibraryUpgrader:
         # Commit
         can_autoapprove = self.can_autoapprove()
         msg = self.build_message()
+        print(msg)
         self.commit_and_push(
             ['.'], msg, branch='master',
             topic='bump-dev-deps',
