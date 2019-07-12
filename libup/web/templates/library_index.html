@@ -3,6 +3,13 @@
 {% block main %}
 <h1>tracked libraries</h1>
 
+<p>
+    You can also view this as a table. Presets:
+    {% for name, query in table_presets.items() %}
+    <a href="{{url_for('library_table', r=query)}}">{{name}}</a>
+    {% endfor %}.
+</p>
+
 {% for manager, deps in sorted(used.items()) %}
 <h3>{{manager}}</h3>
 <ul>
@@ -11,6 +18,4 @@
     {% endfor %}
 </ul>
 {% endfor %}
-
-
 {% endblock %}

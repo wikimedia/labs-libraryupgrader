@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block subtitle %}tracked libraries in a table{% endblock %}
+{% block main %}
+<h1>tracked libraries</h1>
+
+<table class="table table-bordered table-condensed table-responsive">
+    <thead>
+        <tr>
+            <th>Repository</th>
+            <th>Wikimedia-deployed</th>
+            {% for manager, libname in want %}
+            <th><a href="{{url_for('library_', manager=manager, name=libname)}}">{{manager[0]}}:{{libname}}</a></th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for repo, libs in sorted(display.items()) %}
+        <tr>
+            <td><a href="{{url_for('r', repo=repo)}}">{{repo}}</a></td>
+            <td>{% if ci_utils.is_wikimedia_deployed(repo) %}✓{% else %}—{% endif %}</td>
+            {% for lib in libs %}
+            {% if lib %}
+            <td>{{lib.version}} {% if lib.is_latest_safe() %}⬆{% elif lib.is_newer() %}↑{% endif %}</td>
+            {% else %}
+            <td>—</td>
+            {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock %}
