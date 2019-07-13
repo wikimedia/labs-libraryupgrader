@@ -194,17 +194,17 @@ class LibraryUpgrader:
         self.check_call(['npm', 'test'])
 
         for action in audit['actions']:
-            if action['isMajor']:
+            if action.get('isMajor'):
                 # We don't auto-update major versions
                 continue
             reason = ''
             resolves = set(r['id'] for r in action['resolves'])
             for npm_id in sorted(resolves):
-                reason += '  * https://npmjs.com/advisories/%s\n' % npm_id
+                reason += '* https://npmjs.com/advisories/%s\n' % npm_id
                 advisory_info = audit['advisories'][str(npm_id)]
                 # TODO: line wrapping?
                 if advisory_info.get('cves'):
-                    reason += '  * ' + ', '.join(advisory_info['cves']) + '\n'
+                    reason += '* ' + ', '.join(advisory_info['cves']) + '\n'
             self.updates.append(Update(
                 'npm',
                 action['module'],
