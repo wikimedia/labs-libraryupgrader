@@ -546,6 +546,9 @@ class LibraryUpgrader:
 
         return msg
 
+    def get_latest_patch(self):
+        return self.check_call(['git', 'format-patch', 'HEAD~1', '--stdout'])
+
     def run(self, repo, output):
         self.clone_commands(repo)
         data = {
@@ -572,10 +575,6 @@ class LibraryUpgrader:
         # npm audit
         data['npm-audit'] = self.npm_audit()
 
-        # Save all the data we collected.
-        with open(output, 'w') as f:
-            json.dump(data, f)
-
         # Now let's fix and upgrade stuff!
         if data['npm-audit']:
             self.npm_audit_fix(data['npm-audit'])
@@ -600,6 +599,12 @@ class LibraryUpgrader:
             plus2=can_autoapprove,
             push=False,  # TODO: enable pushing!
         )
+
+        data['patch'] = self.get_latest_patch()
+
+        # Save all the data we collected.
+        with open(output, 'w') as f:
+            json.dump(data, f)
 
 
 def main():
