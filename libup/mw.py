@@ -72,10 +72,10 @@ OTHER_LIBRARIES = [
 
 
 def get_everything(exclude=BLACKLIST):
-    for x in ci.mw_things_repos():
+    for x in sorted(ci.mw_things_repos()):
         if x not in exclude:
             yield x
-    for x in get_library_list():
+    for x in sorted(get_library_list()):
         if x not in exclude:
             yield x
 

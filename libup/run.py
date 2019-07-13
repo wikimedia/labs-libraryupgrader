@@ -17,15 +17,24 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import argparse
+
 from . import DATA_ROOT, date_log_dir
 from . import mw
 from .tasks import run_check
 
 
 def main():
-    for repo in sorted(mw.get_everything()):
+    parser = argparse.ArgumentParser(description='Queue jobs to run')
+    parser.add_argument('limit', nargs='?', type=int, help='Limit')
+    args = parser.parse_args()
+    count = 0
+    for repo in mw.get_everything():
         print(repo)
         run_check.delay(repo, DATA_ROOT, date_log_dir())
+        count += 1
+        if args.limit and count >= args.limit:
+            break
 
 
 if __name__ == '__main__':
