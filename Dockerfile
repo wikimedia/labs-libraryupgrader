@@ -15,10 +15,15 @@ RUN git clone --depth 1 https://gerrit.wikimedia.org/r/p/integration/npm.git /sr
 # TODO move grr into venv
 RUN pip3 install grr
 RUN python3 -m virtualenv -p python3 /venv
+# TODO use package for pipenv in buster
+RUN /venv/bin/pip install pipenv
 RUN mkdir -p /venv/src/
+COPY Pipfile /venv/src/
+COPY Pipfile.lock /venv/src/
 COPY setup.py /venv/src/
 COPY ./libup /venv/src/libup
-RUN cd /venv/src && /venv/bin/python3 setup.py install
+RUN cd /venv/src && /venv/bin/pipenv install --deploy \
+    && /venv/bin/pipenv run python setup.py install
 RUN git config --global user.name "libraryupgrader"
 RUN git config --global user.email "tools.libraryupgrader@tools.wmflabs.org"
 ENV COMPOSER_PROCESS_TIMEOUT 1800
@@ -26,5 +31,5 @@ ENV COMPOSER_PROCESS_TIMEOUT 1800
 ENV NPM_CONFIG_CACHE=/cache
 ENV XDG_CACHE_HOME=/cache
 COPY ./libup /venv/src
-WORKDIR /usr/src/myapp
-ENTRYPOINT [ "/venv/bin/libup-ng" ]
+WORKDIR /venv/src
+ENTRYPOINT [ "/venv/bin/pipenv", "run", "libup-ng" ]

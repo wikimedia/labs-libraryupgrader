@@ -6,7 +6,5 @@ After=rabbitmq-server.target
 User=libup
 Group=libup
 WorkingDirectory=/srv/libraryupgrader/
-ExecStart=/srv/libraryupgrader/venv/bin/libup-run
+ExecStart=/srv/libraryupgrader/venv/bin/pipenv run libup-run
 PrivateTmp=true
-
-

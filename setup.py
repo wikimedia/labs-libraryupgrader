@@ -10,16 +10,6 @@ setup(
     author_email='legoktm@member.fsf.org',
     description='semi-automated tool that manages upgrades of libraries',
     include_package_data=True,
-    install_requires=[
-        'requests',
-        'wikimediaci-utils',
-        # 'Flask',
-        'flask-bootstrap',
-        'gunicorn',
-        'markdown',
-        'semver',
-        'celery',
-    ],
     entry_points={
         'console_scripts': [
             'libup-run = libup.run:main',
