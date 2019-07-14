@@ -461,9 +461,9 @@ class LibraryUpgrader(shell.ShellMixin):
             return '[DNM] there are no updates'
         if len(self.updates) == 1:
             update = self.updates[0]
-            msg = 'build: Updating %s to %s' % (update.name, update.new)
+            msg = 'build: Updating %s to %s\n' % (update.name, update.new)
             if update.reason:
-                msg += '\n\n' + update.reason.strip() + '\n'
+                msg += '\n' + update.reason.strip() + '\n'
         else:
             by_manager = defaultdict(list)
             for update in self.updates:
