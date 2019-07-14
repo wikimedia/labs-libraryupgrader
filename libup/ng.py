@@ -26,12 +26,12 @@ import re
 import subprocess
 import tempfile
 from typing import List
-import urllib.parse
 from xml.etree import ElementTree
 
-from . import MANAGERS
+from . import shell
 from .data import Data
 from .files import ComposerJson, PackageJson
+from .update import Update
 
 RULE = '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">'
 RULE_NO_EXCLUDE = '<rule ref="(\./)?vendor/mediawiki/mediawiki-codesniffer/MediaWiki"( )?/>'
@@ -44,34 +44,14 @@ FIND_RULE = re.compile(
 # Can have up to 2-4 number parts, and can't have any
 # text like dev-master or -next
 VALID_NPM_VERSION = re.compile('^(\d+?\.?){2,4}$')
-AUTO_APPROVE_FILES = {
-    'composer.json',
-    'package.json',
-    'package-lock.json',
-    'phpcs.xml',
-    '.phpcs.xml',
-    'phpcs.xml -> .phpcs.xml',
-    'CODE_OF_CONDUCT.md',
-}
 
 
-class Update:
-    """dataclass representing an update"""
-    def __init__(self, manager, name, old, new, reason=''):
-        assert manager in MANAGERS
-        self.manager = manager
-        self.name = name
-        self.old = old
-        self.new = new
-        self.reason = reason
-
-
-class LibraryUpgrader:
+class LibraryUpgrader(shell.ShellMixin):
     def __init__(self):
         self.logfile = None
         self.msg_fixes = []
         self.updates = []  # type: List[Update]
-        self.security_fixes = False
+        self.cves = set()
 
     def log(self, text):
         if self.logfile:
@@ -91,25 +71,6 @@ class LibraryUpgrader:
     @property
     def has_composer(self):
         return os.path.exists('composer.json')
-
-    def check_call(self, args: list) -> str:
-        print('$ ' + ' '.join(args))
-        res = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        # TODO: log
-        print(res.stdout.decode())
-        res.check_returncode()
-        return res.stdout.decode()
-
-    def gerrit_url(self, repo: str, user=None, pw=None) -> str:
-        host = ''
-        if user:
-            if pw:
-                host = user + ':' + urllib.parse.quote_plus(pw) + '@'
-            else:
-                host = user + '@'
-
-        host += 'gerrit.wikimedia.org'
-        return 'https://%s/r/%s.git' % (host, repo)
 
     def ensure_package_lock(self):
         if not os.path.exists('package-lock.json'):
@@ -205,6 +166,7 @@ class LibraryUpgrader:
                 # TODO: line wrapping?
                 if advisory_info.get('cves'):
                     reason += '* ' + ', '.join(advisory_info['cves']) + '\n'
+                    self.cves.update(advisory_info['cves'])
             self.updates.append(Update(
                 'npm',
                 action['module'],
@@ -225,12 +187,6 @@ class LibraryUpgrader:
             return
         self.check_call(['composer', 'install'])
         self.check_call(['composer', 'test'])
-
-    def clone_commands(self, repo):
-        url = self.gerrit_url(repo)
-        self.check_call(['git', 'clone', url, 'repo', '--depth=1'])
-        os.chdir('repo')
-        self.check_call(['grr', 'init'])  # Install commit-msg hook
 
     def fix_coc(self):
         if not os.path.exists('CODE_OF_CONDUCT.md'):
@@ -469,36 +425,15 @@ class LibraryUpgrader:
             # rollback changes
             prior.save()
 
-    def commit_and_push(self, files: list, msg: str, branch: str,
-                        topic: str, remote='origin', plus2=False, push=True):
+    def commit(self, files: list, msg: str):
         f = tempfile.NamedTemporaryFile(delete=False)
         f.write(bytes(msg, 'utf-8'))
         f.close()
         self.check_call(['git', 'add'] + files)
-        self.check_call(['git', 'commit', '-F', f.name])
-        os.unlink(f.name)
-        per = '%topic={0}'.format(topic)
-        if plus2:
-            per += ',l=Code-Review+2'
-        push_cmd = ['git', 'push', remote,
-                    'HEAD:refs/for/{0}'.format(branch) + per]
-        if push:
-            try:
-                self.check_call(push_cmd)
-            except subprocess.CalledProcessError:
-                if plus2:
-                    # Try again without CR+2
-                    push_cmd[-1] = push_cmd[-1].replace(',l=Code-Review+2', '')
-                    subprocess.check_call(push_cmd)
-                else:
-                    raise
-        else:
-            print(' '.join(push_cmd))
-
-    def can_autoapprove(self) -> bool:
-        changed = self.check_call(['git', 'status', '--porcelain']).splitlines()
-        changed_files = {x.strip().split(' ', 1)[1].strip() for x in changed}
-        return changed_files.issubset(AUTO_APPROVE_FILES)
+        try:
+            self.check_call(['git', 'commit', '-F', f.name])
+        finally:
+            os.unlink(f.name)
 
     def _indent(self, text, by=' '):
         new = []
@@ -549,7 +484,7 @@ class LibraryUpgrader:
         return self.check_call(['git', 'format-patch', 'HEAD~1', '--stdout'])
 
     def run(self, repo, output):
-        self.clone_commands(repo)
+        self.clone(repo)
         data = {
             'repo': repo,
             'sha1': self.sha1()
@@ -589,20 +524,18 @@ class LibraryUpgrader:
         self.fix_composer_fix()
 
         # Commit
-        can_autoapprove = self.can_autoapprove()
         msg = self.build_message()
         print(msg)
         try:
-            self.commit_and_push(
-                ['.'], msg, branch='master',
-                topic='bump-dev-deps',
-                plus2=can_autoapprove,
-                push=False,  # TODO: enable pushing!
-            )
+            self.commit(['.'], msg)
             data['patch'] = self.get_latest_patch()
         except subprocess.CalledProcessError:
             # git commit will exit 1 if there's nothing to commit
             data['patch'] = None
+
+        # Convert into a serializable form:
+        data['updates'] = [upd.to_dict() for upd in self.updates]
+        data['cves'] = list(self.cves)
 
         # Save all the data we collected.
         with open(output, 'w') as f:

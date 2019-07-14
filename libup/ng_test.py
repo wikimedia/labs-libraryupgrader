@@ -32,16 +32,6 @@ class MockLibraryUpgrader(LibraryUpgrader):
         return ' '.join(args)
 
 
-def test_gerrit_url():
-    libup = LibraryUpgrader()
-    assert libup.gerrit_url('repo/name') \
-        == 'https://gerrit.wikimedia.org/r/repo/name.git'
-    assert libup.gerrit_url('repo/name', user='foo') \
-        == 'https://foo@gerrit.wikimedia.org/r/repo/name.git'
-    assert libup.gerrit_url('repo/name', user='foo', pw='bar!!+/') \
-        == 'https://foo:bar%21%21%2B%2F@gerrit.wikimedia.org/r/repo/name.git'
-
-
 def test_has_npm(fs):
     libup = LibraryUpgrader()
     assert libup.has_npm is False
