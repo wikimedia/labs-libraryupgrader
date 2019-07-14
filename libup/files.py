@@ -48,6 +48,25 @@ class PackageJson:
             f.write(out + '\n')
 
 
+class PackageLockJson:
+    def __init__(self, fname='package-lock.json'):
+        self.fname = fname
+        with open(fname, 'r') as f:
+            self.data = json.load(f, object_pairs_hook=OrderedDict)
+
+    def get_version(self, package):
+        if package in self.data['dependencies']:
+            return self.data['dependencies'][package]['version']
+
+        return None
+
+    def set_version(self, package, version):
+        raise NotImplementedError
+
+    def save(self):
+        raise NotImplementedError
+
+
 class ComposerJson:
     # TODO: Support non-dev deps
     def __init__(self, fname):

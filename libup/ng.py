@@ -30,7 +30,7 @@ from xml.etree import ElementTree
 
 from . import CANARIES, shell
 from .data import Data
-from .files import ComposerJson, PackageJson
+from .files import ComposerJson, PackageJson, PackageLockJson
 from .update import Update
 
 RULE = '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">'
@@ -129,6 +129,7 @@ class LibraryUpgrader(shell.ShellMixin):
         if not self.has_npm or not audit:
             return
         prior = PackageJson('package.json')
+        prior_lock = PackageLockJson()
         self.check_call(['npm', 'audit', 'fix', '--only=dev'])
         current = PackageJson('package.json')
         for pkg in current.get_packages():
@@ -168,10 +169,15 @@ class LibraryUpgrader(shell.ShellMixin):
                 if advisory_info.get('cves'):
                     reason += '* ' + ', '.join(advisory_info['cves']) + '\n'
                     self.cves.update(advisory_info['cves'])
+
+            prior_version = prior.get_version(action['module'])
+            if prior_version is None:
+                # Try looking in the lockfile?
+                prior_version = prior_lock.get_version(action['module'])
             self.updates.append(Update(
                 'npm',
                 action['module'],
-                prior.get_version(action['module']),
+                prior_version,
                 action['target'],
                 reason
             ))
