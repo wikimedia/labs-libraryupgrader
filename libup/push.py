@@ -19,7 +19,7 @@ import argparse
 import json
 import subprocess
 
-from . import GERRIT_USER, shell, utils
+from . import GERRIT_USER, gerrit, shell, utils
 from .update import Update
 
 AUTO_APPROVE_FILES = {
@@ -92,6 +92,8 @@ class Pusher(shell.ShellMixin):
             hashtags.append('%s;%s=%s' % (upd.manager[0], upd.name, upd.new))
         hashtags.extend(info['cves'])
         plus2 = self.can_autoapprove()
+        # Flood control, don't overload zuul...
+        gerrit.wait_for_zuul_test_gate(count=3)
         self.git_push(info['repo'], hashtags=hashtags, plus2=plus2, push=True)
 
 
