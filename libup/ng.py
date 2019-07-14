@@ -28,7 +28,7 @@ import tempfile
 from typing import List
 from xml.etree import ElementTree
 
-from . import CANARIES, shell
+from . import CANARIES, gerrit, shell
 from .data import Data
 from .files import ComposerJson, PackageJson, PackageLockJson
 from .update import Update
@@ -520,6 +520,10 @@ class LibraryUpgrader(shell.ShellMixin):
 
         # npm audit
         data['npm-audit'] = self.npm_audit()
+
+        data['open-changes'] = gerrit.query_changes(
+            repo=repo, status='open', topic='bump-dev-deps'
+        )
 
         # Now let's fix and upgrade stuff!
         if data['npm-audit']:

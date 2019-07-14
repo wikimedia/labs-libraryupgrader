@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
 import time
+from typing import Dict, List
 
 from . import session
 
@@ -45,6 +46,18 @@ def list_projects(prefix=None):
         repos.add(repo)
 
     yield from sorted(repos)
+
+
+def query_changes(repo: str, status=None, topic=None, limit=5) -> List[Dict]:
+    query = 'project:%s' % repo
+    if status is not None:
+        query += ' status:%s' % status
+    if topic is not None:
+        query += ' topic:%s' % topic
+    return make_request('GET', 'changes/', params={
+        'q': query,
+        'n': limit,
+    })
 
 
 def zuul_queue_length(q='gate-and-submit'):
