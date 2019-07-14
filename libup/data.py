@@ -20,7 +20,7 @@ import json
 import os
 from typing import Dict, List
 
-from . import DATA_ROOT, MANAGERS, TYPES
+from . import CANARIES, DATA_ROOT, MANAGERS, TYPES
 from .library import Library
 
 
@@ -61,3 +61,17 @@ class Data:
                             deps[manager][type_].append(Library(manager, name, version))
 
         return deps
+
+    def check_canaries(self, lib: Library):
+        for repo in CANARIES:
+            try:
+                info = self.get_repo_data(repo)
+            except ValueError:
+                continue
+            deps = self.get_deps(info)
+            for type_ in TYPES:
+                for ilib in deps[lib.manager][type_]:
+                    if ilib.name == lib.name and ilib.version != lib.version:
+                        return False
+
+        return True

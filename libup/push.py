@@ -16,9 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import argparse
+import json
 import subprocess
 
-from . import shell
+from . import GERRIT_USER, shell, utils
 from .update import Update
 
 AUTO_APPROVE_FILES = {
@@ -48,23 +49,28 @@ class Pusher(shell.ShellMixin):
     def can_autoapprove(self):
         return self.changed_files().issubset(AUTO_APPROVE_FILES)
 
-    def git_push(self, hashtags: list, plus2=False, push=False):
+    def git_push(self, repo: str, hashtags: list, plus2=False, push=False):
         # TODO: add ssh remote
+        self.check_call([
+            'git', 'remote', 'add', 'ssh',
+            utils.gerrit_url(repo, GERRIT_USER, ssh=True)
+        ])
         per = '%topic=bump-dev-deps'
         for hashtag in hashtags:
             per += ',t=' + hashtag
         if plus2:
             per += ',l=Code-Review+2'
-        push_cmd = ['git', 'push', 'origin',
+        push_cmd = ['git', 'push', 'ssh',
                     'HEAD:refs/for/master' + per]
+        env = {'SSH_AUTH_SOCK': '/ssh-agent'}
         if push:
             try:
-                self.check_call(push_cmd)
+                self.check_call(push_cmd, env=env)
             except subprocess.CalledProcessError:
                 if plus2:
                     # Try again without CR+2
                     push_cmd[-1] = push_cmd[-1].replace(',l=Code-Review+2', '')
-                    subprocess.check_call(push_cmd)
+                    subprocess.check_call(push_cmd, env=env)
                 else:
                     raise
         else:
@@ -81,18 +87,22 @@ class Pusher(shell.ShellMixin):
         hashtags = []
         updates = [Update.from_dict(upd) for upd in info['updates']]
         for upd in updates:
-            hashtags.append('%s:%s=%s' % (upd.manager[0], upd.name, upd.new))
+            # We use a ; instead of : because the latter can't be used in git
+            # commands apparently.
+            hashtags.append('%s;%s=%s' % (upd.manager[0], upd.name, upd.new))
         hashtags.extend(info['cves'])
         plus2 = self.can_autoapprove()
-        self.git_push(hashtags=hashtags, plus2=plus2, push=False)
+        self.git_push(info['repo'], hashtags=hashtags, plus2=plus2, push=True)
 
 
 def main():
     parser = argparse.ArgumentParser(description='Push patches')
     parser.add_argument('instructions', help='Filename of instructions')
     args = parser.parse_args()
+    with open(args.instructions) as f:
+        info = json.load(f)
     pusher = Pusher()
-    pusher.run(args.instructions)
+    pusher.run(info)
 
 
 if __name__ == '__main__':

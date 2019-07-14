@@ -30,3 +30,5 @@ def test_check_call():
         shell.check_call(['false'])
     # stdin
     assert 'test' == shell.check_call(['tee'], stdin='test')
+    # env
+    assert 'TEST=foo\n' == shell.check_call(['env'], env={'TEST': 'foo'})

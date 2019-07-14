@@ -20,7 +20,7 @@ import os
 import random
 import string
 
-from . import docker
+from . import DATA_ROOT, docker
 
 app = Celery('tasks', broker='amqp://localhost')
 
@@ -36,9 +36,12 @@ def run_check(repo: str, data_root: str, log_dir: str):
         name=rand,
         env={},
         background=False,
-        mounts={log_dir: '/out'},
+        mounts={
+            log_dir: '/out',
+            DATA_ROOT: '/srv/data:ro',
+        },
         rm=True,
-        extra_args=[repo, '/out/%s.json' % rand],
+        extra_args=['libup-ng', repo, '/out/%s.json' % rand],
     )
     output = os.path.join(log_dir, '%s.json' % rand)
     assert os.path.exists(output)
@@ -48,3 +51,14 @@ def run_check(repo: str, data_root: str, log_dir: str):
         fname = os.path.join(data_root, 'current', repo.replace('/', '_') + '.json')
         with open(fname, 'w') as fw:
             fw.write(fr.read())
+    # TODO: How is the ssh-agent going to even make it to this process??
+    if 'SSH_AUTH_SOCK' in os.environ:
+        rand2 = _random_string()
+        docker.run(
+            name=rand2,
+            env={'SSH_AUTH_SOCK': '/ssh-agent'},
+            background=False,
+            mounts={log_dir: '/out', os.environ['SSH_AUTH_SOCK']: '/ssh-agent'},
+            rm=True,
+            extra_args=['libup-push', '/out/%s.json' % rand],
+        )

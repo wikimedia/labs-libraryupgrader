@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import urllib.parse
 
 
-def gerrit_url(repo: str, user=None, pw=None) -> str:
+def gerrit_url(repo: str, user=None, pw=None, ssh=False) -> str:
     host = ''
     if user:
         if pw:
@@ -27,4 +27,7 @@ def gerrit_url(repo: str, user=None, pw=None) -> str:
             host = user + '@'
 
     host += 'gerrit.wikimedia.org'
-    return 'https://%s/r/%s.git' % (host, repo)
+    if ssh:
+        return 'ssh://%s:29418/%s' % (host, repo)
+    else:
+        return 'https://%s/r/%s.git' % (host, repo)

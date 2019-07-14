@@ -26,10 +26,15 @@ from .tasks import run_check
 
 def main():
     parser = argparse.ArgumentParser(description='Queue jobs to run')
-    parser.add_argument('limit', nargs='?', type=int, help='Limit')
+    parser.add_argument('--limit', default=0, type=int, help='Limit')
+    parser.add_argument('repo', nargs='?', help='Only queue this repository (optional)')
     args = parser.parse_args()
     count = 0
-    for repo in mw.get_everything():
+    if args.repo:
+        gen = [args.repo]
+    else:
+        gen = mw.get_everything()
+    for repo in gen:
         print(repo)
         run_check.delay(repo, DATA_ROOT, date_log_dir())
         count += 1

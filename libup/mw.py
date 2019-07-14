@@ -28,14 +28,6 @@ BLACKLIST = [
     'mediawiki/extensions/MediaWikiFarm',
 ]
 
-CANARIES = [
-    'mediawiki/extensions/Linter',
-    'mediawiki/extensions/MassMessage',
-    'mediawiki/extensions/VisualEditor',
-    'mediawiki/skins/MonoBook',
-    'oojs/ui',
-]
-
 # Gerrit repos not under mediawiki/libs/
 OTHER_LIBRARIES = [
     'AhoCorasick',

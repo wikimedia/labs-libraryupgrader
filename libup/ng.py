@@ -28,7 +28,7 @@ import tempfile
 from typing import List
 from xml.etree import ElementTree
 
-from . import shell
+from . import CANARIES, shell
 from .data import Data
 from .files import ComposerJson, PackageJson
 from .update import Update
@@ -52,6 +52,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.msg_fixes = []
         self.updates = []  # type: List[Update]
         self.cves = set()
+        self.is_canary = False
 
     def log(self, text):
         if self.logfile:
@@ -251,12 +252,14 @@ class LibraryUpgrader(shell.ShellMixin):
         if not self.has_composer:
             return
         # TODO: support non-dev deps
-        deps = Data().get_deps(info)['composer']['dev']
+        data = Data()
+        deps = data.get_deps(info)['composer']['dev']
         prior = ComposerJson('composer.json')
         new = ComposerJson('composer.json')
         updates = []
         for lib in deps:
-            if lib.is_newer() and lib.is_latest_safe():
+            if lib.is_newer() and lib.is_latest_safe() and \
+                    (self.is_canary or data.check_canaries(lib.get_latest())):
                 # Upgrade!
                 new.set_version(lib.name, lib.latest_version())
                 update = Update(
@@ -401,11 +404,13 @@ class LibraryUpgrader(shell.ShellMixin):
         if not self.has_npm:
             return
         # TODO: support non-dev deps
-        deps = Data().get_deps(info)['npm']['dev']
+        data = Data()
+        deps = data.get_deps(info)['npm']['dev']
         prior = PackageJson('package.json')
         new = PackageJson('package.json')
         for lib in deps:
-            if lib.is_newer() and lib.is_latest_safe():
+            if lib.is_newer() and lib.is_latest_safe() and \
+                    (self.is_canary or data.check_canaries(lib.get_latest())):
                 # Upgrade!
                 new.set_version(lib.name, lib.latest_version())
                 self.updates.append(Update(
@@ -485,6 +490,7 @@ class LibraryUpgrader(shell.ShellMixin):
 
     def run(self, repo, output):
         self.clone(repo)
+        self.is_canary = repo in CANARIES
         data = {
             'repo': repo,
             'sha1': self.sha1()

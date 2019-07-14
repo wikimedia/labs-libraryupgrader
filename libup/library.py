@@ -48,6 +48,12 @@ class Library:
     def latest_version(self) -> str:
         return self._metadata()['latest']
 
+    def get_latest(self):
+        return Library(
+            self.manager, self.name,
+            self.latest_version()
+        )
+
     def description(self) -> str:
         return self._metadata()['description']
 

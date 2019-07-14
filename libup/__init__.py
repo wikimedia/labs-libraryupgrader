@@ -27,6 +27,15 @@ else:
 LOGS = os.path.join(DATA_ROOT, 'logs')
 MANAGERS = ['composer', 'npm']
 TYPES = ['deps', 'dev']
+CANARIES = [
+    'mediawiki/extensions/Linter',
+    'mediawiki/extensions/MassMessage',
+    'mediawiki/extensions/VisualEditor',
+    'mediawiki/skins/MonoBook',
+    'oojs/ui',
+]
+GERRIT_USER = 'libraryupgrader'
+
 
 session = requests.Session()
 

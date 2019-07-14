@@ -22,13 +22,14 @@ from . import utils
 
 
 class ShellMixin:
-    def check_call(self, args: list, stdin='') -> str:
+    def check_call(self, args: list, stdin='', env=None) -> str:
         print('$ ' + ' '.join(args))
         res = subprocess.run(
             args,
             input=stdin.encode(),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            env=env,
         )
         # TODO: log
         print(res.stdout.decode())
@@ -39,4 +40,5 @@ class ShellMixin:
         url = utils.gerrit_url(repo)
         self.check_call(['git', 'clone', url, 'repo', '--depth=1'])
         os.chdir('repo')
+        self.check_call(['git', 'submodule', 'update', '--init'])
         self.check_call(['grr', 'init'])  # Install commit-msg hook
