@@ -476,7 +476,7 @@ class LibraryUpgrader(shell.ShellMixin):
                             msg += self._indent(update.reason, by='  ') + '\n'
                 else:
                     msg = 'build: Updating dependencies\n\n'
-                    for manager, updates in by_manager.items():
+                    for manager, updates in sorted(by_manager.items()):
                         msg += '%s:\n' % manager
                         for update in updates:
                             msg += '* %s: %s → %s\n' % (update.name, update.old, update.new)
