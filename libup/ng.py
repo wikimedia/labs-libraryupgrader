@@ -471,7 +471,6 @@ class LibraryUpgrader:
 
     def commit_and_push(self, files: list, msg: str, branch: str,
                         topic: str, remote='origin', plus2=False, push=True):
-        self.check_call(['git', 'diff'])
         f = tempfile.NamedTemporaryFile(delete=False)
         f.write(bytes(msg, 'utf-8'))
         f.close()
@@ -593,14 +592,17 @@ class LibraryUpgrader:
         can_autoapprove = self.can_autoapprove()
         msg = self.build_message()
         print(msg)
-        self.commit_and_push(
-            ['.'], msg, branch='master',
-            topic='bump-dev-deps',
-            plus2=can_autoapprove,
-            push=False,  # TODO: enable pushing!
-        )
-
-        data['patch'] = self.get_latest_patch()
+        try:
+            self.commit_and_push(
+                ['.'], msg, branch='master',
+                topic='bump-dev-deps',
+                plus2=can_autoapprove,
+                push=False,  # TODO: enable pushing!
+            )
+            data['patch'] = self.get_latest_patch()
+        except subprocess.CalledProcessError:
+            # git commit will exit 1 if there's nothing to commit
+            data['patch'] = None
 
         # Save all the data we collected.
         with open(output, 'w') as f:

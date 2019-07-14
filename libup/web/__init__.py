@@ -71,6 +71,7 @@ def r(repo):
     deps = data.get_deps(info)
     return render_template(
         'r.html',
+        patch=info.get('patch'),
         repo=repo,
         deps=deps,
         logs=sorted(find_logs(repo))
