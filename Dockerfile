@@ -1,6 +1,7 @@
 FROM debian:stretch
 ENV LANG C.UTF-8
 ADD backports.list /etc/apt/sources.list.d/backports.list
+COPY known_hosts /root/.ssh/known_hosts
 RUN apt-get update && apt-get install -y nodejs -t stretch-backports && \
     apt-get install -y composer git ssh \
     ruby ruby2.3 ruby2.3-dev rubygems-integration \
@@ -31,7 +32,6 @@ ENV COMPOSER_PROCESS_TIMEOUT 1800
 ENV NPM_CONFIG_CACHE=/cache
 ENV XDG_CACHE_HOME=/cache
 COPY ./libup /venv/src
-COPY known_hosts /root/.ssh/known_hosts
 WORKDIR /venv/src
 ENTRYPOINT ["/venv/bin/pipenv", "run"]
 CMD ["libup-ng"]
