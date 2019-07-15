@@ -16,7 +16,7 @@
 {% if info.deps %}
 <h5>Dependencies</h5>
 <ul>
-    {% for library in info.dev|sort %}
+    {% for library in info.deps|sort %}
     <li>
         <a href="{{url_for('library_', manager=manager, name=library.name)}}"><code>{{library.name}}</code></a>: <code>{{library.version}}</code>
         {% if library.is_newer() %}(<code>{{library.latest_version()}}</code> available{% if library.is_latest_safe() %}✔️{% endif %}){% endif %}
