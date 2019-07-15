@@ -20,7 +20,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import wikimediaci_utils as ci
 
 from . import gerrit
-from .data import Data
 
 
 BLACKLIST = [
@@ -75,44 +74,3 @@ def get_everything(exclude=BLACKLIST):
 def get_library_list():
     yield from gerrit.list_projects('mediawiki/libs/')
     yield from OTHER_LIBRARIES
-
-
-def get_extension_list(library: str, version_match=None, exclude=[]):
-    repos = set()
-    skip = BLACKLIST + exclude
-    for repo in ci.mw_things_repos():
-        if repo not in skip:
-            repos.add(repo)
-
-    yield from filter_repo_list(sorted(repos), library, version_match=version_match)
-
-
-def filter_repo_list(repos, library, version_match=None):
-    for repo in repos:
-        version = repo_info(repo, library)
-        if version:
-            # Skip codesniffer 19.x.0
-            if library == 'mediawiki/mediawiki-codesniffer' and version.startswith('19.'):
-                continue
-            elif library == 'mediawiki/mediawiki-phan-config' and version == '0.3.0':
-                # Requires manual intervention to upgrade
-                continue
-            if not version_match or version_match != version:
-                yield {'repo': repo, 'version': version}
-
-
-def repo_info(repo: str, library: str):
-    data = Data()
-    try:
-        info = data.get_repo_data(repo)
-    except ValueError:
-        return None
-    deps = data.get_deps(info)
-
-    if library == 'npm-audit-fix':
-        # Any npm deps
-        return bool(deps['npm']['dev'] or deps['npm']['deps'])
-    for lib in (deps['composer']['deps'] + deps['composer']['dev']):
-        if lib.name == library:
-            return lib.version
-    return None

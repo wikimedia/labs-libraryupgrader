@@ -13,7 +13,6 @@ setup(
     entry_points={
         'console_scripts': [
             'libup-run = libup.run:main',
-            'libup-upgrade = libup.upgrade:main',
             'libup-ng = libup.ng:main',
             'libup-push = libup.push:main'
         ]

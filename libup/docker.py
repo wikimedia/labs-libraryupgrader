@@ -18,11 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import subprocess
-import time
 
 from . import DATA_ROOT
 
-CONCURRENT = 6
 DOCKER_IMAGE = 'libraryupgrader'
 
 
@@ -54,28 +52,3 @@ def run(name: str, env: dict, mounts=None, rm=False, entrypoint=None,
     if extra_args is not None:
         args.extend(extra_args)
     subprocess.check_call(args)
-
-
-def get_running_containers() -> list:
-    out = subprocess.check_output(['docker', 'ps', '-q']).decode().strip()
-    if not out:
-        return []
-    return out.split('\n')
-
-
-def wait_for_containers(count: int):
-    while len(get_running_containers()) > count:
-        print('Waiting...')
-        time.sleep(2)
-
-
-def logs(name: str) -> str:
-    out = subprocess.check_output(
-        ['docker', 'logs', name],
-        stderr=subprocess.STDOUT
-    )
-    return out.decode()
-
-
-def remove_container(name: str):
-    subprocess.check_call(['docker', 'rm', name])
