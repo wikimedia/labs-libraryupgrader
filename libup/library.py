@@ -19,7 +19,7 @@ from distutils.version import LooseVersion
 import functools
 import semver
 
-from . import session
+from . import PACKAGIST_MIRROR, session
 
 
 class Library:
@@ -94,7 +94,7 @@ class Library:
 # FIXME Don't use functools/lru_cache
 @functools.lru_cache()
 def _get_composer_metadata(package: str) -> dict:
-    r = session.get('https://packagist.org/packages/%s.json' % package)
+    r = session.get('%s/packages/%s.json' % (PACKAGIST_MIRROR, package))
     resp = r.json()['package']
     normalized = set()
     for ver in resp['versions']:

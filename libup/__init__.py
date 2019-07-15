@@ -35,6 +35,7 @@ CANARIES = [
     'oojs/ui',
 ]
 GERRIT_USER = 'libraryupgrader'
+PACKAGIST_MIRROR = 'https://repo.packagist.org'
 
 
 session = requests.Session()
