@@ -251,6 +251,21 @@ class LibraryUpgrader(shell.ShellMixin):
             composerjson.save()
             self.msg_fixes.append('Also added phpcbf to "composer fix" command.')
 
+    def fix_private_package_json(self, repo):
+        if not repo.startswith(('mediawiki/extensions/', 'mediawiki/skins/')):
+            # Only MW extensions and skins
+            return
+        if not self.has_npm:
+            return
+        pkg = PackageJson('package.json')
+        if 'private' in pkg.data:
+            return
+        pkg.data['private'] = True
+        # Move to top
+        pkg.data.move_to_end('private', last=False)
+        pkg.save()
+        self.msg_fixes.append('Set `private: true` in package.json.')
+
     def sha1(self):
         return self.check_call(['git', 'show-ref', 'HEAD']).split(' ')[0]
 
@@ -540,6 +555,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_coc()
         self.fix_phpcs_xml_location()
         self.fix_composer_fix()
+        self.fix_private_package_json(repo)
 
         # Commit
         msg = self.build_message()

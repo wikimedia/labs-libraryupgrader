@@ -115,6 +115,25 @@ def test_fix_phpcs_xml_location(fs):
     assert libup.msg_fixes == []
 
 
+@pytest.mark.parametrize(
+    'repo,pkg,expected',
+    [
+        ('mediawiki/extensions/FooBar', None, False),
+        ('mediawiki/core', None, False),
+        ('mediawiki/core', '{}', False),
+        ('mediawiki/extensions/FooBar', '{}', True),
+        ('mediawiki/extensions/FooBar', '{"private": true}', False),
+    ]
+)
+def test_fix_private_package_json(fs, repo, pkg, expected):
+    libup = LibraryUpgrader()
+    if pkg is not None:
+        fs.create_file('package.json', contents=pkg)
+    e_fixes = ['Set `private: true` in package.json.'] if expected else []
+    libup.fix_private_package_json(repo)
+    assert libup.msg_fixes == e_fixes
+
+
 @pytest.mark.skip
 def test_sha1():
     # Note: integration test, relies on this being a git checkout

@@ -24,7 +24,7 @@ class PackageJson:
     def __init__(self, fname):
         self.fname = fname
         with open(fname, 'r') as f:
-            self.data = json.load(f, object_pairs_hook=OrderedDict)
+            self.data = json.load(f, object_pairs_hook=OrderedDict)  # type: OrderedDict
 
     def get_packages(self):
         return list(self.data['devDependencies'])
@@ -52,7 +52,7 @@ class PackageLockJson:
     def __init__(self, fname='package-lock.json'):
         self.fname = fname
         with open(fname, 'r') as f:
-            self.data = json.load(f, object_pairs_hook=OrderedDict)
+            self.data = json.load(f, object_pairs_hook=OrderedDict)  # type: OrderedDict
 
     def get_version(self, package):
         if package in self.data['dependencies']:
@@ -72,7 +72,7 @@ class ComposerJson:
     def __init__(self, fname):
         self.fname = fname
         with open(fname, 'r') as f:
-            self.data = json.load(f, object_pairs_hook=OrderedDict)
+            self.data = json.load(f, object_pairs_hook=OrderedDict)  # type: OrderedDict
 
     def get_version(self, package):
         if package in self.data['require-dev']:
