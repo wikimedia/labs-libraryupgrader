@@ -134,6 +134,24 @@ def test_fix_private_package_json(fs, repo, pkg, expected):
     assert libup.msg_fixes == e_fixes
 
 
+def test_root_eslintrc(fs):
+    libup = LibraryUpgrader()
+    # No .eslintrc.json
+    libup.fix_root_eslintrc()
+    assert libup.msg_fixes == []
+    # Already set
+    fs.create_file('.eslintrc.json', contents='{"root": true}')
+    libup.fix_root_eslintrc()
+    assert libup.msg_fixes == []
+
+
+def test_root_eslintrc_real(fs):
+    libup = LibraryUpgrader()
+    fs.create_file('.eslintrc.json', contents='{}')
+    libup.fix_root_eslintrc()
+    assert libup.msg_fixes == ['Set `root: true` in .eslintrc.json (T206485).']
+
+
 @pytest.mark.skip
 def test_sha1():
     # Note: integration test, relies on this being a git checkout

@@ -15,16 +15,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from collections import OrderedDict
-import json
+from . import utils
 
 
 class PackageJson:
     # TODO: Support non-dev deps
     def __init__(self, fname):
         self.fname = fname
-        with open(fname, 'r') as f:
-            self.data = json.load(f, object_pairs_hook=OrderedDict)  # type: OrderedDict
+        self.data = utils.load_ordered_json(self.fname)
 
     def get_packages(self):
         return list(self.data['devDependencies'])
@@ -43,16 +41,13 @@ class PackageJson:
         raise RuntimeError('Unable to set version for %s to %s' % (package, version))
 
     def save(self):
-        with open(self.fname, 'w') as f:
-            out = json.dumps(self.data, indent='\t', ensure_ascii=False)
-            f.write(out + '\n')
+        utils.save_pretty_json(self.data, self.fname)
 
 
 class PackageLockJson:
     def __init__(self, fname='package-lock.json'):
         self.fname = fname
-        with open(fname, 'r') as f:
-            self.data = json.load(f, object_pairs_hook=OrderedDict)  # type: OrderedDict
+        self.data = utils.load_ordered_json(self.fname)
 
     def get_version(self, package):
         if package in self.data['dependencies']:
@@ -71,8 +66,7 @@ class ComposerJson:
     # TODO: Support non-dev deps
     def __init__(self, fname):
         self.fname = fname
-        with open(fname, 'r') as f:
-            self.data = json.load(f, object_pairs_hook=OrderedDict)  # type: OrderedDict
+        self.data = utils.load_ordered_json(self.fname)
 
     def get_version(self, package):
         if package in self.data['require-dev']:
@@ -97,6 +91,4 @@ class ComposerJson:
         raise RuntimeError('Unable to set version for %s to %s' % (package, version))
 
     def save(self):
-        with open(self.fname, 'w') as f:
-            out = json.dumps(self.data, indent='\t', ensure_ascii=False)
-            f.write(out + '\n')
+        utils.save_pretty_json(self.data, self.fname)

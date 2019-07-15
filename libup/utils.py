@@ -15,6 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from collections import OrderedDict
+import json
 import urllib.parse
 
 
@@ -31,3 +33,14 @@ def gerrit_url(repo: str, user=None, pw=None, ssh=False) -> str:
         return 'ssh://%s:29418/%s' % (host, repo)
     else:
         return 'https://%s/r/%s.git' % (host, repo)
+
+
+def load_ordered_json(fname) -> OrderedDict:
+    with open(fname) as f:
+        return json.load(f, object_pairs_hook=OrderedDict)
+
+
+def save_pretty_json(data: dict, fname: str):
+    with open(fname, 'w') as f:
+        out = json.dumps(data, indent='\t', ensure_ascii=False)
+        f.write(out + '\n')

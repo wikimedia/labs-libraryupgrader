@@ -28,7 +28,7 @@ import tempfile
 from typing import List
 from xml.etree import ElementTree
 
-from . import CANARIES, gerrit, shell
+from . import CANARIES, gerrit, shell, utils
 from .data import Data
 from .files import ComposerJson, PackageJson, PackageLockJson
 from .update import Update
@@ -265,6 +265,17 @@ class LibraryUpgrader(shell.ShellMixin):
         pkg.data.move_to_end('private', last=False)
         pkg.save()
         self.msg_fixes.append('Set `private: true` in package.json.')
+
+    def fix_root_eslintrc(self):
+        if not os.path.exists('.eslintrc.json'):
+            return
+        data = utils.load_ordered_json('.eslintrc.json')
+        if 'root' in data:
+            return
+        data['root'] = True
+        data.move_to_end('root', last=False)
+        utils.save_pretty_json(data, '.eslintrc.json')
+        self.msg_fixes.append('Set `root: true` in .eslintrc.json (T206485).')
 
     def sha1(self):
         return self.check_call(['git', 'show-ref', 'HEAD']).split(' ')[0]
@@ -556,6 +567,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_phpcs_xml_location()
         self.fix_composer_fix()
         self.fix_private_package_json(repo)
+        self.fix_root_eslintrc()
 
         # Commit
         msg = self.build_message()
