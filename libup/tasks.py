@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from celery import Celery
+import json
 import os
 import random
 import string
@@ -50,9 +51,11 @@ def run_check(repo: str, data_root: str, log_dir: str):
     with open(output) as fr:
         fname = os.path.join(data_root, 'current', repo.replace('/', '_') + '.json')
         with open(fname, 'w') as fw:
-            fw.write(fr.read())
+            text = fr.read()
+            fw.write(text)
+    data = json.loads(text)
     # TODO: How is the ssh-agent going to even make it to this process??
-    if 'SSH_AUTH_SOCK' in os.environ:
+    if data['push'] and 'SSH_AUTH_SOCK' in os.environ:
         rand2 = _random_string()
         docker.run(
             name=rand2,

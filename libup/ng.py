@@ -534,6 +534,8 @@ class LibraryUpgrader(shell.ShellMixin):
         self.npm_upgrade(data)
         self.composer_upgrade(data)
 
+        data['push'] = bool(self.updates) and not data['open-changes']
+
         # General fixes:
         self.fix_coc()
         self.fix_phpcs_xml_location()
@@ -548,6 +550,7 @@ class LibraryUpgrader(shell.ShellMixin):
         except subprocess.CalledProcessError:
             # git commit will exit 1 if there's nothing to commit
             data['patch'] = None
+            data['push'] = False
 
         # Convert into a serializable form:
         data['updates'] = [upd.to_dict() for upd in self.updates]
