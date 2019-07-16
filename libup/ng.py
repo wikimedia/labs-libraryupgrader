@@ -19,16 +19,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import argparse
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import json
 import os
 import re
 import subprocess
 import tempfile
+import traceback
 from typing import List
 from xml.etree import ElementTree
 
-from . import CANARIES, gerrit, shell, utils
+from . import CANARIES, gerrit, grunt, shell, utils
 from .data import Data
 from .files import ComposerJson, PackageJson, PackageLockJson
 from .update import Update
@@ -276,6 +277,42 @@ class LibraryUpgrader(shell.ShellMixin):
         data.move_to_end('root', last=False)
         utils.save_pretty_json(data, '.eslintrc.json')
         self.msg_fixes.append('Set `root: true` in .eslintrc.json (T206485).')
+
+    def fix_eslint_config(self):
+        if not os.path.exists('Gruntfile.js'):
+            return
+        gf = grunt.Gruntfile()
+        try:
+            data = gf.parse_section('eslint')
+        except grunt.NoSuchSection:
+            return
+        except:  # noqa
+            # Some bug with the parser
+            traceback.print_exc()
+            return
+
+        changes = False
+        if 'options' not in data:
+            data['options'] = OrderedDict()
+        if 'cache' not in data['options']:
+            data['options']['cache'] = True
+            # TODO: implement abstraction for .gitignore
+            with open('.gitignore') as f:
+                gitignore = f.read()
+            if not gitignore.endswith('\n'):
+                gitignore += '\n'
+            if '.eslintcache' not in gitignore:
+                gitignore += '/.eslintcache\n'
+            changes = True
+            self.msg_fixes.append('Enable eslint caching.')
+        if 'reportUnusedDisableDirectives' not in data['options']:
+            data['options']['reportUnusedDisableDirectives'] = True
+            self.msg_fixes.append('Enable eslint\'s reportUnusedDisableDirectives.')
+            changes = True
+
+        if changes:
+            gf.set_section('eslint', data)
+            gf.save()
 
     def sha1(self):
         return self.check_call(['git', 'show-ref', 'HEAD']).split(' ')[0]
@@ -568,6 +605,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_composer_fix()
         self.fix_private_package_json(repo)
         self.fix_root_eslintrc()
+        self.fix_eslint_config()
 
         # Commit
         msg = self.build_message()
