@@ -303,6 +303,8 @@ class LibraryUpgrader(shell.ShellMixin):
                 gitignore += '\n'
             if '.eslintcache' not in gitignore:
                 gitignore += '/.eslintcache\n'
+            with open('.gitignore', 'w') as f:
+                f.write(gitignore)
             changes = True
             self.msg_fixes.append('Enable eslint caching.')
         if 'reportUnusedDisableDirectives' not in data['options']:
