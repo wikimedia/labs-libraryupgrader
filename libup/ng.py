@@ -294,6 +294,7 @@ class LibraryUpgrader(shell.ShellMixin):
         changes = False
         if 'options' not in data:
             data['options'] = OrderedDict()
+            data.move_to_end('options', last=False)
         if 'cache' not in data['options']:
             data['options']['cache'] = True
             # TODO: implement abstraction for .gitignore

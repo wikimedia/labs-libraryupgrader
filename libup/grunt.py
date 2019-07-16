@@ -93,7 +93,7 @@ class Gruntfile:
             raise NoSuchSection
         return found
 
-    def parse_section(self, section: str) -> dict:
+    def parse_section(self, section: str) -> OrderedDict:
         base = self._find(section)
         self.has_comma[section] = base.group(2)
         return self._inner_parse(base.group(1).splitlines()[1:])
@@ -107,7 +107,7 @@ class Gruntfile:
             inp = 'False'
         return inp
 
-    def _inner_parse(self, lines: list):
+    def _inner_parse(self, lines: list) -> OrderedDict:
         data = OrderedDict()
         skip_to = 0
         for index, line in enumerate(lines):
