@@ -23,7 +23,8 @@ from . import utils
 
 class ShellMixin:
     def check_call(self, args: list, stdin='', env=None) -> str:
-        print('$ ' + ' '.join(args))
+        debug = self.log if hasattr(self, 'log') else print
+        debug('$ ' + ' '.join(args))
         res = subprocess.run(
             args,
             input=stdin.encode(),
@@ -31,8 +32,7 @@ class ShellMixin:
             stderr=subprocess.STDOUT,
             env=env,
         )
-        # TODO: log
-        print(res.stdout.decode())
+        debug(res.stdout.decode())
         res.check_returncode()
         return res.stdout.decode()
 

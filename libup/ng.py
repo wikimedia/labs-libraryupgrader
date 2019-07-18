@@ -30,6 +30,7 @@ from typing import List
 from xml.etree import ElementTree
 
 from . import CANARIES, gerrit, grunt, shell, utils
+from .collections import SaveDict
 from .data import Data
 from .files import ComposerJson, PackageJson, PackageLockJson
 from .update import Update
@@ -49,22 +50,16 @@ VALID_NPM_VERSION = re.compile('^(\d+?\.?){2,4}$')
 
 class LibraryUpgrader(shell.ShellMixin):
     def __init__(self):
-        self.logfile = None
         self.msg_fixes = []
         self.updates = []  # type: List[Update]
         self.cves = set()
         self.is_canary = False
+        self.output = None  # type: SaveDict
 
     def log(self, text):
-        if self.logfile:
-            self.logfile.write(text)
-
-    def finish(self):
-        if self.logfile:
-            self.logfile.close()
-
-    def set_logfile(self, fname):
-        self.logfile = open(fname, 'a')
+        print(text)
+        if self.output:
+            self.output['log'].append(text)
 
     @property
     def has_npm(self):
@@ -563,44 +558,45 @@ class LibraryUpgrader(shell.ShellMixin):
     def run(self, repo, output):
         self.clone(repo)
         self.is_canary = repo in CANARIES
-        data = {
+        self.output = SaveDict({
             'repo': repo,
-            'sha1': self.sha1()
-        }
+            'sha1': self.sha1(),
+            'log': [],
+        }, fname=output)
 
         # Collect current dependencies
-        data['npm-deps'] = self.npm_deps()
-        data['composer-deps'] = self.composer_deps()
+        self.output['npm-deps'] = self.npm_deps()
+        self.output['composer-deps'] = self.composer_deps()
 
         # Run tests
         try:
             self.npm_test()
-            data['npm-test'] = {'result': True}
+            self.output['npm-test'] = {'result': True}
         except subprocess.CalledProcessError as e:
-            data['npm-test'] = {'result': False, 'error': e.output.decode()}
+            self.output['npm-test'] = {'result': False, 'error': e.output.decode()}
         try:
             self.composer_test()
-            data['composer-test'] = {'result': True}
+            self.output['composer-test'] = {'result': True}
         except subprocess.CalledProcessError as e:
-            data['composer-test'] = {'result': False, 'error': e.output.decode()}
+            self.output['composer-test'] = {'result': False, 'error': e.output.decode()}
 
         # npm audit
-        data['npm-audit'] = self.npm_audit()
+        self.output['npm-audit'] = self.npm_audit()
 
-        data['open-changes'] = gerrit.query_changes(
+        self.output['open-changes'] = gerrit.query_changes(
             repo=repo, status='open', topic='bump-dev-deps'
         )
 
         # Now let's fix and upgrade stuff!
-        if data['npm-audit']:
-            self.npm_audit_fix(data['npm-audit'])
+        if self.output['npm-audit']:
+            self.npm_audit_fix(self.output['npm-audit'])
         # TODO: composer audit
 
         # Try upgrades
-        self.npm_upgrade(data)
-        self.composer_upgrade(data)
+        self.npm_upgrade(self.output)
+        self.composer_upgrade(self.output)
 
-        data['push'] = bool(self.updates) and not data['open-changes']
+        self.output['push'] = bool(self.updates) and not self.output['open-changes']
 
         # General fixes:
         self.fix_coc()
@@ -615,34 +611,27 @@ class LibraryUpgrader(shell.ShellMixin):
         print(msg)
         try:
             self.commit(['.'], msg)
-            data['patch'] = self.get_latest_patch()
+            self.output['patch'] = self.get_latest_patch()
         except subprocess.CalledProcessError:
             # git commit will exit 1 if there's nothing to commit
-            data['patch'] = None
-            data['push'] = False
+            self.output['patch'] = None
+            self.output['push'] = False
 
         # Convert into a serializable form:
-        data['updates'] = [upd.to_dict() for upd in self.updates]
-        data['cves'] = list(self.cves)
+        self.output['updates'] = [upd.to_dict() for upd in self.updates]
+        self.output['cves'] = list(self.cves)
 
-        # Save all the data we collected.
-        with open(output, 'w') as f:
-            json.dump(data, f)
+        # Flag that we finished properly
+        self.output['done'] = True
 
 
 def main():
     parser = argparse.ArgumentParser(description='next generation of libraryupgrader')
     parser.add_argument('repo', help='Git repository')
     parser.add_argument('output', help='Path to output results to')
-    parser.add_argument('logfile', nargs='?', help='Log file')
     args = parser.parse_args()
     libup = LibraryUpgrader()
-    if args.logfile:
-        libup.set_logfile(args.logfile)
-    try:
-        libup.run(args.repo, args.output)
-    finally:
-        libup.finish()
+    libup.run(args.repo, args.output)
 
 
 if __name__ == '__main__':
