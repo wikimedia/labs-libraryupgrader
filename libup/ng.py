@@ -56,10 +56,14 @@ class LibraryUpgrader(shell.ShellMixin):
         self.is_canary = False
         self.output = None  # type: SaveDict
 
-    def log(self, text):
+    def log(self, text: str):
         print(text)
         if self.output:
             self.output['log'].append(text)
+
+    def log_update(self, upd: Update):
+        self.log('Upgrading %s:%s from %s -> %s'
+                 % (upd.manager[0], upd.name, upd.old, upd.new))
 
     @property
     def has_npm(self):
@@ -72,6 +76,7 @@ class LibraryUpgrader(shell.ShellMixin):
     def ensure_package_lock(self):
         if not os.path.exists('package-lock.json'):
             self.check_call(['npm', 'i', '--package-lock-only'])
+            self.log('Editing .gitignore to remove package-lock.json')
             # We want to commit these now, so remove it from gitignore if it's in there
             if os.path.exists('.gitignore'):
                 with open('.gitignore') as f:
@@ -118,12 +123,13 @@ class LibraryUpgrader(shell.ShellMixin):
             try:
                 return json.loads(e.output.decode())
             except json.decoder.JSONDecodeError:
-                print('Error, invalid JSON from npm audit, skipping')
+                self.log('Error, invalid JSON from npm audit, skipping')
                 return {'error': e.output.decode()}
 
     def npm_audit_fix(self, audit: dict):
         if not self.has_npm or not audit:
             return
+        self.log('Attempting to npm audit fix')
         prior = PackageJson('package.json')
         prior_lock = PackageLockJson()
         self.check_call(['npm', 'audit', 'fix', '--only=dev'])
@@ -143,12 +149,13 @@ class LibraryUpgrader(shell.ShellMixin):
                     # must be valid too
                     if (not old_version or VALID_NPM_VERSION.match(old_version)) \
                             and not VALID_NPM_VERSION.match(current.get_version(pkg)):
-                        print('Error: %s version is not valid: %s' % (pkg, current.get_version(pkg)))
+                        self.log('Error: %s version is not valid: %s' % (pkg, current.get_version(pkg)))
                         return
 
         current.save()
 
         # Verify that tests still pass
+        self.log('Verifying that tests still pass')
         self.check_call(['npm', 'ci'])
         self.check_call(['npm', 'test'])
 
@@ -170,13 +177,15 @@ class LibraryUpgrader(shell.ShellMixin):
             if prior_version is None:
                 # Try looking in the lockfile?
                 prior_version = prior_lock.get_version(action['module'])
-            self.updates.append(Update(
+            upd = Update(
                 'npm',
                 action['module'],
                 prior_version,
                 action['target'],
                 reason
-            ))
+            )
+            self.log_update(upd)
+            self.updates.append(upd)
 
     def npm_test(self):
         if not self.has_npm:
@@ -283,7 +292,8 @@ class LibraryUpgrader(shell.ShellMixin):
             return
         except:  # noqa
             # Some bug with the parser
-            traceback.print_exc()
+            tb = traceback.format_exc()
+            self.log(tb)
             return
 
         changes = False
@@ -334,6 +344,7 @@ class LibraryUpgrader(shell.ShellMixin):
                     prior.get_version(lib.name),
                     lib.latest_version()
                 )
+                self.log_update(update)
                 updates.append(update)
                 self.updates.append(update)
         new.save()
@@ -375,7 +386,7 @@ class LibraryUpgrader(shell.ShellMixin):
                 for grandchild in child:
                     if grandchild.tag == 'exclude':
                         previously_failing.add(grandchild.attrib['name'])
-        print(previously_failing)
+        self.log(str(previously_failing))
 
         # Re-enable all disabled rules
         with open(phpcs_xml, 'w') as f:
@@ -386,13 +397,14 @@ class LibraryUpgrader(shell.ShellMixin):
             f.write(new)
 
         try:
+            # TODO: use self.check_call
             subprocess.check_output(['vendor/bin/phpcs', '--report=json'])
         except subprocess.CalledProcessError as e:
             try:
                 phpcs_j = json.loads(e.output.decode())
             except json.decoder.JSONDecodeError:
-                print('Error, invalid JSON, skipping')
-                print(e.output.decode())
+                self.log('Error, invalid JSON, skipping')
+                self.log(e.output.decode())
                 return False
             run_fix = False
             for fname, value in phpcs_j['files'].items():
@@ -401,7 +413,7 @@ class LibraryUpgrader(shell.ShellMixin):
                         run_fix = True
                     else:
                         failing.add(message['source'])
-            print('Tests fail!')
+            self.log('Tests fail!')
             if run_fix:
                 try:
                     self.check_call(['vendor/bin/phpcbf'])
@@ -450,7 +462,7 @@ class LibraryUpgrader(shell.ShellMixin):
             try:
                 subprocess.check_call(['composer', 'test'])
             except subprocess.CalledProcessError:
-                print('Tests still failing. Skipping')
+                self.log('Tests still failing. Skipping')
                 return False
 
         msg = ''
@@ -569,6 +581,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.output['composer-deps'] = self.composer_deps()
 
         # Run tests
+        self.log('Running tests to verify repository integrity')
         try:
             self.npm_test()
             self.output['npm-test'] = {'result': True}
@@ -608,7 +621,6 @@ class LibraryUpgrader(shell.ShellMixin):
 
         # Commit
         msg = self.build_message()
-        print(msg)
         try:
             self.commit(['.'], msg)
             self.output['patch'] = self.get_latest_patch()
