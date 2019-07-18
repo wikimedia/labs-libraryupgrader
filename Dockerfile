@@ -9,12 +9,20 @@ RUN apt-get update && apt-get install -y nodejs -t stretch-backports && \
     php-ast php-xml php-zip php-gd php-gmp php-mbstring php-curl \
     python3 python3-dev python3-pip python3-virtualenv \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
-RUN gem install --no-rdoc --no-ri jsduck
 RUN git clone --depth 1 https://gerrit.wikimedia.org/r/p/integration/npm.git /srv/npm \
     && rm -rf /srv/npm/.git \
     && ln -s /srv/npm/bin/npm-cli.js /usr/bin/npm
 # TODO move grr into venv
 RUN pip3 install grr
+RUN gem install --no-rdoc --no-ri jsduck
+
+RUN install --owner=nobody --group=nogroup --directory /venv
+# Some tooling (e.g. git config) is easier if we have a home dir.
+RUN install --owner=nobody --group=nogroup --directory /nonexistent
+
+USER nobody
+ENV PIPENV_VENV_IN_PROJECT 1
+ENV PYTHONUNBUFFERED 1
 RUN python3 -m virtualenv -p python3 /venv
 # TODO use package for pipenv in buster
 RUN /venv/bin/pip install pipenv
