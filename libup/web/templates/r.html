@@ -10,6 +10,14 @@
     <pre>{{patch}}</pre>
 </div>
 {% endif %}
+{% if log %}
+<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#logtext" aria-expanded="false" aria-controls="logtext">
+  {% if success %}View log file{% else %}View error log{% endif %}
+</button>
+<div class="collapse" id="logtext">
+    <pre>{{log}}</pre>
+</div>
+{% endif %}
 {% for manager, info in deps.items()|sort %}
 {% if info %}
 <h3>{{manager}} dependencies</h3>
