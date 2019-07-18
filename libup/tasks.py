@@ -20,6 +20,8 @@ import json
 import os
 import random
 import string
+import subprocess
+import traceback
 
 from . import DATA_ROOT, docker
 
@@ -33,17 +35,22 @@ def _random_string():
 @app.task
 def run_check(repo: str, data_root: str, log_dir: str):
     rand = _random_string()
-    docker.run(
-        name=rand,
-        env={},
-        background=False,
-        mounts={
-            log_dir: '/out',
-            DATA_ROOT: '/srv/data:ro',
-        },
-        rm=True,
-        extra_args=['libup-ng', repo, '/out/%s.json' % rand],
-    )
+    try:
+        docker.run(
+            name=rand,
+            env={},
+            background=False,
+            mounts={
+                log_dir: '/out',
+                DATA_ROOT: '/srv/data:ro',
+            },
+            rm=True,
+            extra_args=['libup-ng', repo, '/out/%s.json' % rand],
+        )
+    except subprocess.CalledProcessError:
+        # Just print the traceback. The real check is to verify
+        # that the JSON file exists.
+        traceback.print_exc()
     output = os.path.join(log_dir, '%s.json' % rand)
     assert os.path.exists(output)
     # Copy it over to the current directory,
