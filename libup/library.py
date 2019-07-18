@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from distutils.version import LooseVersion
 import functools
+import json
 import semver
 
 from . import PACKAGIST_MIRROR, session
@@ -95,7 +96,13 @@ class Library:
 @functools.lru_cache()
 def _get_composer_metadata(package: str) -> dict:
     r = session.get('%s/packages/%s.json' % (PACKAGIST_MIRROR, package))
-    resp = r.json()['package']
+    try:
+        resp = r.json()['package']
+    except (KeyError, json.decoder.JSONDecodeError):
+        return {
+            'latest': '0.0.0',
+            'description': 'Unknown package',
+        }
     normalized = set()
     for ver in resp['versions']:
         if not ver.startswith('dev-') and not ver.endswith('-dev'):
