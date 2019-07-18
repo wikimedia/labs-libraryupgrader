@@ -486,13 +486,15 @@ class LibraryUpgrader(shell.ShellMixin):
         data = Data()
         deps = data.get_deps(info)['npm']['dev']
         prior = PackageJson('package.json')
+        priorlock = PackageLockJson()
         new = PackageJson('package.json')
+        updates = []
         for lib in deps:
             if lib.is_newer() and lib.is_latest_safe() and \
                     (self.is_canary or data.check_canaries(lib.get_latest())):
                 # Upgrade!
                 new.set_version(lib.name, lib.latest_version())
-                self.updates.append(Update(
+                updates.append(Update(
                     'npm', lib.name,
                     prior.get_version(lib.name),
                     lib.latest_version()
@@ -505,9 +507,15 @@ class LibraryUpgrader(shell.ShellMixin):
             # Then test
             self.npm_test()
         except subprocess.CalledProcessError:
-            # TODO: log something somewhere?
+            # FIXME: log something somewhere?
             # rollback changes
             prior.save()
+            priorlock.save()
+            return
+
+        for update in updates:
+            self.log_update(update)
+            self.updates.append(update)
 
     def commit(self, files: list, msg: str):
         f = tempfile.NamedTemporaryFile(delete=False)

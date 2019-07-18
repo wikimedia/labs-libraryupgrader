@@ -59,7 +59,8 @@ class PackageLockJson:
         raise NotImplementedError
 
     def save(self):
-        raise NotImplementedError
+        # For rollbacks and stuff. We don't allow modification though.
+        utils.save_pretty_json(self.data, self.fname)
 
 
 class ComposerJson:

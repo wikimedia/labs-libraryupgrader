@@ -55,7 +55,7 @@ def run_check(repo: str, data_root: str, log_dir: str):
             fw.write(text)
     data = json.loads(text)
     # TODO: How is the ssh-agent going to even make it to this process??
-    if data['push'] and 'SSH_AUTH_SOCK' in os.environ:
+    if False and data['push'] and 'SSH_AUTH_SOCK' in os.environ:
         rand2 = _random_string()
         docker.run(
             name=rand2,
