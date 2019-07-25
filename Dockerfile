@@ -1,7 +1,7 @@
 FROM debian:stretch
 ENV LANG C.UTF-8
-ADD backports.list /etc/apt/sources.list.d/backports.list
-COPY known_hosts /root/.ssh/known_hosts
+COPY files/backports.list /etc/apt/sources.list.d/backports.list
+COPY files/known_hosts /root/.ssh/known_hosts
 RUN apt-get update && apt-get install -y nodejs -t stretch-backports && \
     apt-get install -y composer git ssh \
     ruby ruby2.3 ruby2.3-dev rubygems-integration \
@@ -21,6 +21,7 @@ RUN install --owner=nobody --group=nogroup --directory /venv
 RUN install --owner=nobody --group=nogroup --directory /nonexistent
 
 USER nobody
+COPY files/gitconfig /nonexistent/.gitconfig
 ENV PIPENV_VENV_IN_PROJECT 1
 ENV PYTHONUNBUFFERED 1
 RUN python3 -m virtualenv -p python3 /venv
@@ -33,8 +34,6 @@ COPY setup.py /venv/src/
 COPY ./libup /venv/src/libup
 RUN cd /venv/src && /venv/bin/pipenv install --deploy \
     && /venv/bin/pipenv run python setup.py install
-RUN git config --global user.name "libraryupgrader"
-RUN git config --global user.email "tools.libraryupgrader@tools.wmflabs.org"
 ENV COMPOSER_PROCESS_TIMEOUT 1800
 # Shared cache
 ENV NPM_CONFIG_CACHE=/cache
