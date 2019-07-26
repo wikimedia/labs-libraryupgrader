@@ -26,6 +26,11 @@ else:
     DATA_ROOT = os.path.abspath(os.path.join(
         os.path.dirname(os.path.dirname(__file__)), 'data'))
 LOGS = os.path.join(DATA_ROOT, 'logs')
+if os.path.exists('/srv/config'):
+    CONFIG_REPO = '/srv/config'
+else:
+    CONFIG_REPO = os.path.join(DATA_ROOT, 'config')
+RELEASES = os.path.join(CONFIG_REPO, 'releases.json')
 MANAGERS = ['composer', 'npm']
 TYPES = ['deps', 'dev']
 CANARIES = [

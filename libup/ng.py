@@ -29,7 +29,7 @@ import traceback
 from typing import List
 from xml.etree import ElementTree
 
-from . import CANARIES, gerrit, grunt, shell, utils
+from . import CANARIES, gerrit, grunt, library, shell, utils
 from .collections import SaveDict
 from .data import Data
 from .files import ComposerJson, PackageJson, PackageLockJson
@@ -608,6 +608,8 @@ class LibraryUpgrader(shell.ShellMixin):
             repo=repo, status='open', topic='bump-dev-deps'
         )
 
+        # Do a pull to get the latest safe versions
+        library.get_good_releases(pull=True)
         # Now let's fix and upgrade stuff!
         if self.output['npm-audit']:
             self.npm_audit_fix(self.output['npm-audit'])

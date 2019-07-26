@@ -18,9 +18,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from distutils.version import LooseVersion
 import functools
 import json
+import os
 import semver
+import subprocess
 
-from . import PACKAGIST_MIRROR, session
+from . import CONFIG_REPO, RELEASES, PACKAGIST_MIRROR, session
 
 
 class Library:
@@ -59,7 +61,7 @@ class Library:
         return self._metadata()['description']
 
     def safe_versions(self) -> list:
-        safes = _get_good_releases()
+        safes = get_good_releases()
         try:
             return safes[self.manager][self.name]
         except KeyError:
@@ -135,7 +137,15 @@ def _get_npm_metadata(package: str) -> dict:
     }
 
 
-@functools.lru_cache()
-def _get_good_releases() -> dict:
-    r = session.get('https://www.mediawiki.org/w/index.php?title=Libraryupgrader/Good_releases.json&action=raw')
-    return r.json()
+def get_good_releases(pull=False) -> dict:
+    if not os.path.exists(RELEASES):
+        subprocess.check_call([
+            'git', 'clone',
+            'https://gerrit.wikimedia.org/r/labs/libraryupgrader/config',
+            CONFIG_REPO
+        ], cwd=os.path.dirname(CONFIG_REPO))
+    elif pull:
+        subprocess.check_call(['git', 'pull'], cwd=CONFIG_REPO)
+
+    with open(RELEASES) as f:
+        return json.load(f)
