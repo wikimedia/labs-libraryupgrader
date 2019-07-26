@@ -15,15 +15,22 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from . import utils
+from libup.push import Pusher
 
 
-def test_gerrit_url():
-    assert utils.gerrit_url('repo/name') \
-        == 'https://gerrit.wikimedia.org/r/repo/name.git'
-    assert utils.gerrit_url('repo/name', user='foo') \
-        == 'https://foo@gerrit.wikimedia.org/r/repo/name.git'
-    assert utils.gerrit_url('repo/name', user='foo', pw='bar!!+/') \
-        == 'https://foo:bar%21%21%2B%2F@gerrit.wikimedia.org/r/repo/name.git'
-    assert utils.gerrit_url('repo/name', user='foo', ssh=True) \
-        == 'ssh://foo@gerrit.wikimedia.org:29418/repo/name'
+GIT_OUTPUT = """37a71cdcc1 This is a test
+ README => README.md         | 0
+ includes/Hooks.php          | 2 +-
+ sample.php => something.php | 2 +-
+ 3 files changed, 2 insertions(+), 2 deletions(-)
+"""
+
+
+def test_changed_files():
+    pusher = Pusher()
+    pusher.check_call = lambda args: GIT_OUTPUT
+    assert {
+        'README => README.md',
+        'includes/Hooks.php',
+        'sample.php => something.php'
+    } == pusher.changed_files()

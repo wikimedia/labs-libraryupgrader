@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from . import grunt
+from libup import grunt
 
 # This variable is indented with spaces to please flake8, but replaced
 # at the very bottom. Sigh.

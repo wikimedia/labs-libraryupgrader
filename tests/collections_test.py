@@ -15,22 +15,21 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from .push import Pusher
+import json
+import tempfile
+
+from libup.collections import SaveDict
 
 
-GIT_OUTPUT = """37a71cdcc1 This is a test
- README => README.md         | 0
- includes/Hooks.php          | 2 +-
- sample.php => something.php | 2 +-
- 3 files changed, 2 insertions(+), 2 deletions(-)
-"""
+def test_savedict():
+    def read(name):
+        with open(name) as fr:
+            return json.load(fr)
 
-
-def test_changed_files():
-    pusher = Pusher()
-    pusher.check_call = lambda args: GIT_OUTPUT
-    assert {
-        'README => README.md',
-        'includes/Hooks.php',
-        'sample.php => something.php'
-    } == pusher.changed_files()
+    with tempfile.NamedTemporaryFile(mode='w') as f:
+        sdict = SaveDict({'test': True}, fname=f.name)
+        assert read(f.name) == {'test': True}
+        sdict['set'] = 'yes'
+        assert read(f.name) == {'test': True, 'set': 'yes'}
+        del sdict['test']
+        assert read(f.name) == {'set': 'yes'}

@@ -15,21 +15,15 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import json
-import tempfile
-
-from .collections import SaveDict
+from libup import utils
 
 
-def test_savedict():
-    def read(name):
-        with open(name) as fr:
-            return json.load(fr)
-
-    with tempfile.NamedTemporaryFile(mode='w') as f:
-        sdict = SaveDict({'test': True}, fname=f.name)
-        assert read(f.name) == {'test': True}
-        sdict['set'] = 'yes'
-        assert read(f.name) == {'test': True, 'set': 'yes'}
-        del sdict['test']
-        assert read(f.name) == {'set': 'yes'}
+def test_gerrit_url():
+    assert utils.gerrit_url('repo/name') \
+        == 'https://gerrit.wikimedia.org/r/repo/name.git'
+    assert utils.gerrit_url('repo/name', user='foo') \
+        == 'https://foo@gerrit.wikimedia.org/r/repo/name.git'
+    assert utils.gerrit_url('repo/name', user='foo', pw='bar!!+/') \
+        == 'https://foo:bar%21%21%2B%2F@gerrit.wikimedia.org/r/repo/name.git'
+    assert utils.gerrit_url('repo/name', user='foo', ssh=True) \
+        == 'ssh://foo@gerrit.wikimedia.org:29418/repo/name'

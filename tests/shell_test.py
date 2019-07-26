@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import pytest
 import subprocess
 
-from .shell import ShellMixin
+from libup.shell import ShellMixin
 
 
 def test_check_call():

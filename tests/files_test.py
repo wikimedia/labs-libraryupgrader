@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
 
-from .files import ComposerJson, PackageJson
+from libup.files import ComposerJson, PackageJson
 
 pkg_json = """{
     "private": true,

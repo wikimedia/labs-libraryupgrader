@@ -19,7 +19,7 @@ import pytest
 import re
 import subprocess
 
-from .ng import LibraryUpgrader
+from libup.ng import LibraryUpgrader
 
 
 class MockLibraryUpgrader(LibraryUpgrader):
