@@ -352,6 +352,8 @@ class LibraryUpgrader(shell.ShellMixin):
                 updates.append(update)
                 self.updates.append(update)
         new.save()
+        if not updates:
+            return
         self.check_call(['composer', 'update'])
         hooks = {
             'mediawiki/mediawiki-codesniffer': self._handle_codesniffer,
@@ -363,8 +365,7 @@ class LibraryUpgrader(shell.ShellMixin):
                 hooks[update.name](update)
 
         # TODO: support rollback if this fails
-        if updates:
-            self.composer_test()
+        self.composer_test()
 
     def _handle_codesniffer(self, update: Update):
         if os.path.exists('.phpcs.xml'):
