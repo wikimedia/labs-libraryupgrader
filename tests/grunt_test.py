@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import pytest
 
 from libup import grunt
 
@@ -79,3 +80,5 @@ def test_gruntfile(tempfs):
     gf.set_section('eslint', eslint)
     gf.set_section('stylelint', stylelint)
     assert gf.text == GRUNTFILE
+    with pytest.raises(grunt.NoSuchSection):
+        gf.parse_section('doesnotexist')
