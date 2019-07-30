@@ -60,6 +60,8 @@ class LibraryUpgrader(shell.ShellMixin):
         print(text)
         if self.output:
             self.output['log'].append(text)
+            # FIXME: this shouldn't be needed
+            self.output.save()
 
     def log_update(self, upd: Update):
         self.log('Upgrading %s:%s from %s -> %s'

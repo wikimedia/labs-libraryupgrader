@@ -33,3 +33,10 @@ def test_savedict():
         assert read(f.name) == {'test': True, 'set': 'yes'}
         del sdict['test']
         assert read(f.name) == {'set': 'yes'}
+        del sdict['set']
+        sdict['log'] = ['test']
+        assert read(f.name) == {'log': ['test']}
+        sdict['log'].append('test2')
+        # FIXME this doesn't work naturally
+        sdict.save()
+        assert read(f.name) == {'log': ['test', 'test2']}
