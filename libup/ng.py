@@ -165,6 +165,8 @@ class LibraryUpgrader(shell.ShellMixin):
             if action.get('isMajor'):
                 # We don't auto-update major versions
                 continue
+            if action['action'] != 'update':
+                continue
             reason = ''
             resolves = set(r['id'] for r in action['resolves'])
             for npm_id in sorted(resolves):
