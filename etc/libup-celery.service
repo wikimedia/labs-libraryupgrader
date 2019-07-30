@@ -9,7 +9,7 @@ Group=libup
 RuntimeDirectory=celery
 WorkingDirectory=/srv/libraryupgrader/
 ExecStart=/srv/libraryupgrader/venv/bin/celery -A libup.tasks worker --loglevel=info \
-          --pidfile /run/celery/pid
+          --pidfile /run/celery/pid --concurrency=1
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
 PrivateTmp=true
