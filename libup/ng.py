@@ -358,12 +358,8 @@ class LibraryUpgrader(shell.ShellMixin):
                 # they can adjust reason, etc.
                 hooks[update.name](update)
 
-        try:
-            self.composer_test()
-        except subprocess.CalledProcessError:
-            # TODO: log something somewhere?
-            # rollback changes
-            prior.save()
+        # TODO: support rollback if this fails
+        self.composer_test()
 
     def _handle_codesniffer(self, update: Update):
         if os.path.exists('.phpcs.xml'):
@@ -486,7 +482,6 @@ class LibraryUpgrader(shell.ShellMixin):
         data = Data()
         deps = data.get_deps(info)['npm']['dev']
         prior = PackageJson('package.json')
-        priorlock = PackageLockJson()
         new = PackageJson('package.json')
         updates = []
         for lib in deps:
@@ -501,17 +496,11 @@ class LibraryUpgrader(shell.ShellMixin):
                 ))
         new.save()
         # TODO support upgrade hooks for e.g. eslint
-        try:
-            # Update lockfile
-            self.check_call(['npm', 'install'])
-            # Then test
-            self.npm_test()
-        except subprocess.CalledProcessError:
-            # FIXME: log something somewhere?
-            # rollback changes
-            prior.save()
-            priorlock.save()
-            return
+        # Update lockfile
+        self.check_call(['npm', 'install'])
+        # Then test
+        self.npm_test()
+        # TODO: if this fails, support rollback?
 
         for update in updates:
             self.log_update(update)
