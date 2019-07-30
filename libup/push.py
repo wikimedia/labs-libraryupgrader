@@ -19,7 +19,7 @@ import argparse
 import json
 import subprocess
 
-from . import GERRIT_USER, gerrit, shell, utils
+from . import GERRIT_USER, config, gerrit, shell, utils
 from .update import Update
 
 AUTO_APPROVE_FILES = {
@@ -94,7 +94,8 @@ class Pusher(shell.ShellMixin):
         plus2 = self.can_autoapprove()
         # Flood control, don't overload zuul...
         gerrit.wait_for_zuul_test_gate(count=3)
-        self.git_push(info['repo'], hashtags=hashtags, plus2=plus2, push=True)
+        push = config.should_push()
+        self.git_push(info['repo'], hashtags=hashtags, plus2=plus2, push=push)
 
 
 def main():

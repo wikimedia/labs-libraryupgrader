@@ -18,11 +18,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from distutils.version import LooseVersion
 import functools
 import json
-import os
 import semver
-import subprocess
 
-from . import CONFIG_REPO, RELEASES, PACKAGIST_MIRROR, session
+from . import PACKAGIST_MIRROR, session
+from .config import config
 
 
 class Library:
@@ -138,14 +137,5 @@ def _get_npm_metadata(package: str) -> dict:
 
 
 def get_good_releases(pull=False) -> dict:
-    if not os.path.exists(RELEASES):
-        subprocess.check_call([
-            'git', 'clone',
-            'https://gerrit.wikimedia.org/r/labs/libraryupgrader/config',
-            CONFIG_REPO
-        ], cwd=os.path.dirname(CONFIG_REPO))
-    elif pull:
-        subprocess.check_call(['git', 'pull'], cwd=CONFIG_REPO)
-
-    with open(RELEASES) as f:
-        return json.load(f)
+    # TODO: do we need this wrapper?
+    return config(pull=pull)
