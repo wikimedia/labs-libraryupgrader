@@ -17,7 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
 import re
-import subprocess
 
 from libup.ng import LibraryUpgrader
 
@@ -44,18 +43,6 @@ def test_has_composer(tempfs):
     assert libup.has_composer is False
     tempfs.create_file('composer.json', contents='{}')
     assert libup.has_composer is True
-
-
-def test_check_call():
-    libup = LibraryUpgrader()
-    res = libup.check_call(['echo', 'hi'])
-    assert res == 'hi\n'
-
-
-def test_check_call_fail():
-    libup = LibraryUpgrader()
-    with pytest.raises(subprocess.CalledProcessError):
-        libup.check_call(['false'])
 
 
 def test_ensure_package_lock(tempfs):
@@ -93,7 +80,7 @@ def test_actually_update_coc(tempfs):
                  '(https://www.mediawiki.org/wiki/Code_of_Conduct).\n')
     libup = LibraryUpgrader()
     libup.fix_coc()
-    # TODO: verify it actually fixed it
+    assert 'Special:MyLanguage/Code_of_Conduct' in tempfs.contents('CODE_OF_CONDUCT.md')
     assert libup.msg_fixes == ['And updating CoC link to use Special:MyLanguage (T202047).']
 
 
@@ -134,6 +121,8 @@ def test_fix_private_package_json(tempfs, repo, pkg, expected):
     e_fixes = ['Set `private: true` in package.json.'] if expected else []
     libup.fix_private_package_json(repo)
     assert libup.msg_fixes == e_fixes
+    if expected:
+        assert tempfs.json_contents('package.json')['private'] is True
 
 
 def test_root_eslintrc(tempfs):
@@ -151,6 +140,7 @@ def test_root_eslintrc_real(tempfs):
     libup = LibraryUpgrader()
     tempfs.create_file('.eslintrc.json', contents='{}')
     libup.fix_root_eslintrc()
+    assert {'root': True} == tempfs.json_contents('.eslintrc.json')
     assert libup.msg_fixes == ['Set `root: true` in .eslintrc.json (T206485).']
 
 

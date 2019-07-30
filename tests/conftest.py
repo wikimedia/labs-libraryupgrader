@@ -15,6 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import json
 import os
 import tempfile
 import pytest
@@ -29,6 +30,13 @@ class Tempfs:
         """implement pyfakefs API"""
         with open(filename, 'w') as f:
             f.write(contents)
+
+    def contents(self, filename):
+        with open(filename) as f:
+            return f.read()
+
+    def json_contents(self, filename):
+        return json.loads(self.contents(filename))
 
     def enter(self):
         os.chdir(self.tmpdir.name)
