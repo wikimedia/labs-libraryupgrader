@@ -36,14 +36,7 @@ def test_link():
         z = bad.link  # noqa
 
 
-# Integration tests (TODO: mock repository response):
-@pytest.mark.skip
-def test_is_newer_composer():
+def test_is_newer():
     lib = Library('composer', 'mediawiki/mediawiki-codesniffer', '24.0.0')
-    assert lib.is_newer() is True
-
-
-@pytest.mark.skip
-def test_is_newer_npm():
-    lib = Library('npm', 'grunt-banana-checker', '0.6.0')
+    lib.latest_version = lambda: '26.0.0'
     assert lib.is_newer() is True
