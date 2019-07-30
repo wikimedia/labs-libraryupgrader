@@ -90,7 +90,11 @@ class Library:
                 pass
             return False
         # Just do a safer/more basic semver comparison
-        return LooseVersion(self.latest_version()) > LooseVersion(self.version)
+        try:
+            return LooseVersion(self.latest_version()) > LooseVersion(self.version)
+        except TypeError:
+            # bug in distutils I think
+            return False
 
 
 # FIXME Don't use functools/lru_cache
