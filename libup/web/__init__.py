@@ -247,7 +247,7 @@ def vulns_npm():
         markdown=markdown,
         SEVERITIES=SEVERITIES,
         COLORS=COLORS,
-        dev_all=lambda x: all(y['dev'] for y in x),
+        dev_all=lambda x: all(y.get('dev') for y in x),
         via=via,
     )
 
