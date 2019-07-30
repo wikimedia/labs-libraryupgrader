@@ -42,6 +42,11 @@ class Data:
 
         return data
 
+    def get_errors(self):
+        for repo, info in self.get_data().items():
+            if 'done' not in info:
+                yield repo
+
     def get_repo_data(self, repo) -> dict:
         expected = os.path.join(self.current, repo.replace('/', '_') + '.json')
         # Sanity check?

@@ -187,6 +187,12 @@ def logs():
     return 'Not yet implemented'
 
 
+@app.route('/errors')
+def errors():
+    repos = list(Data().get_errors())
+    return render_template('errors.html', repos=repos)
+
+
 def find_logs(repo):
     for date in os.listdir(LOGS):
         if date.startswith('.'):

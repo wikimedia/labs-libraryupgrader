@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block subtitle %}errors{% endblock %}
+{% block main %}
+<h1>errors</h1>
+<p>The following repositories have some kind of error.</p>
+<ul>
+    {% for repo in sorted(repos) %}
+    <li><a href="{{url_for('r', repo=repo)}}">{{repo}}</a></li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
