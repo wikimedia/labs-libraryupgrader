@@ -5,7 +5,7 @@ COPY files/known_hosts /root/.ssh/known_hosts
 RUN apt-get update && apt-get install -y nodejs -t stretch-backports && \
     apt-get install -y composer git ssh \
     ruby ruby2.3 ruby2.3-dev rubygems-integration \
-    python-minimal build-essential pkg-config \
+    python build-essential pkg-config \
     php-ast php-xml php-zip php-gd php-gmp php-mbstring php-curl \
     python3 python3-dev python3-pip python3-virtualenv \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
