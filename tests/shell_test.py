@@ -15,10 +15,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import os
 import pytest
 import subprocess
 
 from libup.shell import ShellMixin
+
+HELPER = os.path.join(os.path.dirname(__file__), 'shell_helper.py')
 
 
 def test_check_call():
@@ -32,3 +35,22 @@ def test_check_call():
     assert 'test' == shell.check_call(['tee'], stdin='test')
     # env
     assert 'TEST=foo\n' == shell.check_call(['env'], env={'TEST': 'foo'})
+
+
+def test_integration():
+    output = []
+    shell = ShellMixin()
+    shell.log = output.append
+    expected = 'this goes to stderr\nthis goes to stdout\n'
+    assert expected == shell.check_call(['python3', HELPER])
+    assert expected in output
+
+
+def test_integration_fail():
+    output = []
+    shell = ShellMixin()
+    shell.log = output.append
+    expected = 'this goes to stderr\nthis goes to stdout\n'
+    with pytest.raises(subprocess.CalledProcessError):
+        shell.check_call(['python3', HELPER, '--fail'])
+    assert expected in output
