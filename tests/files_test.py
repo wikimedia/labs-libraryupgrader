@@ -47,8 +47,8 @@ composer_json = """{
 """
 
 
-def test_package_json(fs):
-    fs.create_file('package.json', contents=pkg_json)
+def test_package_json(tempfs):
+    tempfs.create_file('package.json', contents=pkg_json)
     pkg = PackageJson('package.json')
     assert pkg.get_packages() == ['eslint-config-wikimedia', 'grunt', 'grunt-banana-checker']
     assert pkg.get_version('not-here') is None
@@ -60,8 +60,8 @@ def test_package_json(fs):
     # TODO: pkg.save()
 
 
-def test_composer_json(fs):
-    fs.create_file('composer.json', contents=composer_json)
+def test_composer_json(tempfs):
+    tempfs.create_file('composer.json', contents=composer_json)
     pkg = ComposerJson('composer.json')
     assert pkg.get_version('mediawiki/mediawiki-codesniffer') == '25.0.0'
     # p-t-c-p is in extra

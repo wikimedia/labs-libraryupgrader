@@ -60,8 +60,8 @@ module.exports = function ( grunt ) {
 """.replace('    ', '\t')
 
 
-def test_gruntfile(fs):
-    fs.create_file('Gruntfile.js', contents=GRUNTFILE)
+def test_gruntfile(tempfs):
+    tempfs.create_file('Gruntfile.js', contents=GRUNTFILE)
     gf = grunt.Gruntfile()
     eslint = gf.parse_section('eslint')
     assert eslint == {
