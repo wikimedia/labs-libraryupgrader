@@ -359,7 +359,8 @@ class LibraryUpgrader(shell.ShellMixin):
                 hooks[update.name](update)
 
         # TODO: support rollback if this fails
-        self.composer_test()
+        if updates:
+            self.composer_test()
 
     def _handle_codesniffer(self, update: Update):
         if os.path.exists('.phpcs.xml'):
@@ -495,16 +496,18 @@ class LibraryUpgrader(shell.ShellMixin):
                     lib.latest_version()
                 ))
         new.save()
-        # TODO support upgrade hooks for e.g. eslint
-        # Update lockfile
-        self.check_call(['npm', 'install'])
-        # Then test
-        self.npm_test()
-        # TODO: if this fails, support rollback?
 
         for update in updates:
             self.log_update(update)
             self.updates.append(update)
+
+        # TODO support upgrade hooks for e.g. eslint
+        if updates:
+            # Update lockfile
+            self.check_call(['npm', 'install'])
+            # Then test
+            self.npm_test()
+            # TODO: if this fails, support rollback?
 
     def commit(self, files: list, msg: str):
         f = tempfile.NamedTemporaryFile(delete=False)
