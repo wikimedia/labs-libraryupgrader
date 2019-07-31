@@ -12,7 +12,6 @@ ExecStart=/srv/libraryupgrader/venv/bin/celery -A libup.tasks worker --loglevel=
           --pidfile /run/celery/pid --concurrency=1
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
-PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
