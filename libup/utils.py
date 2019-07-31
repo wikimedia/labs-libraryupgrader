@@ -16,8 +16,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from collections import OrderedDict
+from contextlib import contextmanager
 import json
+import os
 import urllib.parse
+
+
+@contextmanager
+def cd(dirname):
+    cwd = os.getcwd()
+    os.chdir(dirname)
+    try:
+        yield dirname
+    finally:
+        os.chdir(cwd)
 
 
 def gerrit_url(repo: str, user=None, pw=None, ssh=False) -> str:

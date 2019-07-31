@@ -19,7 +19,7 @@ import argparse
 import json
 import subprocess
 
-from . import GERRIT_USER, config, gerrit, shell, utils
+from . import GERRIT_USER, SSH_AUTH_SOCK, config, gerrit, shell, utils
 from .update import Update
 
 AUTO_APPROVE_FILES = {
@@ -62,7 +62,7 @@ class Pusher(shell.ShellMixin):
             per += ',l=Code-Review+2'
         push_cmd = ['git', 'push', 'ssh',
                     'HEAD:refs/for/master' + per]
-        env = {'SSH_AUTH_SOCK': '/ssh-agent'}
+        env = {'SSH_AUTH_SOCK': SSH_AUTH_SOCK}
         if push:
             try:
                 self.call_git(push_cmd, env=env)

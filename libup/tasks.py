@@ -21,9 +21,10 @@ import os
 import random
 import string
 import subprocess
+import tempfile
 import traceback
 
-from . import CONFIG_REPO, DATA_ROOT, SSH_AUTH_SOCK, docker, ssh
+from . import CONFIG_REPO, DATA_ROOT, docker, push, utils, ssh
 
 app = Celery('tasks', broker='amqp://localhost')
 
@@ -65,17 +66,7 @@ def run_check(repo: str, data_root: str, log_dir: str):
     print('push: %s' % data.get('push'))
     print('key loaded: %s' % ssh.is_key_loaded())
     if data.get('push') and ssh.is_key_loaded():
-        rand2 = _random_string()
-        docker.run(
-            name=rand2,
-            env={'SSH_AUTH_SOCK': '/ssh-agent'},
-            background=False,
-            mounts={
-                log_dir: '/out',
-                SSH_AUTH_SOCK: '/ssh-agent',
-                DATA_ROOT: '/srv/data:ro',
-                CONFIG_REPO: '/srv/config',
-            },
-            rm=True,
-            extra_args=['libup-push', '/out/%s.json' % rand],
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with utils.cd(tmpdir):
+                pusher = push.Pusher()
+                pusher.run(data)

@@ -15,6 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import os
+
 from libup import utils
 
 
@@ -27,3 +29,14 @@ def test_gerrit_url():
         == 'https://foo:bar%21%21%2B%2F@gerrit.wikimedia.org/r/repo/name.git'
     assert utils.gerrit_url('repo/name', user='foo', ssh=True) \
         == 'ssh://foo@gerrit.wikimedia.org:29418/repo/name'
+
+
+def test_cd():
+    cwd = os.getcwd()
+    # Make sure the test will work
+    assert '/' != cwd
+    with utils.cd('/'):
+        # We're now in the root dir
+        assert '/' == os.getcwd()
+    # And now we're back
+    assert cwd == os.getcwd()
