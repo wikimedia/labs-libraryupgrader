@@ -225,7 +225,7 @@ class LibraryUpgrader(shell.ShellMixin):
 
     def fix_phpcs_xml_location(self):
         if os.path.exists('phpcs.xml') and not os.path.exists('.phpcs.xml'):
-            self.check_call(['git', 'mv', 'phpcs.xml', '.phpcs.xml'])
+            self.call_git(['git', 'mv', 'phpcs.xml', '.phpcs.xml'])
             self.msg_fixes.append('And moved phpcs.xml to .phpcs.xml (T177256).')
 
     def fix_composer_fix(self):
@@ -327,7 +327,7 @@ class LibraryUpgrader(shell.ShellMixin):
             gf.save()
 
     def sha1(self):
-        return self.check_call(['git', 'show-ref', 'HEAD']).split(' ')[0]
+        return self.call_git(['git', 'show-ref', 'HEAD']).split(' ')[0]
 
     def composer_upgrade(self, info: dict):
         if not self.has_composer:
@@ -429,7 +429,7 @@ class LibraryUpgrader(shell.ShellMixin):
             for sniff in failing:
                 if sniff not in previously_failing:
                     now_failing.add(sniff)
-            subprocess.check_call(['git', 'checkout', phpcs_xml])
+            self.call_git(['git', 'checkout', phpcs_xml])
             with open(phpcs_xml) as f:
                 text = f.read()
             # Before we apply all of our regexs, let's get everything into a mostly standardized form
@@ -518,9 +518,9 @@ class LibraryUpgrader(shell.ShellMixin):
         f = tempfile.NamedTemporaryFile(delete=False)
         f.write(bytes(msg, 'utf-8'))
         f.close()
-        self.check_call(['git', 'add'] + files)
+        self.call_git(['git', 'add'] + files)
         try:
-            self.check_call(['git', 'commit', '-F', f.name])
+            self.call_git(['git', 'commit', '-F', f.name])
         finally:
             os.unlink(f.name)
 
@@ -570,7 +570,7 @@ class LibraryUpgrader(shell.ShellMixin):
         return msg
 
     def get_latest_patch(self):
-        return self.check_call(['git', 'format-patch', 'HEAD~1', '--stdout'])
+        return self.call_git(['git', 'format-patch', 'HEAD~1', '--stdout'])
 
     def run(self, repo, output):
         self.clone(repo)

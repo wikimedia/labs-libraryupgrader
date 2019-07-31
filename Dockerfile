@@ -20,7 +20,6 @@ RUN install --owner=nobody --group=nogroup --directory /venv
 RUN install --owner=nobody --group=nogroup --directory /nonexistent
 
 USER nobody
-COPY files/gitconfig /nonexistent/.gitconfig
 COPY files/known_hosts /nonexistent/.ssh/known_hosts
 ENV PIPENV_VENV_IN_PROJECT 1
 ENV PYTHONUNBUFFERED 1

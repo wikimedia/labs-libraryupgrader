@@ -22,11 +22,12 @@ from libup.ng import LibraryUpgrader
 
 
 class MockLibraryUpgrader(LibraryUpgrader):
+    # TODO: Replace this with proper mocking
     def __init__(self):
         super().__init__()
         self.called = []
 
-    def check_call(self, args: list) -> str:
+    def check_call(self, args: list, stdin='', env=None) -> str:
         self.called.append(args)
         return ' '.join(args)
 

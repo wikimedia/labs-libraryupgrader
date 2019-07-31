@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 import subprocess
 
-from . import utils
+from . import GIT_EMAIL, GIT_NAME, utils
 
 
 class ShellMixin:
@@ -36,9 +36,20 @@ class ShellMixin:
         res.check_returncode()
         return res.stdout.decode()
 
+    def call_git(self, args: list, stdin='', env=None):
+        git_env = {
+            'GIT_AUTHOR_NAME': GIT_NAME,
+            'GIT_AUTHOR_EMAIL': GIT_EMAIL,
+            'GIT_COMMITTER_NAME': GIT_NAME,
+            'GIT_COMMITTER_EMAIL': GIT_EMAIL,
+        }
+        if env:
+            git_env.update(env)
+        return self.check_call(args, stdin, env)
+
     def clone(self, repo):
         url = utils.gerrit_url(repo)
-        self.check_call(['git', 'clone', url, 'repo', '--depth=1'])
+        self.call_git(['git', 'clone', url, 'repo', '--depth=1'])
         os.chdir('repo')
-        self.check_call(['git', 'submodule', 'update', '--init'])
-        self.check_call(['grr', 'init'])  # Install commit-msg hook
+        self.call_git(['git', 'submodule', 'update', '--init'])
+        self.call_git(['grr', 'init'])  # Install commit-msg hook

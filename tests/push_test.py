@@ -26,9 +26,10 @@ GIT_OUTPUT = """37a71cdcc1 This is a test
 """
 
 
-def test_changed_files():
+def test_changed_files(mocker):
     pusher = Pusher()
-    pusher.check_call = lambda args: GIT_OUTPUT
+    call_git = mocker.patch('libup.push.Pusher.call_git')
+    call_git.return_value = GIT_OUTPUT
     assert {
         'README => README.md',
         'includes/Hooks.php',
