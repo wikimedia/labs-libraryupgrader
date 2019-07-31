@@ -519,6 +519,7 @@ class LibraryUpgrader(shell.ShellMixin):
         f.write(bytes(msg, 'utf-8'))
         f.close()
         self.call_git(['git', 'add'] + files)
+        self.call_git(['grr', 'init'])  # Install commit-msg hook
         try:
             self.call_git(['git', 'commit', '-F', f.name])
         finally:

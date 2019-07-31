@@ -37,19 +37,13 @@ class ShellMixin:
         return res.stdout.decode()
 
     def call_git(self, args: list, stdin='', env=None):
-        git_env = {
-            'GIT_AUTHOR_NAME': GIT_NAME,
-            'GIT_AUTHOR_EMAIL': GIT_EMAIL,
-            'GIT_COMMITTER_NAME': GIT_NAME,
-            'GIT_COMMITTER_EMAIL': GIT_EMAIL,
-        }
-        if env:
-            git_env.update(env)
+        # TODO: get rid of no-longer needed wrapper
         return self.check_call(args, stdin, env)
 
     def clone(self, repo):
         url = utils.gerrit_url(repo)
         self.call_git(['git', 'clone', url, 'repo', '--depth=1'])
         os.chdir('repo')
+        self.call_git(['git', 'config', 'user.name', GIT_NAME])
+        self.call_git(['git', 'config', 'user.email', GIT_EMAIL])
         self.call_git(['git', 'submodule', 'update', '--init'])
-        self.call_git(['grr', 'init'])  # Install commit-msg hook
