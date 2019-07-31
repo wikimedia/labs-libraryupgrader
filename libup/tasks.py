@@ -62,6 +62,8 @@ def run_check(repo: str, data_root: str, log_dir: str):
             text = fr.read()
             fw.write(text)
     data = json.loads(text)
+    print('push: %s' % data.get('push'))
+    print('key loaded: %s' % ssh.is_key_loaded())
     if data.get('push') and ssh.is_key_loaded():
         rand2 = _random_string()
         docker.run(
