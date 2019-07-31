@@ -1,7 +1,6 @@
 FROM debian:stretch
 ENV LANG C.UTF-8
 COPY files/backports.list /etc/apt/sources.list.d/backports.list
-COPY files/known_hosts /root/.ssh/known_hosts
 RUN apt-get update && apt-get install -y nodejs -t stretch-backports && \
     apt-get install -y composer git ssh \
     ruby ruby2.3 ruby2.3-dev rubygems-integration \
@@ -22,6 +21,7 @@ RUN install --owner=nobody --group=nogroup --directory /nonexistent
 
 USER nobody
 COPY files/gitconfig /nonexistent/.gitconfig
+COPY files/known_hosts /nonexistent/.ssh/known_hosts
 ENV PIPENV_VENV_IN_PROJECT 1
 ENV PYTHONUNBUFFERED 1
 RUN python3 -m virtualenv -p python3 /venv
