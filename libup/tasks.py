@@ -70,7 +70,12 @@ def run_check(repo: str, data_root: str, log_dir: str):
             name=rand2,
             env={'SSH_AUTH_SOCK': '/ssh-agent'},
             background=False,
-            mounts={log_dir: '/out', SSH_AUTH_SOCK: '/ssh-agent'},
+            mounts={
+                log_dir: '/out',
+                SSH_AUTH_SOCK: '/ssh-agent',
+                DATA_ROOT: '/srv/data:ro',
+                CONFIG_REPO: '/srv/config',
+            },
             rm=True,
             extra_args=['libup-push', '/out/%s.json' % rand],
         )
