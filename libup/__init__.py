@@ -42,6 +42,8 @@ CANARIES = [
 ]
 GERRIT_USER = 'libraryupgrader'
 PACKAGIST_MIRROR = 'https://repo.packagist.org'
+# TODO: this path is different inside the container
+SSH_AUTH_SOCK = '/tmp/ssh-agent.socket'
 
 
 session = requests.Session()

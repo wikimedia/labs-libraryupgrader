@@ -23,7 +23,7 @@ import string
 import subprocess
 import traceback
 
-from . import CONFIG_REPO, DATA_ROOT, docker
+from . import CONFIG_REPO, DATA_ROOT, SSH_AUTH_SOCK, docker, ssh
 
 app = Celery('tasks', broker='amqp://localhost')
 
@@ -62,14 +62,13 @@ def run_check(repo: str, data_root: str, log_dir: str):
             text = fr.read()
             fw.write(text)
     data = json.loads(text)
-    # TODO: How is the ssh-agent going to even make it to this process??
-    if False and data['push'] and 'SSH_AUTH_SOCK' in os.environ:
+    if data['push'] and ssh.is_key_loaded():
         rand2 = _random_string()
         docker.run(
             name=rand2,
             env={'SSH_AUTH_SOCK': '/ssh-agent'},
             background=False,
-            mounts={log_dir: '/out', os.environ['SSH_AUTH_SOCK']: '/ssh-agent'},
+            mounts={log_dir: '/out', SSH_AUTH_SOCK: '/ssh-agent'},
             rm=True,
             extra_args=['libup-push', '/out/%s.json' % rand],
         )
