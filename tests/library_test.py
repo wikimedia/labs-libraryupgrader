@@ -36,16 +36,19 @@ def test_link():
         z = bad.link  # noqa
 
 
-def test_is_newer():
+def test_is_newer(mocker):
     lib = Library('composer', 'mediawiki/mediawiki-codesniffer', '24.0.0')
-    lib.latest_version = lambda: '26.0.0'
+    latest_version = mocker.patch.object(lib, 'latest_version')
+    latest_version.return_value = '26.0.0'
     assert lib.is_newer() is True
 
 
 def test_is_latest_safe(mocker):
-    is_safe_upgrade = mocker.patch('libup.library.Library.is_safe_upgrade')
-    is_safe_upgrade.return_value = True
     lib = Library('composer', 'mediawiki/mediawiki-codesniffer', '24.0.0')
+    is_safe_upgrade = mocker.patch.object(lib, 'is_safe_upgrade')
+    is_safe_upgrade.return_value = True
+    latest_version = mocker.patch.object(lib, 'latest_version')
+    latest_version.return_value = '26.0.0'
     assert lib.is_latest_safe() is True
     lib.version = '19.2.0'
     assert lib.is_latest_safe() is False

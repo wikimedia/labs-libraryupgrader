@@ -15,23 +15,21 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from libup.push import Pusher
+from libup import CACHE, docker
 
 
-GIT_OUTPUT = """37a71cdcc1 This is a test
- README => README.md         | 0
- includes/Hooks.php          | 2 +-
- sample.php => something.php | 2 +-
- 3 files changed, 2 insertions(+), 2 deletions(-)
-"""
-
-
-def test_changed_files(mocker):
-    pusher = Pusher()
-    check_call = mocker.patch('libup.push.Pusher.check_call')
-    check_call.return_value = GIT_OUTPUT
-    assert {
-        'README => README.md',
-        'includes/Hooks.php',
-        'sample.php => something.php'
-    } == pusher.changed_files()
+def test_run(mocker):
+    check_call = mocker.patch('subprocess.check_call')
+    docker.run(
+        'foobar',
+        env={'env1': 'val1'},
+        mounts={'/tmp/test': '/test:ro'},
+        rm=True,
+        entrypoint='/bin/bash',
+        extra_args=['libup-ng'],
+    )
+    check_call.assert_called_once_with([
+        'docker', 'run', '--name=foobar', '--env', 'env1=val1',
+        '--rm', '--entrypoint', '/bin/bash', '-v', '%s:/cache' % CACHE,
+        '-v', '/tmp/test:/test:ro', '-d', 'libraryupgrader', 'libup-ng',
+    ])

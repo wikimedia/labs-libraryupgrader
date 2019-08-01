@@ -36,14 +36,10 @@ class ShellMixin:
         res.check_returncode()
         return res.stdout.decode()
 
-    def call_git(self, args: list, stdin='', env=None):
-        # TODO: get rid of no-longer needed wrapper
-        return self.check_call(args, stdin, env)
-
     def clone(self, repo):
         url = utils.gerrit_url(repo)
-        self.call_git(['git', 'clone', url, 'repo', '--depth=1'])
+        self.check_call(['git', 'clone', url, 'repo', '--depth=1'])
         os.chdir('repo')
-        self.call_git(['git', 'config', 'user.name', GIT_NAME])
-        self.call_git(['git', 'config', 'user.email', GIT_EMAIL])
-        self.call_git(['git', 'submodule', 'update', '--init'])
+        self.check_call(['git', 'config', 'user.name', GIT_NAME])
+        self.check_call(['git', 'config', 'user.email', GIT_EMAIL])
+        self.check_call(['git', 'submodule', 'update', '--init'])

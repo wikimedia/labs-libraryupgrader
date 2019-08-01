@@ -57,7 +57,8 @@ def test_package_json(tempfs):
     assert pkg.get_version('grunt') == '1.0.5'
     with pytest.raises(RuntimeError):
         pkg.set_version('not-here', '0.0.0')
-    # TODO: pkg.save()
+    pkg.save()
+    assert tempfs.json_contents('package.json')['devDependencies']['grunt'] == '1.0.5'
 
 
 def test_composer_json(tempfs):
@@ -73,4 +74,7 @@ def test_composer_json(tempfs):
     assert pkg.get_version('mediawiki/phan-taint-check-plugin') == '1.6.0'
     with pytest.raises(RuntimeError):
         pkg.set_version('not-here', '0.0.0')
-    # TODO: pkg.save()
+    pkg.save()
+    assert tempfs.json_contents('composer.json')[
+        'require-dev'
+    ]['mediawiki/mediawiki-codesniffer'] == '26.0.0'

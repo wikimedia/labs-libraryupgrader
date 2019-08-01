@@ -35,7 +35,7 @@ AUTO_APPROVE_FILES = {
 
 class Pusher(shell.ShellMixin):
     def changed_files(self):
-        out = self.call_git(['git', 'log', '--stat', '--oneline', '-n1'])
+        out = self.check_call(['git', 'log', '--stat', '--oneline', '-n1'])
         lines = out.splitlines()
         # Drop the first and last lines
         lines.pop(0)
@@ -51,7 +51,7 @@ class Pusher(shell.ShellMixin):
 
     def git_push(self, repo: str, hashtags: list, plus2=False, push=False):
         # TODO: add ssh remote
-        self.call_git([
+        self.check_call([
             'git', 'remote', 'add', 'ssh',
             utils.gerrit_url(repo, GERRIT_USER, ssh=True)
         ])
@@ -65,12 +65,12 @@ class Pusher(shell.ShellMixin):
         env = {'SSH_AUTH_SOCK': SSH_AUTH_SOCK}
         if push:
             try:
-                self.call_git(push_cmd, env=env)
+                self.check_call(push_cmd, env=env)
             except subprocess.CalledProcessError:
                 if plus2:
                     # Try again without CR+2
                     push_cmd[-1] = push_cmd[-1].replace(',l=Code-Review+2', '')
-                    self.call_git(push_cmd, env=env)
+                    self.check_call(push_cmd, env=env)
                 else:
                     raise
         else:
@@ -83,7 +83,7 @@ class Pusher(shell.ShellMixin):
         self.clone(info['repo'])
         # TODO: investigate doing some diff/sanity check to make sure
         # the deps match updates
-        self.call_git(['git', 'am'], stdin=info['patch'])
+        self.check_call(['git', 'am'], stdin=info['patch'])
         hashtags = []
         updates = [Update.from_dict(upd) for upd in info['updates']]
         for upd in updates:

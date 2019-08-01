@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess
 
-from . import DATA_ROOT
+from . import CACHE
 
 DOCKER_IMAGE = 'libraryupgrader'
 
@@ -41,7 +41,7 @@ def run(name: str, env: dict, mounts=None, rm=False, entrypoint=None,
     if entrypoint is not None:
         args.extend(['--entrypoint', entrypoint])
     args.extend([
-        '-v', DATA_ROOT + '/cache:/cache',
+        '-v', CACHE + ':/cache',
     ])
     if mounts is not None:
         for outside, inside in mounts.items():

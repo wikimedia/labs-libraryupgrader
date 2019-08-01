@@ -15,21 +15,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import json
+import os
 import pytest
 import re
 
 from libup.ng import LibraryUpgrader
-
-
-class MockLibraryUpgrader(LibraryUpgrader):
-    # TODO: Replace this with proper mocking
-    def __init__(self):
-        super().__init__()
-        self.called = []
-
-    def check_call(self, args: list, stdin='', env=None) -> str:
-        self.called.append(args)
-        return ' '.join(args)
 
 
 def test_has_npm(tempfs):
@@ -46,15 +37,17 @@ def test_has_composer(tempfs):
     assert libup.has_composer is True
 
 
-def test_ensure_package_lock(tempfs):
-    libup = MockLibraryUpgrader()
+def test_ensure_package_lock(tempfs, mocker):
+    libup = LibraryUpgrader()
+    check_call = mocker.patch.object(libup, 'check_call')
     libup.ensure_package_lock()
-    assert libup.called == [['npm', 'i', '--package-lock-only']]
+    check_call.assert_called_once_with(['npm', 'i', '--package-lock-only'])
     assert libup.msg_fixes == ['Committed package-lock.json (T179229) too.']
-    libup = MockLibraryUpgrader()
+    libup = LibraryUpgrader()
+    check_call = mocker.patch.object(libup, 'check_call')
     tempfs.create_file('package-lock.json', contents='{}')
     libup.ensure_package_lock()
-    assert libup.called == []
+    check_call.assert_not_called()
     assert libup.msg_fixes == []
     # TODO: .gitignore integration
 
@@ -85,23 +78,29 @@ def test_actually_update_coc(tempfs):
     assert libup.msg_fixes == ['And updating CoC link to use Special:MyLanguage (T202047).']
 
 
-def test_fix_phpcs_xml_location(tempfs):
+def test_fix_phpcs_xml_location(tempfs, mocker):
     # No phpcs.xml nor .phpcs.xml
-    libup = MockLibraryUpgrader()
+    libup = LibraryUpgrader()
+    check_call = mocker.patch.object(libup, 'check_call')
     libup.fix_phpcs_xml_location()
-    assert libup.called == []
+    check_call.assert_not_called()
     assert libup.msg_fixes == []
     # Now if only phpcs.xml exists
     tempfs.create_file('phpcs.xml')
-    libup = MockLibraryUpgrader()
+    libup = LibraryUpgrader()
+    check_call = mocker.patch.object(libup, 'check_call')
     libup.fix_phpcs_xml_location()
-    assert libup.called == [['git', 'mv', 'phpcs.xml', '.phpcs.xml']]
+    check_call.assert_called_once_with(['git', 'mv', 'phpcs.xml', '.phpcs.xml'])
     assert libup.msg_fixes == ['And moved phpcs.xml to .phpcs.xml (T177256).']
+
+
+def test_fix_phpcs_xml_location_exists(tempfs, mocker):
     # Now if a .phpcs.xml exists
     tempfs.create_file('.phpcs.xml')
-    libup = MockLibraryUpgrader()
+    libup = LibraryUpgrader()
+    check_call = mocker.patch.object(libup, 'check_call')
     libup.fix_phpcs_xml_location()
-    assert libup.called == []
+    check_call.assert_not_called()
     assert libup.msg_fixes == []
 
 
@@ -143,6 +142,45 @@ def test_root_eslintrc_real(tempfs):
     libup.fix_root_eslintrc()
     assert {'root': True} == tempfs.json_contents('.eslintrc.json')
     assert libup.msg_fixes == ['Set `root: true` in .eslintrc.json (T206485).']
+
+
+@pytest.mark.parametrize('scripts,expected', (
+    ({}, {'fix': ['phpcbf']}),
+    ({'fix': ['first']}, {'fix': ['first', 'phpcbf']}),
+    ({'fix': 'first'}, {'fix': ['first', 'phpcbf']}),
+))
+def test_fix_composer_fix(tempfs, scripts, expected):
+    tempfs.create_file('composer.json', contents=json.dumps({
+        'require-dev': {
+            'mediawiki/mediawiki-codesniffer': '24.0.0',
+        },
+        'scripts': scripts
+    }))
+    libup = LibraryUpgrader()
+    libup.fix_composer_fix()
+    assert tempfs.json_contents('composer.json')['scripts'] == expected
+
+
+def test_fix_eslint_config(tempfs):
+    __dir__ = os.path.dirname(__file__)
+    with open(os.path.join(__dir__, 'ng_Gruntfile.js.before')) as f:
+        tempfs.create_file('Gruntfile.js', contents=f.read())
+    libup = LibraryUpgrader()
+    libup.fix_eslint_config()
+    with open(os.path.join(__dir__, 'ng_Gruntfile.js.expected')) as f:
+        assert tempfs.contents('Gruntfile.js') == f.read()
+
+
+def test_indent():
+    libup = LibraryUpgrader()
+    assert libup._indent("""
+foo
+bar
+baz
+""") == """
+ foo
+ bar
+ baz"""
 
 
 @pytest.mark.skip

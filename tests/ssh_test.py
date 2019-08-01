@@ -15,23 +15,19 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from libup.push import Pusher
+import pytest
+
+from libup import ssh
 
 
-GIT_OUTPUT = """37a71cdcc1 This is a test
- README => README.md         | 0
- includes/Hooks.php          | 2 +-
- sample.php => something.php | 2 +-
- 3 files changed, 2 insertions(+), 2 deletions(-)
-"""
-
-
-def test_changed_files(mocker):
-    pusher = Pusher()
-    check_call = mocker.patch('libup.push.Pusher.check_call')
-    check_call.return_value = GIT_OUTPUT
-    assert {
-        'README => README.md',
-        'includes/Hooks.php',
-        'sample.php => something.php'
-    } == pusher.changed_files()
+@pytest.mark.parametrize('output,expected', [
+    ('256 SHA256:<hash> tools.libraryupgrader@tools.wmflabs.org (ED25519)',
+     True),
+    ('The agent has no identities.', False)
+])
+def test_is_key_loaded(mocker, output, expected):
+    check_call = mocker.patch('libup.ssh.ShellMixin.check_call')
+    check_call.return_value = output
+    is_agent_running = mocker.patch('libup.ssh.is_agent_running')
+    is_agent_running.return_value = True
+    assert ssh.is_key_loaded() is expected

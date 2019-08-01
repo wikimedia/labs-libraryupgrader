@@ -25,6 +25,7 @@ if os.path.exists('/srv/data'):
 else:
     DATA_ROOT = os.path.abspath(os.path.join(
         os.path.dirname(os.path.dirname(__file__)), 'data'))
+CACHE = os.path.join(DATA_ROOT, 'cache')
 LOGS = os.path.join(DATA_ROOT, 'logs')
 if os.path.exists('/srv/config'):
     CONFIG_REPO = '/srv/config'

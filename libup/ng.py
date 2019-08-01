@@ -225,7 +225,7 @@ class LibraryUpgrader(shell.ShellMixin):
 
     def fix_phpcs_xml_location(self):
         if os.path.exists('phpcs.xml') and not os.path.exists('.phpcs.xml'):
-            self.call_git(['git', 'mv', 'phpcs.xml', '.phpcs.xml'])
+            self.check_call(['git', 'mv', 'phpcs.xml', '.phpcs.xml'])
             self.msg_fixes.append('And moved phpcs.xml to .phpcs.xml (T177256).')
 
     def fix_composer_fix(self):
@@ -241,8 +241,6 @@ class LibraryUpgrader(shell.ShellMixin):
                 if 'phpcbf' not in j['scripts']['fix']:
                     j['scripts']['fix'].append('phpcbf')
                     added_fix = True
-                else:
-                    pass
             elif j['scripts']['fix'] != 'phpcbf':
                 j['scripts']['fix'] = [
                     j['scripts']['fix'],
@@ -307,14 +305,15 @@ class LibraryUpgrader(shell.ShellMixin):
         if 'cache' not in data['options']:
             data['options']['cache'] = True
             # TODO: implement abstraction for .gitignore
-            with open('.gitignore') as f:
-                gitignore = f.read()
-            if not gitignore.endswith('\n'):
-                gitignore += '\n'
-            if '.eslintcache' not in gitignore:
-                gitignore += '/.eslintcache\n'
-            with open('.gitignore', 'w') as f:
-                f.write(gitignore)
+            if os.path.exists('.gitignore'):
+                with open('.gitignore') as f:
+                    gitignore = f.read()
+                if not gitignore.endswith('\n'):
+                    gitignore += '\n'
+                if '.eslintcache' not in gitignore:
+                    gitignore += '/.eslintcache\n'
+                with open('.gitignore', 'w') as f:
+                    f.write(gitignore)
             changes = True
             self.msg_fixes.append('Enable eslint caching.')
         if 'reportUnusedDisableDirectives' not in data['options']:
@@ -327,7 +326,7 @@ class LibraryUpgrader(shell.ShellMixin):
             gf.save()
 
     def sha1(self):
-        return self.call_git(['git', 'show-ref', 'HEAD']).split(' ')[0]
+        return self.check_call(['git', 'show-ref', 'HEAD']).split(' ')[0]
 
     def composer_upgrade(self, info: dict):
         if not self.has_composer:
@@ -429,7 +428,7 @@ class LibraryUpgrader(shell.ShellMixin):
             for sniff in failing:
                 if sniff not in previously_failing:
                     now_failing.add(sniff)
-            self.call_git(['git', 'checkout', phpcs_xml])
+            self.check_call(['git', 'checkout', phpcs_xml])
             with open(phpcs_xml) as f:
                 text = f.read()
             # Before we apply all of our regexs, let's get everything into a mostly standardized form
@@ -518,10 +517,10 @@ class LibraryUpgrader(shell.ShellMixin):
         f = tempfile.NamedTemporaryFile(delete=False)
         f.write(bytes(msg, 'utf-8'))
         f.close()
-        self.call_git(['git', 'add'] + files)
-        self.call_git(['grr', 'init'])  # Install commit-msg hook
+        self.check_call(['git', 'add'] + files)
+        self.check_call(['grr', 'init'])  # Install commit-msg hook
         try:
-            self.call_git(['git', 'commit', '-F', f.name])
+            self.check_call(['git', 'commit', '-F', f.name])
         finally:
             os.unlink(f.name)
 
@@ -571,7 +570,7 @@ class LibraryUpgrader(shell.ShellMixin):
         return msg
 
     def get_latest_patch(self):
-        return self.call_git(['git', 'format-patch', 'HEAD~1', '--stdout'])
+        return self.check_call(['git', 'format-patch', 'HEAD~1', '--stdout'])
 
     def run(self, repo, output):
         self.clone(repo)
