@@ -40,3 +40,12 @@ def test_is_newer():
     lib = Library('composer', 'mediawiki/mediawiki-codesniffer', '24.0.0')
     lib.latest_version = lambda: '26.0.0'
     assert lib.is_newer() is True
+
+
+def test_is_latest_safe(mocker):
+    is_safe_upgrade = mocker.patch('libup.library.Library.is_safe_upgrade')
+    is_safe_upgrade.return_value = True
+    lib = Library('composer', 'mediawiki/mediawiki-codesniffer', '24.0.0')
+    assert lib.is_latest_safe() is True
+    lib.version = '19.2.0'
+    assert lib.is_latest_safe() is False

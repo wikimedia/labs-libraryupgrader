@@ -72,6 +72,11 @@ class Library:
 
     def is_latest_safe(self) -> bool:
         """is the latest version a good release"""
+        # HACK HACK HACK
+        if self.name == 'mediawiki/mediawiki-codesniffer' \
+                and self.version.startswith('19.'):
+            # Don't upgrade codesniffer 19.x (
+            return False
         return self.is_safe_upgrade(self.latest_version())
 
     def is_newer(self) -> bool:
