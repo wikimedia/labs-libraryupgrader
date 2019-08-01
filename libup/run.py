@@ -19,8 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
 
-from . import DATA_ROOT, date_log_dir
-from . import mw
+from . import CANARIES, DATA_ROOT, date_log_dir, mw
 from .tasks import run_check
 
 
@@ -30,7 +29,9 @@ def main():
     parser.add_argument('repo', nargs='?', help='Only queue this repository (optional)')
     args = parser.parse_args()
     count = 0
-    if args.repo:
+    if args.repo == 'canaries':
+        gen = CANARIES
+    elif args.repo:
         gen = [args.repo]
     else:
         gen = mw.get_everything()
