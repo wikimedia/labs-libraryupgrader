@@ -50,16 +50,13 @@ class Pusher(shell.ShellMixin):
         return self.changed_files().issubset(AUTO_APPROVE_FILES)
 
     def git_push(self, repo: str, hashtags: list, plus2=False, push=False):
-        self.check_call([
-            'git', 'remote', 'add', 'ssh',
-            utils.gerrit_url(repo, GERRIT_USER, ssh=True)
-        ])
         per = '%topic=bump-dev-deps'
         for hashtag in hashtags:
             per += ',t=' + hashtag
         if plus2:
             per += ',l=Code-Review+2'
-        push_cmd = ['git', 'push', 'ssh',
+        push_cmd = ['git', 'push',
+                    utils.gerrit_url(repo, GERRIT_USER, ssh=True),
                     'HEAD:refs/for/master' + per]
         env = {'SSH_AUTH_SOCK': SSH_AUTH_SOCK}
         if push:
