@@ -506,7 +506,9 @@ class LibraryUpgrader(shell.ShellMixin):
         if not updates:
             return
         self.check_call(['npm', 'install'])
-        hooks = {}
+        hooks = {
+            'eslint-config-wikimedia': self._handle_eslint
+        }
 
         for update in updates:
             if update.name in hooks:
@@ -516,6 +518,33 @@ class LibraryUpgrader(shell.ShellMixin):
 
         # TODO: support rollback if this fails
         self.npm_test()
+
+    def _handle_eslint(self, update: Update):
+        try:
+            self.check_call(['./node_modules/.bin/eslint', '.', '--fix'])
+        except subprocess.CalledProcessError:
+            # eslint exits with status code of 1 if there are any
+            # errors left, so ignore that.
+            pass
+        errors = json.loads(self.check_call([
+            './node_modules/.bin/eslint', '.', '-f', 'json']))
+        disable = set()
+        for error in errors:
+            for message in error['messages']:
+                disable.add(message['ruleId'])
+
+        if disable:
+            eslint_cfg = utils.load_ordered_json('.eslintrc.json')
+            msg = 'The following rules are failing and were disabled:\n'
+
+            if 'rules' not in eslint_cfg:
+                eslint_cfg['rules'] = OrderedDict()
+            for rule in sorted(disable):
+                eslint_cfg['rules'][rule] = 'off'
+                msg += '* ' + rule + '\n'
+            msg += '\n'
+            utils.save_pretty_json(eslint_cfg, '.eslintrc.json')
+            update.reason = msg
 
     def commit(self, files: list, msg: str):
         f = tempfile.NamedTemporaryFile(delete=False)
