@@ -50,7 +50,6 @@ class Pusher(shell.ShellMixin):
         return self.changed_files().issubset(AUTO_APPROVE_FILES)
 
     def git_push(self, repo: str, hashtags: list, plus2=False, push=False):
-        # TODO: add ssh remote
         self.check_call([
             'git', 'remote', 'add', 'ssh',
             utils.gerrit_url(repo, GERRIT_USER, ssh=True)
