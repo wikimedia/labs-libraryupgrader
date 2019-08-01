@@ -98,6 +98,12 @@ class Gruntfile:
         self.has_comma[section] = base.group(2)
         return self._inner_parse(base.group(1).splitlines()[1:])
 
+    def remove_section(self, section: str):
+        self.text = self.text.replace('\n' + self._find(section).group(0), '')
+        self.text = self.text.replace(
+            "\tgrunt.loadNpmTasks( 'grunt-%s' );\n" % section, ''
+        )
+
     def _normalize(self, inp: str) -> str:
         if inp.endswith(','):
             inp = inp[:-1]
@@ -153,6 +159,15 @@ class Gruntfile:
 
         return data
 
+    def _find_tasks(self):
+        return re.search(r"registerTask\( '(lint|test)', \[ (.*?) \] \);", self.text)
+
+    def tasks(self) -> list:
+        return ast.literal_eval('[' + self._find_tasks().group(2) + ']')
+
+    def set_tasks(self, new_tasks: list):
+        self.text = self.text.replace(self._find_tasks().group(2), str(new_tasks)[1:-1])
+
 
 def check_everything():
     files = glob.glob('/home/km/gerrit/mediawiki/core/extensions/*/Gruntfile.js')
@@ -163,6 +178,7 @@ def check_everything():
         gf = Gruntfile(fname)
         if 'grunt-eslint' in gf.text:
             print(fname)
+            gf.tasks()
             original = gf.text
             data = gf.parse_section('eslint')
             assert data.get('all') or data.get('shared')

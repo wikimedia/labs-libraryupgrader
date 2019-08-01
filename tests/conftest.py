@@ -38,6 +38,12 @@ class Tempfs:
     def json_contents(self, filename):
         return json.loads(self.contents(filename))
 
+    def fixture(self, test, filename):
+        return self.contents(os.path.join(
+            os.path.dirname(__file__),
+            'fixtures', test, filename
+        ))
+
     def enter(self):
         os.chdir(self.tmpdir.name)
 

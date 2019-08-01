@@ -40,6 +40,9 @@ class PackageJson:
 
         raise RuntimeError('Unable to set version for %s to %s' % (package, version))
 
+    def remove_package(self, package):
+        del self.data['devDependencies'][package]
+
     def save(self):
         utils.save_pretty_json(self.data, self.fname)
 

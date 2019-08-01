@@ -16,7 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import json
-import os
 import pytest
 
 from libup.ng import LibraryUpgrader
@@ -161,13 +160,12 @@ def test_fix_composer_fix(tempfs, scripts, expected):
 
 
 def test_fix_eslint_config(tempfs):
-    __dir__ = os.path.dirname(__file__)
-    with open(os.path.join(__dir__, 'ng_Gruntfile.js.before')) as f:
-        tempfs.create_file('Gruntfile.js', contents=f.read())
+    tempfs.create_file('Gruntfile.js',
+                       contents=tempfs.fixture('ng', 'Gruntfile.js.before'))
     libup = LibraryUpgrader()
     libup.fix_eslint_config()
-    with open(os.path.join(__dir__, 'ng_Gruntfile.js.expected')) as f:
-        assert tempfs.contents('Gruntfile.js') == f.read()
+    assert tempfs.contents('Gruntfile.js') == \
+        tempfs.fixture('ng', 'Gruntfile.js.expected')
 
 
 def test_indent():

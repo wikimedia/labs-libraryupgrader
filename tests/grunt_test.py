@@ -18,51 +18,11 @@ import pytest
 
 from libup import grunt
 
-# This variable is indented with spaces to please flake8, but replaced
-# at the very bottom. Sigh.
-GRUNTFILE = """/* eslint-env node */
-module.exports = function ( grunt ) {
-    grunt.loadNpmTasks( 'grunt-jsonlint' );
-    grunt.loadNpmTasks( 'grunt-eslint' );
-    grunt.loadNpmTasks( 'grunt-banana-checker' );
-    grunt.loadNpmTasks( 'grunt-stylelint' );
-
-    grunt.initConfig( {
-        banana: {
-            all: [
-                'i18n/'
-            ]
-        },
-        eslint: {
-            all: '.',
-            options: {
-                cache: true,
-                reportUnusedDisableDirectives: true
-            }
-        },
-        jsonlint: {
-            all: [
-                '**/*.json',
-                '!node_modules/**',
-                '!vendor/**'
-            ]
-        },
-        stylelint: {
-            all: [
-                '**/*.css',
-                '!node_modules/**',
-                '!vendor/**'
-            ]
-        }
-    } );
-
-    grunt.registerTask( 'test', [ 'jsonlint', 'banana', 'eslint', 'stylelint' ] );
-};
-""".replace('    ', '\t')
-
 
 def test_gruntfile(tempfs):
-    tempfs.create_file('Gruntfile.js', contents=GRUNTFILE)
+    original = tempfs.fixture('grunt', 'Gruntfile.js')
+    tempfs.create_file('Gruntfile.js',
+                       contents=original)
     gf = grunt.Gruntfile()
     eslint = gf.parse_section('eslint')
     assert eslint == {
@@ -76,9 +36,23 @@ def test_gruntfile(tempfs):
     assert stylelint == {
         'all': ['**/*.css', '!node_modules/**', '!vendor/**'],
     }
+    tasks = gf.tasks()
+    assert tasks == ['jsonlint', 'banana', 'eslint', 'stylelint']
     # Rebuild/roundtrip
     gf.set_section('eslint', eslint)
     gf.set_section('stylelint', stylelint)
-    assert gf.text == GRUNTFILE
+    gf.set_tasks(tasks)
+    assert original == gf.text
     with pytest.raises(grunt.NoSuchSection):
         gf.parse_section('doesnotexist')
+
+
+def test_remove_section(tempfs):
+    tempfs.create_file('Gruntfile.js',
+                       contents=tempfs.fixture('grunt', 'Gruntfile.js'))
+    gf = grunt.Gruntfile()
+    gf.remove_section('jsonlint')
+    tasks = gf.tasks()
+    tasks.remove('jsonlint')
+    gf.set_tasks(tasks)
+    assert tempfs.fixture('grunt', 'Gruntfile.js-no-jsonlint') == gf.text
