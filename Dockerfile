@@ -29,10 +29,10 @@ RUN /venv/bin/pip install pipenv
 RUN mkdir -p /venv/src/
 COPY Pipfile /venv/src/
 COPY Pipfile.lock /venv/src/
+RUN cd /venv/src && /venv/bin/pipenv install --deploy
 COPY setup.py /venv/src/
 COPY ./libup /venv/src/libup
-RUN cd /venv/src && /venv/bin/pipenv install --deploy \
-    && /venv/bin/pipenv run python setup.py install
+RUN cd /venv/src && /venv/bin/pipenv run python setup.py install
 ENV COMPOSER_PROCESS_TIMEOUT 1800
 # Shared cache
 ENV NPM_CONFIG_CACHE=/cache
