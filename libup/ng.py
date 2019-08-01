@@ -573,13 +573,13 @@ class LibraryUpgrader(shell.ShellMixin):
         return self.check_call(['git', 'format-patch', 'HEAD~1', '--stdout'])
 
     def run(self, repo, output):
-        self.clone(repo)
-        self.is_canary = repo in CANARIES
         self.output = SaveDict({
             'repo': repo,
-            'sha1': self.sha1(),
             'log': [],
         }, fname=output)
+        self.clone(repo)
+        self.is_canary = repo in CANARIES
+        self.output['sha1'] = self.sha1()
 
         # Collect current dependencies
         self.output['npm-deps'] = self.npm_deps()
@@ -650,7 +650,12 @@ def main():
     parser.add_argument('output', help='Path to output results to')
     args = parser.parse_args()
     libup = LibraryUpgrader()
-    libup.run(args.repo, args.output)
+    try:
+        libup.run(args.repo, args.output)
+    except:  # noqa
+        # Make sure we log all exceptions that bubble up
+        libup.log(traceback.format_exc())
+        raise
 
 
 if __name__ == '__main__':
