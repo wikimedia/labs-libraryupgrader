@@ -18,7 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import os
 import pytest
-import re
 
 from libup.ng import LibraryUpgrader
 
@@ -183,9 +182,9 @@ baz
  baz"""
 
 
-@pytest.mark.skip
-def test_sha1():
-    # Note: integration test, relies on this being a git checkout
+def test_sha1(mocker):
     libup = LibraryUpgrader()
-    sha1 = libup.sha1()
-    assert re.match(r'^[0-9a-f]{40}$', sha1) is not None
+    check_call = mocker.patch.object(libup, 'check_call')
+    check_call.return_value = \
+        '44560cc7288485f23988bf2e35cc20518f37b2ee refs/remotes/origin/HEAD'
+    assert '44560cc7288485f23988bf2e35cc20518f37b2ee' == libup.sha1()
