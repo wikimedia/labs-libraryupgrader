@@ -494,24 +494,28 @@ class LibraryUpgrader(shell.ShellMixin):
                     (self.is_canary or data.check_canaries(lib.get_latest())):
                 # Upgrade!
                 new.set_version(lib.name, lib.latest_version())
-                updates.append(Update(
+                update = Update(
                     'npm', lib.name,
                     prior.get_version(lib.name),
                     lib.latest_version()
-                ))
+                )
+                self.log_update(update)
+                updates.append(update)
+                self.updates.append(update)
         new.save()
+        if not updates:
+            return
+        self.check_call(['npm', 'install'])
+        hooks = {}
 
         for update in updates:
-            self.log_update(update)
-            self.updates.append(update)
+            if update.name in hooks:
+                # Pass the Update to the hook so
+                # they can adjust reason, etc.
+                hooks[update.name](update)
 
-        # TODO support upgrade hooks for e.g. eslint
-        if updates:
-            # Update lockfile
-            self.check_call(['npm', 'install'])
-            # Then test
-            self.npm_test()
-            # TODO: if this fails, support rollback?
+        # TODO: support rollback if this fails
+        self.npm_test()
 
     def commit(self, files: list, msg: str):
         f = tempfile.NamedTemporaryFile(delete=False)
