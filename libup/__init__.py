@@ -46,6 +46,7 @@ GIT_NAME = 'libraryupgrader'
 GIT_EMAIL = 'tools.libraryupgrader@tools.wmflabs.org'
 PACKAGIST_MIRROR = 'https://repo.packagist.org'
 SSH_AUTH_SOCK = '/tmp/ssh-agent.socket'
+PHP_SECURITY_CHECK = 'https://php-security-checker.wmflabs.org/check_lock'
 
 
 session = requests.Session()

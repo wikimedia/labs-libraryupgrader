@@ -29,7 +29,7 @@ import traceback
 from typing import List
 from xml.etree import ElementTree
 
-from . import CANARIES, gerrit, grunt, library, shell, utils
+from . import CANARIES, PHP_SECURITY_CHECK, gerrit, grunt, library, session, shell, utils
 from .collections import SaveDict
 from .data import Data
 from .files import ComposerJson, PackageJson, PackageLockJson
@@ -89,6 +89,10 @@ class LibraryUpgrader(shell.ShellMixin):
                         f.write(ignore)
             self.msg_fixes.append('Committed package-lock.json (T179229) too.')
 
+    def ensure_composer_lock(self):
+        if not os.path.exists('composer.lock'):
+            self.check_call(['composer', 'install'])
+
     def npm_deps(self):
         if not self.has_npm:
             return None
@@ -127,6 +131,16 @@ class LibraryUpgrader(shell.ShellMixin):
             except json.decoder.JSONDecodeError:
                 self.log('Error, invalid JSON from npm audit, skipping')
                 return {'error': e.output.decode()}
+
+    def composer_audit(self):
+        if not self.has_composer:
+            return {}
+        self.ensure_composer_lock()
+        req = session.post(PHP_SECURITY_CHECK,
+                           files={'lock': open('composer.lock', 'rb')},
+                           headers={'Accept': 'application/json'})
+        req.raise_for_status()
+        return req.json()
 
     def npm_audit_fix(self, audit: dict):
         if not self.has_npm or not audit:
@@ -679,6 +693,7 @@ class LibraryUpgrader(shell.ShellMixin):
 
         # npm audit
         self.output['npm-audit'] = self.npm_audit()
+        self.output['composer-audit'] = self.composer_audit()
 
         self.output['open-changes'] = gerrit.query_changes(
             repo=repo, status='open', topic='bump-dev-deps'
