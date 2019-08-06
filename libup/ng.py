@@ -512,7 +512,8 @@ class LibraryUpgrader(shell.ShellMixin):
             return
         self.check_call(['npm', 'install'])
         hooks = {
-            'eslint-config-wikimedia': self._handle_eslint
+            'eslint-config-wikimedia': self._handle_eslint,
+            'stylelint-config-wikimedia': self._handle_stylelint,
         }
 
         for update in updates:
@@ -523,6 +524,46 @@ class LibraryUpgrader(shell.ShellMixin):
 
         # TODO: support rollback if this fails
         self.npm_test()
+
+    def _handle_stylelint(self, update: Update):
+        try:
+            self.check_call(['./node_modules/.bin/grunt', 'stylelint'])
+            # Didn't fail, all good
+            return
+        except subprocess.CalledProcessError:
+            pass
+        # TODO: Support autofix once stylelint improves it
+        gf = grunt.Gruntfile()
+        try:
+            stylelint = gf.parse_section('stylelint')
+        except grunt.NoSuchSection:
+            # ???
+            return
+        except:  # noqa
+            # Some bug with the parser
+            tb = traceback.format_exc()
+            self.log(tb)
+            return
+        patterns = [pattern for pattern in stylelint['src'] if not pattern.startswith('!')]
+        errors = json.loads(self.check_call(['./node_modules/.bin/stylelint'] + patterns + [
+            '-f', 'json'
+        ], ignore_returncode=True))
+        disable = set()
+        for file in errors:
+            for warning in file['warnings']:
+                disable.add(warning['rule'])
+
+        if disable:
+            stylelint_cfg = utils.load_ordered_json('.stylelintrc.json')
+            msg = 'The following rules are failing and were disabled:\n'
+            if 'rules' not in stylelint_cfg:
+                stylelint_cfg['rules'] = OrderedDict()
+            for rule in sorted(disable):
+                stylelint_cfg['rules'][rule] = None
+                msg += '* ' + rule + '\n'
+            msg += '\n'
+            utils.save_pretty_json(stylelint_cfg, '.stylelintrc.json')
+            update.reason = msg
 
     def _handle_eslint(self, update: Update):
         try:
