@@ -58,7 +58,7 @@ class Data:
     def get_deps(self, info) -> Dict[str, Dict[str, List[Library]]]:
         deps = defaultdict(lambda: defaultdict(list))  # type: Dict[str, Dict[str, List[Library]]]
         for manager in MANAGERS:
-            if info['%s-deps' % manager]:
+            if info.get('%s-deps' % manager):
                 minfo = info['%s-deps' % manager]
                 for type_ in TYPES:
                     if minfo[type_]:
