@@ -1,8 +1,8 @@
-FROM debian:stretch
+FROM docker-registry.wikimedia.org/wikimedia-stretch
 ENV LANG C.UTF-8
-COPY files/backports.list /etc/apt/sources.list.d/backports.list
-RUN apt-get update && apt-get install -y nodejs -t stretch-backports && \
-    apt-get install -y composer git ssh \
+COPY files/node10.list /etc/apt/sources.list.d/node10.list
+RUN apt-get update && \
+    apt-get install -y composer nodejs git ssh \
     ruby ruby2.3 ruby2.3-dev rubygems-integration \
     python build-essential pkg-config \
     php-ast php-xml php-zip php-gd php-gmp php-mbstring php-curl \
