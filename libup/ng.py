@@ -302,20 +302,25 @@ class LibraryUpgrader(shell.ShellMixin):
         if 'options' not in data:
             data['options'] = OrderedDict()
             data.move_to_end('options', last=False)
+        set_options_cache = False
         if 'cache' not in data['options']:
             data['options']['cache'] = True
-            # TODO: implement abstraction for .gitignore
-            if os.path.exists('.gitignore'):
-                with open('.gitignore') as f:
-                    gitignore = f.read()
-                if not gitignore.endswith('\n'):
-                    gitignore += '\n'
-                if '.eslintcache' not in gitignore:
-                    gitignore += '/.eslintcache\n'
-                with open('.gitignore', 'w') as f:
-                    f.write(gitignore)
-            changes = True
             self.msg_fixes.append('Enable eslint caching.')
+            changes = True
+            set_options_cache = True
+        if data['options']['cache'] and os.path.exists('.gitignore'):
+            # TODO: implement abstraction for .gitignore
+            with open('.gitignore') as f:
+                gitignore = f.read()
+            if not gitignore.endswith('\n'):
+                gitignore += '\n'
+            if '.eslintcache' not in gitignore:
+                gitignore += '/.eslintcache\n'
+            with open('.gitignore', 'w') as f:
+                f.write(gitignore)
+            if not set_options_cache:
+                self.msg_fixes.append('Added .eslintcache to .gitignore.')
+            changes = True
         if 'reportUnusedDisableDirectives' not in data['options']:
             data['options']['reportUnusedDisableDirectives'] = True
             self.msg_fixes.append('Enable eslint\'s reportUnusedDisableDirectives.')
