@@ -22,11 +22,9 @@ from libup import utils
 
 def test_gerrit_url():
     assert utils.gerrit_url('repo/name') \
-        == 'https://gerrit.wikimedia.org/r/repo/name.git'
+        == 'https://gerrit-replica.wikimedia.org/r/repo/name.git'
     assert utils.gerrit_url('repo/name', user='foo') \
-        == 'https://foo@gerrit.wikimedia.org/r/repo/name.git'
-    assert utils.gerrit_url('repo/name', user='foo', pw='bar!!+/') \
-        == 'https://foo:bar%21%21%2B%2F@gerrit.wikimedia.org/r/repo/name.git'
+        == 'https://foo@gerrit-replica.wikimedia.org/r/repo/name.git'
     assert utils.gerrit_url('repo/name', user='foo', ssh=True) \
         == 'ssh://foo@gerrit.wikimedia.org:29418/repo/name'
 

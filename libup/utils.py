@@ -19,7 +19,6 @@ from collections import OrderedDict
 from contextlib import contextmanager
 import json
 import os
-import urllib.parse
 
 
 @contextmanager
@@ -32,19 +31,15 @@ def cd(dirname):
         os.chdir(cwd)
 
 
-def gerrit_url(repo: str, user=None, pw=None, ssh=False) -> str:
-    host = ''
-    if user:
-        if pw:
-            host = user + ':' + urllib.parse.quote_plus(pw) + '@'
-        else:
-            host = user + '@'
-
-    host += 'gerrit.wikimedia.org'
-    if ssh:
-        return 'ssh://%s:29418/%s' % (host, repo)
+def gerrit_url(repo: str, user=None, ssh=False) -> str:
+    if user is not None:
+        prefix = user + '@'
     else:
-        return 'https://%s/r/%s.git' % (host, repo)
+        prefix = ''
+    if ssh:
+        return 'ssh://%sgerrit.wikimedia.org:29418/%s' % (prefix, repo)
+    else:
+        return 'https://%sgerrit-replica.wikimedia.org/r/%s.git' % (prefix, repo)
 
 
 def load_ordered_json(fname) -> OrderedDict:
