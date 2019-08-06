@@ -222,7 +222,7 @@ def vulns_npm():
     advisories = {}
     affected = defaultdict(dict)
     for repo, info in data.items():
-        if not info['npm-audit']:
+        if not info.get('npm-audit'):
             continue
         if 'error' in info['npm-audit']:
             # TODO: Use proper logging
