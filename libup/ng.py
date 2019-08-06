@@ -527,7 +527,7 @@ class LibraryUpgrader(shell.ShellMixin):
             # errors left, so ignore that.
             pass
         errors = json.loads(self.check_call([
-            './node_modules/.bin/eslint', '.', '-f', 'json']))
+            './node_modules/.bin/eslint', '.', '-f', 'json'], ignore_returncode=True))
         disable = set()
         for error in errors:
             for message in error['messages']:

@@ -22,7 +22,8 @@ from . import GIT_EMAIL, GIT_NAME, utils
 
 
 class ShellMixin:
-    def check_call(self, args: list, stdin='', env=None) -> str:
+    def check_call(self, args: list, stdin='', env=None,
+                   ignore_returncode=False) -> str:
         debug = self.log if hasattr(self, 'log') else print
         debug('$ ' + ' '.join(args))
         res = subprocess.run(
@@ -33,7 +34,8 @@ class ShellMixin:
             env=env,
         )
         debug(res.stdout.decode())
-        res.check_returncode()
+        if not ignore_returncode:
+            res.check_returncode()
         return res.stdout.decode()
 
     def clone(self, repo):

@@ -31,6 +31,8 @@ def test_check_call():
     # errors
     with pytest.raises(subprocess.CalledProcessError):
         shell.check_call(['false'])
+    # no exception raised
+    assert '' == shell.check_call(['false'], ignore_returncode=True)
     # stdin
     assert 'test' == shell.check_call(['tee'], stdin='test')
     # env
