@@ -18,8 +18,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import argparse
+import json
+import os
 
 from . import CANARIES, DATA_ROOT, date_log_dir, mw
+from .data import Data
 from .tasks import run_check
 
 
@@ -29,18 +32,30 @@ def main():
     parser.add_argument('repo', nargs='?', help='Only queue this repository (optional)')
     args = parser.parse_args()
     count = 0
+    everything = None
     if args.repo == 'canaries':
         gen = CANARIES
     elif args.repo:
         gen = [args.repo]
     else:
-        gen = mw.get_everything()
+        gen = list(mw.get_everything())
+        everything = gen
     for repo in gen:
-        print(repo)
+        print('Queuing %s' % repo)
         run_check.delay(repo, DATA_ROOT, date_log_dir())
         count += 1
         if args.limit and count >= args.limit:
             break
+
+    if everything is None:
+        everything = list(mw.get_everything())
+    data = Data()
+    for path in data.find_files():
+        with open(path) as f:
+            jdata = json.load(f)
+        if jdata['repo'] not in everything:
+            print('Removing %s' % path)
+            os.unlink(path)
 
 
 if __name__ == '__main__':
