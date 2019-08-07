@@ -44,18 +44,16 @@ class Tempfs:
             'fixtures', test, filename
         ))
 
-    def enter(self):
+    def __enter__(self):
         os.chdir(self.tmpdir.name)
+        return self
 
-    def exit(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         os.chdir(self.cwd)
         self.tmpdir.cleanup()
 
 
 @pytest.fixture()
 def tempfs():
-    fs = Tempfs()
-    fs.enter()
-    yield fs
-
-    fs.exit()
+    with Tempfs() as fs:
+        yield fs
