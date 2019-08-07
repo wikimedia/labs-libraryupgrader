@@ -558,8 +558,10 @@ class LibraryUpgrader(shell.ShellMixin):
             tb = traceback.format_exc()
             self.log(tb)
             return
-        patterns = [pattern for pattern in stylelint['src'] if not pattern.startswith('!')]
-        errors = json.loads(self.check_call(['./node_modules/.bin/stylelint'] + patterns + [
+        # TODO: whaaaat. Why no consistency??
+        gf_key = 'all' if 'all' in stylelint else 'src'
+        files = grunt.expand_glob(stylelint[gf_key])
+        errors = json.loads(self.check_call(['./node_modules/.bin/stylelint'] + files + [
             '-f', 'json'
         ], ignore_returncode=True))
         disable = set()

@@ -169,7 +169,20 @@ class Gruntfile:
         self.text = self.text.replace(self._find_tasks().group(2), str(new_tasks)[1:-1])
 
 
-def check_everything():
+def expand_glob(paths):
+    """see https://gruntjs.com/api/grunt.file#grunt.file.expand"""
+    include = []
+    exclude = []
+    for path in paths:
+        if path.startswith('!'):
+            exclude.append(path)
+        else:
+            include.append(path)
+    exclude_paths = set(glob.iglob(exclude))
+    return [path for path in glob.glob(include) if path not in exclude_paths]
+
+
+def __check_everything():
     files = glob.glob('/home/km/gerrit/mediawiki/core/extensions/*/Gruntfile.js')
     for fname in sorted(files):
         if '/Popups/' in fname:
@@ -190,4 +203,4 @@ def check_everything():
 
 
 if __name__ == '__main__':
-    check_everything()
+    __check_everything()
