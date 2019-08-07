@@ -17,8 +17,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from collections import OrderedDict
 from contextlib import contextmanager
+from datetime import datetime
 import json
 import os
+import stat
+
+from . import LOGS
 
 
 @contextmanager
@@ -51,3 +55,16 @@ def save_pretty_json(data: dict, fname: str):
     with open(fname, 'w') as f:
         out = json.dumps(data, indent='\t', ensure_ascii=False)
         f.write(out + '\n')
+
+
+def date_log_dir():
+    log_dir = os.path.join(LOGS, datetime.utcnow().strftime('%Y-%m-%d'))
+    if not os.path.isdir(log_dir):
+        os.mkdir(log_dir)
+        os.chmod(
+            log_dir,
+            stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
+            stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
+            stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
+        )
+    return log_dir

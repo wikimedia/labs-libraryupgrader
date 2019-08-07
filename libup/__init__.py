@@ -15,10 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from datetime import datetime
 import os
 import requests
-import stat
 
 if os.path.exists('/srv/data'):
     DATA_ROOT = '/srv/data'
@@ -50,16 +48,3 @@ PHP_SECURITY_CHECK = 'https://php-security-checker.wmflabs.org/check_lock'
 
 
 session = requests.Session()
-
-
-def date_log_dir():
-    log_dir = os.path.join(LOGS, datetime.utcnow().strftime('%Y-%m-%d'))
-    if not os.path.isdir(log_dir):
-        os.mkdir(log_dir)
-        os.chmod(
-            log_dir,
-            stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
-            stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
-            stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
-        )
-    return log_dir

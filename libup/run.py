@@ -21,7 +21,7 @@ import argparse
 import json
 import os
 
-from . import CANARIES, DATA_ROOT, date_log_dir, mw
+from . import CANARIES, DATA_ROOT, mw, utils
 from .data import Data
 from .tasks import run_check
 
@@ -42,7 +42,7 @@ def main():
         everything = gen
     for repo in gen:
         print('Queuing %s' % repo)
-        run_check.delay(repo, DATA_ROOT, date_log_dir())
+        run_check.delay(repo, DATA_ROOT, utils.date_log_dir())
         count += 1
         if args.limit and count >= args.limit:
             break
