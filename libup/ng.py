@@ -580,18 +580,18 @@ class LibraryUpgrader(shell.ShellMixin):
             update.reason = msg
 
     def _handle_eslint(self, update: Update):
-        try:
-            self.check_call(['./node_modules/.bin/eslint', '.', '--fix'])
-        except subprocess.CalledProcessError:
-            # eslint exits with status code of 1 if there are any
-            # errors left, so ignore that.
-            pass
+        # eslint exits with status code of 1 if there are any
+        # errors left, so ignore that. Just try and fix as much
+        # as possible
+        self.check_call(['./node_modules/.bin/eslint', '.', '--fix'],
+                        ignore_returncode=True)
         errors = json.loads(self.check_call([
             './node_modules/.bin/eslint', '.', '-f', 'json'], ignore_returncode=True))
         disable = set()
         for error in errors:
             for message in error['messages']:
-                disable.add(message['ruleId'])
+                if message['ruleId']:
+                    disable.add(message['ruleId'])
 
         if disable:
             eslint_cfg = utils.load_ordered_json('.eslintrc.json')
@@ -600,7 +600,7 @@ class LibraryUpgrader(shell.ShellMixin):
             if 'rules' not in eslint_cfg:
                 eslint_cfg['rules'] = OrderedDict()
             for rule in sorted(disable):
-                eslint_cfg['rules'][rule] = 'off'
+                eslint_cfg['rules'][rule] = 'warn'
                 msg += '* ' + rule + '\n'
             msg += '\n'
             utils.save_pretty_json(eslint_cfg, '.eslintrc.json')
