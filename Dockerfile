@@ -2,7 +2,7 @@ FROM docker-registry.wikimedia.org/wikimedia-stretch
 ENV LANG C.UTF-8
 COPY files/node10.list /etc/apt/sources.list.d/node10.list
 RUN apt-get update && \
-    apt-get install -y composer nodejs git ssh \
+    apt-get install -y nodejs git ssh \
     ruby ruby2.3 ruby2.3-dev rubygems-integration \
     python build-essential pkg-config \
     php-ast php-xml php-zip php-gd php-gmp php-mbstring php-curl \
@@ -10,7 +10,11 @@ RUN apt-get update && \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 RUN git clone --depth 1 https://gerrit.wikimedia.org/r/p/integration/npm.git /srv/npm \
     && rm -rf /srv/npm/.git \
-    && ln -s /srv/npm/bin/npm-cli.js /usr/bin/npm
+    && ln -s /srv/npm/bin/npm-cli.js /usr/bin/npm \
+    # TODO: Use packaged composer once Debian's #934104 is fixed.
+    && git clone --depth 1 https://gerrit.wikimedia.org/r/p/integration/composer.git /srv/composer \
+    && rm -rf /srv/composer/.git \
+    && ln -s /srv/composer/vendor/bin/composer /usr/bin/composer
 # TODO move grr into venv
 RUN pip3 install grr
 RUN gem install --no-rdoc --no-ri jsduck
