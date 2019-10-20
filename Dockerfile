@@ -1,11 +1,13 @@
 FROM docker-registry.wikimedia.org/wikimedia-stretch
 ENV LANG C.UTF-8
 COPY files/node10.list /etc/apt/sources.list.d/node10.list
+COPY files/php72.list /etc/apt/sources.list.d/php72.list
 RUN apt-get update && \
     apt-get install -y nodejs git ssh \
     ruby ruby2.3 ruby2.3-dev rubygems-integration \
     python build-essential pkg-config \
-    php-ast php-xml php-zip php-gd php-gmp php-mbstring php-curl \
+    php7.2-cli php-ast php7.2-xml php7.2-zip php7.2-gd \
+    php7.2-gmp php7.2-mbstring php7.2-curl \
     python3 python3-dev python3-pip python3-virtualenv \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 RUN git clone --depth 1 https://gerrit.wikimedia.org/r/p/integration/npm.git /srv/npm \
