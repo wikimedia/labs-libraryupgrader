@@ -58,6 +58,7 @@ OTHER_LIBRARIES = [
     'unicodejs',
     'utfnormal',
     'wikimedia/lucene-explain-parser',
+    'wikimedia/portals',
     'wikimedia/textcat',
 ]
 
