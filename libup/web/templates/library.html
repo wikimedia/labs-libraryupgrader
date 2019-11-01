@@ -5,7 +5,7 @@
 <p><a href="{{library.link}}">{{library.description()}}</a></p>
 <p>Latest version: <code>{{library.latest_version()}}</code></p>
 <p>
-    <a href="https://www.mediawiki.org/wiki/Libraryupgrader/Good_releases.json">Good/approved version(s)</a>:
+    <a href="https://gerrit.wikimedia.org/r/plugins/gitiles/labs/libraryupgrader/config/+/master/releases.json">Good/approved version(s)</a>:
     {% if library.safe_versions() %}
     {% for ver in library.safe_versions() %}
     <code>{{ver}}</code>,
