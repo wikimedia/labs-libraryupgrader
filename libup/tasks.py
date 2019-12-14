@@ -24,7 +24,7 @@ import subprocess
 import tempfile
 import traceback
 
-from . import CONFIG_REPO, DATA_ROOT, docker, push, utils, ssh
+from . import DATA_ROOT, docker, push, utils, ssh
 
 app = Celery('tasks', broker='amqp://localhost')
 
@@ -44,7 +44,6 @@ def run_check(repo: str, data_root: str, log_dir: str):
             mounts={
                 log_dir: '/out',
                 DATA_ROOT: '/srv/data:ro',
-                CONFIG_REPO: '/srv/config'
             },
             rm=True,
             extra_args=['libup-ng', repo, '/out/%s.json' % rand],

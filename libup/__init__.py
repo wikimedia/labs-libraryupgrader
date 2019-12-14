@@ -26,7 +26,11 @@ else:
 CACHE = os.path.join(DATA_ROOT, 'cache')
 LOGS = os.path.join(DATA_ROOT, 'logs')
 if os.path.exists('/srv/config'):
+    # have a pre-existing /srv/config
     CONFIG_REPO = '/srv/config'
+elif os.path.exists('/.dockerenv'):
+    # FIXME: HACK HACK for inside docker because permissions are hard
+    CONFIG_REPO = '/tmp/config'
 else:
     CONFIG_REPO = os.path.join(DATA_ROOT, 'config')
 RELEASES = os.path.join(CONFIG_REPO, 'releases.json')
