@@ -335,9 +335,13 @@ class LibraryUpgrader(shell.ShellMixin):
             if not set_options_cache:
                 self.msg_fixes.append('Added .eslintcache to .gitignore.')
             changes = True
-        if 'reportUnusedDisableDirectives' not in data['options']:
-            data['options']['reportUnusedDisableDirectives'] = True
-            self.msg_fixes.append('Enable eslint\'s reportUnusedDisableDirectives.')
+        pkg = PackageJson('package.json')
+        eslint_cfg = pkg.get_version('eslint-config-wikimedia')
+        if eslint_cfg and 'reportUnusedDisableDirectives' in data['options'] \
+                and data['options']['reportUnusedDisableDirectives'] \
+                and (eslint_cfg == '0.15.0' or library.is_greater_than('0.15.0', eslint_cfg)):
+            del data['options']['reportUnusedDisableDirectives']
+            self.msg_fixes.append('Removing manual reportUnusedDisableDirectives for eslint.')
             changes = True
 
         if changes:

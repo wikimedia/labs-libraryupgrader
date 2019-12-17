@@ -162,6 +162,14 @@ def test_fix_composer_fix(tempfs, scripts, expected):
 def test_fix_eslint_config(tempfs):
     tempfs.create_file('Gruntfile.js',
                        contents=tempfs.fixture('ng', 'Gruntfile.js.before'))
+    tempfs.create_file('package.json',
+                       contents="""
+{
+    "devDependencies": {
+        "eslint-config-wikimedia": "0.15.0"
+    }
+}
+""")
     libup = LibraryUpgrader()
     libup.fix_eslint_config()
     assert tempfs.contents('Gruntfile.js') == \

@@ -80,26 +80,30 @@ class Library:
         return self.is_safe_upgrade(self.latest_version())
 
     def is_newer(self) -> bool:
-        """if a newer version is available"""
-        # Try and detect some operators to see if the current is a constraint
-        # TODO: I don't think semver supports ^
-        if any(True for x in '^><=|' if x in self.version):
-            try:
-                # Split on | since semver doesn't support that
-                if any(
-                        semver.match(self.latest_version(), part)
-                        for part in self.version.split('|')
-                ):
-                    return True
-            except ValueError:
-                pass
-            return False
-        # Just do a safer/more basic semver comparison
+        return is_greater_than(self.version, self.latest_version())
+
+
+def is_greater_than(first, second) -> bool:
+    """if second > first"""
+    # Try and detect some operators to see if the current is a constraint
+    # TODO: I don't think semver supports ^
+    if any(True for x in '^><=|' if x in first):
         try:
-            return LooseVersion(self.latest_version()) > LooseVersion(self.version)
-        except TypeError:
-            # bug in distutils I think
-            return False
+            # Split on | since semver doesn't support that
+            if any(
+                    semver.match(second, part)
+                    for part in first.split('|')
+            ):
+                return True
+        except ValueError:
+            pass
+        return False
+    # Just do a safer/more basic semver comparison
+    try:
+        return LooseVersion(second) > LooseVersion(first)
+    except TypeError:
+        # bug in distutils I think
+        return False
 
 
 # FIXME Don't use functools/lru_cache
