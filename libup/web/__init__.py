@@ -76,7 +76,9 @@ def r(repo):
         patch=info.get('patch'),
         repo=repo,
         deps=deps,
-        logs=sorted(find_logs(repo))
+        # FIXME: find_logs() is way too slow
+        # logs=sorted(find_logs(repo))
+        logs=[]
     )
 
 
