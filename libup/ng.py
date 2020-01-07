@@ -248,29 +248,28 @@ class LibraryUpgrader(shell.ShellMixin):
         composerjson = ComposerJson('composer.json')
         if composerjson.get_version('mediawiki/mediawiki-codesniffer') is None:
             return
+        changes = False
         j = composerjson.data
-        added_fix = False
-        if 'fix' in j['scripts']:
-            if isinstance(j['scripts']['fix'], list):
-                if 'phpcbf' not in j['scripts']['fix']:
-                    j['scripts']['fix'].append('phpcbf')
-                    added_fix = True
-            elif j['scripts']['fix'] != 'phpcbf':
-                j['scripts']['fix'] = [
-                    j['scripts']['fix'],
-                    'phpcbf'
-                ]
-                added_fix = True
-        else:
-            j['scripts']['fix'] = ['phpcbf']
-            added_fix = True
+        if 'fix' not in j['scripts']:
+            j['scripts']['fix'] = []
+        elif not isinstance(j['scripts']['fix'], list):
+            # It's a str
+            j['scripts']['fix'] = [j['scripts']['fix']]
 
-        # TODO: resort "composer fix" so that phpcbf is last
+        if 'phpcbf' not in j['scripts']['fix']:
+            j['scripts']['fix'].append('phpcbf')
+            self.msg_fixes.append('Also added phpcbf to "composer fix" command.')
+            changes = True
+        elif j['scripts']['fix'][-1] != 'phpcbf':
+            # Make sure phpcbf is last
+            j['scripts']['fix'].remove('phpcbf')
+            j['scripts']['fix'].append('phpcbf')
+            self.msg_fixes.append('Also sorted "composer fix" command to run phpcbf last.')
+            changes = True
 
-        if added_fix:
+        if changes:
             composerjson.data = j
             composerjson.save()
-            self.msg_fixes.append('Also added phpcbf to "composer fix" command.')
 
     def fix_private_package_json(self, repo):
         if not repo.startswith(('mediawiki/extensions/', 'mediawiki/skins/')):

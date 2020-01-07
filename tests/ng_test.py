@@ -146,6 +146,7 @@ def test_root_eslintrc_real(tempfs):
     ({}, {'fix': ['phpcbf']}),
     ({'fix': ['first']}, {'fix': ['first', 'phpcbf']}),
     ({'fix': 'first'}, {'fix': ['first', 'phpcbf']}),
+    ({'fix': ['phpcbf', 'second']}, {'fix': ['second', 'phpcbf']}),
 ))
 def test_fix_composer_fix(tempfs, scripts, expected):
     tempfs.create_file('composer.json', contents=json.dumps({
