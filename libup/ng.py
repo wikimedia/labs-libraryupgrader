@@ -367,6 +367,35 @@ class LibraryUpgrader(shell.ShellMixin):
         if changes:
             pkg.save()
 
+    def fix_add_vendor_node_modules_to_gitignore(self):
+        """see T200620"""
+        # TODO: Provde an abstraction for .gitignore
+        if os.path.exists('.gitignore'):
+            with open('.gitignore') as f:
+                ignore = f.read()
+        else:
+            ignore = ''
+
+        changes = False
+
+        if self.has_composer:
+            if 'vendor' not in ignore:
+                ignore += '/vendor/\n'
+                changes = True
+                self.msg_fixes.append('.gitignore: Added vendor/ (T200620).')
+
+            # Note: Not always-ignoring composer.lock, as it's used in mediawiki/vendor.git
+
+        if self.has_npm:
+            if 'node_modules' not in ignore:
+                ignore += '/node_modules/\n'
+                changes = True
+                self.msg_fixes.append('.gitignore: Added node_modules/ (T200620).')
+
+        if changes:
+            with open('.gitignore', 'w') as f:
+                f.write(ignore)
+
     def sha1(self):
         return self.check_call(['git', 'show-ref', 'HEAD']).split(' ')[0]
 
@@ -762,6 +791,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_root_eslintrc()
         self.fix_eslint_config()
         self.fix_remove_eslint_stylelint_if_grunt()
+        self.fix_add_vendor_node_modules_to_gitignore()
 
         # Commit
         msg = self.build_message()

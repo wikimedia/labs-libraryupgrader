@@ -195,6 +195,17 @@ def test_fix_remove_eslint_stylelint_if_grunt(tempfs):
     assert 'stylelint' not in pkg['devDependencies']
 
 
+def test_fix_add_vendor_node_modules_to_gitignore(tempfs):
+    tempfs.create_file('package.json')
+    tempfs.create_file('composer.json')
+    libup = LibraryUpgrader()
+    libup.fix_add_vendor_node_modules_to_gitignore()
+    assert tempfs.contents('.gitignore') == '/vendor/\n/node_modules/\n'
+    tempfs.create_file('.gitignore', '/node_modules\n')
+    libup.fix_add_vendor_node_modules_to_gitignore()
+    assert tempfs.contents('.gitignore') == '/node_modules\n/vendor/\n'
+
+
 def test_indent():
     libup = LibraryUpgrader()
     assert libup._indent("""
