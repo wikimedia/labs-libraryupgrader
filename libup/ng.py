@@ -328,13 +328,15 @@ class LibraryUpgrader(shell.ShellMixin):
                 gitignore = f.read()
             if not gitignore.endswith('\n'):
                 gitignore += '\n'
+                # Don't set changes true just for this; wait for a real change.
             if '.eslintcache' not in gitignore:
                 gitignore += '/.eslintcache\n'
-            with open('.gitignore', 'w') as f:
-                f.write(gitignore)
-            if not set_options_cache:
-                self.msg_fixes.append('Added .eslintcache to .gitignore.')
-            changes = True
+                changes = True
+            if changes:
+                with open('.gitignore', 'w') as f:
+                    f.write(gitignore)
+                if not set_options_cache:
+                    self.msg_fixes.append('Added .eslintcache to .gitignore.')
         pkg = PackageJson('package.json')
         eslint_cfg = pkg.get_version('eslint-config-wikimedia')
         if eslint_cfg and 'reportUnusedDisableDirectives' in data['options'] \
