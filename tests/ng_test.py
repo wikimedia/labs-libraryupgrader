@@ -176,6 +176,25 @@ def test_fix_eslint_config(tempfs):
         tempfs.fixture('ng', 'Gruntfile.js.expected')
 
 
+def test_fix_remove_eslint_stylelint_if_grunt(tempfs):
+    tempfs.create_file('package.json',
+                       contents="""
+{
+    "devDependencies": {
+        "grunt-eslint": "0.0.0",
+        "eslint": "0.0.0",
+        "grunt-stylelint": "0.0.0",
+        "stylelint": "0.0.0"
+    }
+}
+""")
+    libup = LibraryUpgrader()
+    libup.fix_remove_eslint_stylelint_if_grunt()
+    pkg = tempfs.json_contents('package.json')
+    assert 'eslint' not in pkg['devDependencies']
+    assert 'stylelint' not in pkg['devDependencies']
+
+
 def test_indent():
     libup = LibraryUpgrader()
     assert libup._indent("""

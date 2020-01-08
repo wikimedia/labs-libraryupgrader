@@ -350,6 +350,23 @@ class LibraryUpgrader(shell.ShellMixin):
             gf.set_section('eslint', data)
             gf.save()
 
+    def fix_remove_eslint_stylelint_if_grunt(self):
+        """see T242145"""
+        pkg = PackageJson('package.json')
+        changes = False
+        if pkg.get_version('grunt-eslint') and pkg.get_version('eslint'):
+            pkg.remove_package('eslint')
+            changes = True
+            self.msg_fixes.append('Remove direct "eslint" dependency in favor of "grunt-eslint".')
+
+        if pkg.get_version('grunt-stylelint') and pkg.get_version('stylelint'):
+            pkg.remove_package('stylelint')
+            changes = True
+            self.msg_fixes.append('Remove direct "stylelint" dependency in favor of "grunt-stylelint".')
+
+        if changes:
+            pkg.save()
+
     def sha1(self):
         return self.check_call(['git', 'show-ref', 'HEAD']).split(' ')[0]
 
@@ -727,6 +744,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_private_package_json(repo)
         self.fix_root_eslintrc()
         self.fix_eslint_config()
+        self.fix_remove_eslint_stylelint_if_grunt()
 
         # Commit
         msg = self.build_message()
