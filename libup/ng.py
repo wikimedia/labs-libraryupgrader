@@ -608,10 +608,25 @@ class LibraryUpgrader(shell.ShellMixin):
         # eslint exits with status code of 1 if there are any
         # errors left, so ignore that. Just try and fix as much
         # as possible
-        self.check_call(['./node_modules/.bin/eslint', '.', '--fix'],
+        gf = grunt.Gruntfile()
+        try:
+            eslint = gf.parse_section('eslint')
+        except grunt.NoSuchSection:
+            # ???
+            return
+        except:  # noqa
+            # Some bug with the parser
+            tb = traceback.format_exc()
+            self.log(tb)
+            return
+        # TODO: whaaaat. Why no consistency??
+        gf_key = 'all' if 'all' in eslint else 'src'
+        files = grunt.expand_glob(eslint[gf_key])
+
+        self.check_call(['./node_modules/.bin/eslint'] + files + ['--fix'],
                         ignore_returncode=True)
         errors = json.loads(self.check_call([
-            './node_modules/.bin/eslint', '.', '-f', 'json'], ignore_returncode=True))
+            './node_modules/.bin/eslint'] + files + ['-f', 'json'], ignore_returncode=True))
         disable = set()
         for error in errors:
             for message in error['messages']:
