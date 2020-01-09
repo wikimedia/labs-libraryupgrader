@@ -615,7 +615,9 @@ class LibraryUpgrader(shell.ShellMixin):
         disable = set()
         for error in errors:
             for message in error['messages']:
-                if message['ruleId']:
+                # eslint severity: 1 = warning, 2 = error.
+                # We only care about errors.
+                if message['ruleId'] and message['severity'] > 1:
                     disable.add(message['ruleId'])
 
         if disable:
