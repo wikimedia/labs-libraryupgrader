@@ -28,6 +28,10 @@ class Tempfs:
 
     def create_file(self, filename, contents=''):
         """implement pyfakefs API"""
+        dirname = os.path.dirname(filename)
+        if dirname != '' and not os.path.exists(dirname):
+            # Autocreate directory
+            os.mkdir(dirname)
         with open(filename, 'w') as f:
             f.write(contents)
 

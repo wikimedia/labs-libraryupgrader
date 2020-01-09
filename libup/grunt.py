@@ -169,17 +169,45 @@ class Gruntfile:
         self.text = self.text.replace(self._find_tasks().group(2), str(new_tasks)[1:-1])
 
 
-def expand_glob(paths):
+def expand_braces(path: str) -> list:
+    """
+    fnmatch/glob doesn't support .js{,on} style globbing,
+    so we need to reimplement it!
+
+    see https://bugs.python.org/issue9584
+    """
+    paths = [path]
+    while any(['{' in path for path in paths]):
+        for path in paths:
+            if '{' not in path:
+                continue
+            search = re.search('{(.*?)}', path)
+            for part in search.group(1).split(','):
+                new = path.replace(search.group(0), part, 1)
+                paths.append(new)
+            paths.remove(path)
+
+    return paths
+
+
+def expand_glob(paths: list) -> list:
     """see https://gruntjs.com/api/grunt.file#grunt.file.expand"""
     include = []
     exclude = []
     for path in paths:
+        # We need to implement leading ! as exclude
         if path.startswith('!'):
-            exclude.append(path)
+            exclude.extend(expand_braces(path[1:]))
         else:
-            include.append(path)
-    exclude_paths = set(glob.iglob(exclude))
-    return [path for path in glob.glob(include) if path not in exclude_paths]
+            include.extend(expand_braces(path))
+    include_paths = set()
+    exclude_paths = set()
+    for ipath in include:
+        include_paths.update(set(glob.iglob(ipath, recursive=True)))
+    for epath in exclude:
+        exclude_paths.update(set(glob.iglob(epath, recursive=True)))
+
+    return [path for path in include_paths if path not in exclude_paths]
 
 
 def __check_everything():

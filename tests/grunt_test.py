@@ -56,3 +56,31 @@ def test_remove_section(tempfs):
     tasks.remove('jsonlint')
     gf.set_tasks(tasks)
     assert tempfs.fixture('grunt', 'Gruntfile.js-no-jsonlint') == gf.text
+
+
+def test_expand_braces():
+    assert [
+        'vendor/foo.js',
+        'vendor/foo.json',
+        'node_modules/foo.js',
+        'node_modules/foo.json',
+    ] == grunt.expand_braces('{node_modules,vendor}/foo.js{,on}')
+
+
+def test_expand_glob(tempfs):
+    paths = [
+        'foo.js',
+        'foo.json',
+        'i18n/foo.json',
+        'resources/foo.js',
+        'node_modules/foo.js',
+        'vendor/foo.json',
+    ]
+    for path in paths:
+        tempfs.create_file(path, contents='')
+    actual = grunt.expand_glob([
+        '**/*.js{,on}',
+        '!{node_modules,vendor}/**',
+    ])
+    assert ['foo.js', 'foo.json', 'i18n/foo.json', 'resources/foo.js'] \
+        == sorted(actual)
