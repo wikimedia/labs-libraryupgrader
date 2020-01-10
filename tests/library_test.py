@@ -69,3 +69,9 @@ def test_is_latest_safe(mocker):
 )
 def test_is_greater_than(first, second, expected):
     assert is_greater_than(first, second) is expected
+
+
+def test_version_parts_normalized():
+    """integration test to verify 0.4 -> 0.4.0"""
+    lib = Library('composer', 'jakub-onderka/php-console-highlighter', '0.4.0')
+    assert len(lib.latest_version().split('.')) == 3

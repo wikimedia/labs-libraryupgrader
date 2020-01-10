@@ -124,6 +124,10 @@ def _get_composer_metadata(package: str) -> dict:
         except semver.exceptions.ParseVersionError:
             # TODO: log these exceptions
             pass
+    parts = version.split('.')
+    if len(parts) == 2:
+        # see T242276
+        version += '.0'
     # print('Latest %s: %s' % (package, version))
     return {
         'latest': version,
