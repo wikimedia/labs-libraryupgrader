@@ -177,7 +177,7 @@ def test_fix_eslint_config(tempfs):
         tempfs.fixture('ng', 'Gruntfile.js.expected')
 
 
-def test_fix_remove_eslint_stylelint_if_grunt(tempfs):
+def test_fix_remove_eslint_stylelint_if_grunt(tempfs, mocker):
     tempfs.create_file('package.json',
                        contents="""
 {
@@ -190,6 +190,10 @@ def test_fix_remove_eslint_stylelint_if_grunt(tempfs):
 }
 """)
     libup = LibraryUpgrader()
+    # Disable shelling out/etc.
+    mocker.patch.object(libup, 'check_call')
+    mocker.patch('os.unlink')
+    mocker.patch('shutil.rmtree')
     libup.fix_remove_eslint_stylelint_if_grunt()
     pkg = tempfs.json_contents('package.json')
     assert 'eslint' not in pkg['devDependencies']

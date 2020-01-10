@@ -23,6 +23,7 @@ from collections import defaultdict, OrderedDict
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import traceback
@@ -351,6 +352,8 @@ class LibraryUpgrader(shell.ShellMixin):
 
     def fix_remove_eslint_stylelint_if_grunt(self):
         """see T242145"""
+        if not self.has_npm:
+            return
         pkg = PackageJson('package.json')
         changes = False
         if pkg.get_version('grunt-eslint') and pkg.get_version('eslint'):
@@ -365,6 +368,10 @@ class LibraryUpgrader(shell.ShellMixin):
 
         if changes:
             pkg.save()
+            # Regenerate package-lock.json super cleanly
+            os.unlink('package-lock.json')
+            shutil.rmtree('node_modules')
+            self.check_call(['npm', 'install'])
 
     def fix_add_vendor_node_modules_to_gitignore(self):
         """see T200620"""
