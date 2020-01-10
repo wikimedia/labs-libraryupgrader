@@ -29,6 +29,8 @@ AUTO_APPROVE_FILES = {
     'phpcs.xml',
     '.phpcs.xml',
     'phpcs.xml => .phpcs.xml',
+    '.eslintrc => .eslintrc.json',
+    '.stylelintrc => .stylelintrc.json',
     'CODE_OF_CONDUCT.md',
 }
 

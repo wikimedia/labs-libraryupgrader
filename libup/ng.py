@@ -243,6 +243,16 @@ class LibraryUpgrader(shell.ShellMixin):
             self.check_call(['git', 'mv', 'phpcs.xml', '.phpcs.xml'])
             self.msg_fixes.append('And moved phpcs.xml to .phpcs.xml (T177256).')
 
+    def fix_eslintrc_json_location(self):
+        if os.path.exists('.eslintrc') and not os.path.exists('.eslintrc.json'):
+            self.check_call(['git', 'mv', '.eslintrc', '.eslintrc.json'])
+            self.msg_fixes.append('Use json file extension for the eslint config file.')
+
+    def fix_stylelintrc_json_location(self):
+        if os.path.exists('.stylelintrc') and not os.path.exists('.stylelintrc.json'):
+            self.check_call(['git', 'mv', '.stylelintrc', '.stylelintrc.json'])
+            self.msg_fixes.append('Use json file extension for the stylelint config file.')
+
     def fix_composer_fix(self):
         if not self.has_composer:
             return
@@ -800,6 +810,8 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_phpcs_xml_location()
         self.fix_composer_fix()
         self.fix_private_package_json(repo)
+        self.fix_eslintrc_json_location()
+        self.fix_stylelintrc_json_location()
         self.fix_root_eslintrc()
         self.fix_eslint_config()
         self.fix_add_vendor_node_modules_to_gitignore()

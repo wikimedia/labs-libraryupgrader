@@ -102,6 +102,58 @@ def test_fix_phpcs_xml_location_exists(tempfs, mocker):
     assert libup.msg_fixes == []
 
 
+def test_fix_eslintrc_json_location(tempfs, mocker):
+    # No .eslintrc nor .eslintrc.json
+    libup = LibraryUpgrader()
+    check_call = mocker.patch.object(libup, 'check_call')
+    libup.fix_eslintrc_json_location()
+    check_call.assert_not_called()
+    assert libup.msg_fixes == []
+    # Now if only .eslintrc exists
+    tempfs.create_file('.eslintrc')
+    libup = LibraryUpgrader()
+    check_call = mocker.patch.object(libup, 'check_call')
+    libup.fix_eslintrc_json_location()
+    check_call.assert_called_once_with(['git', 'mv', '.eslintrc', '.eslintrc.json'])
+    assert libup.msg_fixes == ['Use json file extension for the eslint config file.']
+
+
+def test_fix_eslintrc_json_location_exists(tempfs, mocker):
+    # Now if a .eslintrc.json exists
+    tempfs.create_file('.eslintrc.json')
+    libup = LibraryUpgrader()
+    check_call = mocker.patch.object(libup, 'check_call')
+    libup.fix_eslintrc_json_location()
+    check_call.assert_not_called()
+    assert libup.msg_fixes == []
+
+
+def test_fix_stylelintrc_json_location(tempfs, mocker):
+    # No .stylelintrc nor .stylelintrc.json
+    libup = LibraryUpgrader()
+    check_call = mocker.patch.object(libup, 'check_call')
+    libup.fix_stylelintrc_json_location()
+    check_call.assert_not_called()
+    assert libup.msg_fixes == []
+    # Now if only .stylelintrc exists
+    tempfs.create_file('.stylelintrc')
+    libup = LibraryUpgrader()
+    check_call = mocker.patch.object(libup, 'check_call')
+    libup.fix_stylelintrc_json_location()
+    check_call.assert_called_once_with(['git', 'mv', '.stylelintrc', '.stylelintrc.json'])
+    assert libup.msg_fixes == ['Use json file extension for the stylelint config file.']
+
+
+def test_fix_stylelintrc_json_location_exists(tempfs, mocker):
+    # Now if a .stylelintrc.json exists
+    tempfs.create_file('.stylelintrc.json')
+    libup = LibraryUpgrader()
+    check_call = mocker.patch.object(libup, 'check_call')
+    libup.fix_stylelintrc_json_location()
+    check_call.assert_not_called()
+    assert libup.msg_fixes == []
+
+
 @pytest.mark.parametrize(
     'repo,pkg,expected',
     [
