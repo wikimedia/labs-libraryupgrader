@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 PIDFile=/run/gunicorn/pid
-User=www-data
-Group=www-data
+User=libup
+Group=libup
 RuntimeDirectory=gunicorn
 WorkingDirectory=/srv/libraryupgrader
 ExecStart=/home/libup/.poetry/bin/poetry run gunicorn --pid /run/gunicorn/pid   \
