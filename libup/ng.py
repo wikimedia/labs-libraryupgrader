@@ -369,8 +369,10 @@ class LibraryUpgrader(shell.ShellMixin):
         if changes:
             pkg.save()
             # Regenerate package-lock.json super cleanly
-            os.unlink('package-lock.json')
-            shutil.rmtree('node_modules')
+            if os.path.exists('package-lock.json'):
+                os.unlink('package-lock.json')
+            if os.path.isdir('node_modules'):
+                shutil.rmtree('node_modules')
             self.check_call(['npm', 'install'])
 
     def fix_add_vendor_node_modules_to_gitignore(self):
@@ -783,6 +785,10 @@ class LibraryUpgrader(shell.ShellMixin):
             self.npm_audit_fix(self.output['npm-audit'])
         # TODO: composer audit
 
+        # We need to do this first because it can cause problems
+        # with later eslint/stylelint upgrades
+        self.fix_remove_eslint_stylelint_if_grunt()
+
         # Try upgrades
         self.npm_upgrade(self.output)
         self.composer_upgrade(self.output)
@@ -796,7 +802,6 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_private_package_json(repo)
         self.fix_root_eslintrc()
         self.fix_eslint_config()
-        self.fix_remove_eslint_stylelint_if_grunt()
         self.fix_add_vendor_node_modules_to_gitignore()
 
         # Commit
