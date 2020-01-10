@@ -53,7 +53,7 @@ class Gruntfile:
             for key, val in data.items():
                 count += 1
                 exp = self._export(val, indent + '\t')
-                text += '%s%s: %s' % (indent, key, exp)
+                text += f'{indent}{key}: {exp}'
                 if count != len(data):
                     # Last item gets a comma
                     text += ','
@@ -68,7 +68,7 @@ class Gruntfile:
             if len(data) == 1:
                 return "[ '%s' ]" % data[0]
             elif len(data) == 2:
-                ret = "[ '%s', '%s' ]" % (data[0], data[1])
+                ret = "[ '{}', '{}' ]".format(data[0], data[1])
                 if len(ret) < 25:
                     return ret
                 # else fallthrough for a normal list

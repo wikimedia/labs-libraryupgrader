@@ -41,9 +41,9 @@ def gerrit_url(repo: str, user=None, ssh=False) -> str:
     else:
         prefix = ''
     if ssh:
-        return 'ssh://%sgerrit.wikimedia.org:29418/%s' % (prefix, repo)
+        return f'ssh://{prefix}gerrit.wikimedia.org:29418/{repo}'
     else:
-        return 'https://%sgerrit-replica.wikimedia.org/r/%s.git' % (prefix, repo)
+        return f'https://{prefix}gerrit-replica.wikimedia.org/r/{repo}.git'
 
 
 def load_ordered_json(fname) -> OrderedDict:

@@ -35,7 +35,7 @@ def run(name: str, env: dict, mounts=None, rm=False, entrypoint=None,
     """
     args = ['docker', 'run', '--name=' + name]
     for key, value in env.items():
-        args.extend(['--env', '%s=%s' % (key, value)])
+        args.extend(['--env', f'{key}={value}'])
     if rm:
         args.append('--rm')
     if entrypoint is not None:
@@ -45,7 +45,7 @@ def run(name: str, env: dict, mounts=None, rm=False, entrypoint=None,
     ])
     if mounts is not None:
         for outside, inside in mounts.items():
-            args.extend(['-v', '%s:%s' % (outside, inside)])
+            args.extend(['-v', f'{outside}:{inside}'])
     if background:
         args.append('-d')
     args.append(DOCKER_IMAGE)

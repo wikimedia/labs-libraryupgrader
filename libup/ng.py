@@ -37,7 +37,7 @@ from .files import ComposerJson, PackageJson, PackageLockJson
 from .update import Update
 
 RULE = '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">'
-RULE_NO_EXCLUDE = '<rule ref="(\./)?vendor/mediawiki/mediawiki-codesniffer/MediaWiki"( )?/>'
+RULE_NO_EXCLUDE = r'<rule ref="(\./)?vendor/mediawiki/mediawiki-codesniffer/MediaWiki"( )?/>'
 FIND_RULE = re.compile(
     '(' + re.escape(RULE) + '(.*?)' + re.escape('</rule>') +
     '|' + RULE_NO_EXCLUDE +
@@ -46,7 +46,7 @@ FIND_RULE = re.compile(
 )
 # Can have up to 2-4 number parts, and can't have any
 # text like dev-master or -next
-VALID_NPM_VERSION = re.compile('^(\d+?\.?){2,4}$')
+VALID_NPM_VERSION = re.compile(r'^(\d+?\.?){2,4}$')
 
 
 class LibraryUpgrader(shell.ShellMixin):
@@ -166,7 +166,7 @@ class LibraryUpgrader(shell.ShellMixin):
                     # must be valid too
                     if (not old_version or VALID_NPM_VERSION.match(old_version)) \
                             and not VALID_NPM_VERSION.match(current.get_version(pkg)):
-                        self.log('Error: %s version is not valid: %s' % (pkg, current.get_version(pkg)))
+                        self.log('Error: {} version is not valid: {}'.format(pkg, current.get_version(pkg)))
                         return
 
         current.save()
@@ -183,7 +183,7 @@ class LibraryUpgrader(shell.ShellMixin):
             if action['action'] != 'update':
                 continue
             reason = ''
-            resolves = set(r['id'] for r in action['resolves'])
+            resolves = {r['id'] for r in action['resolves']}
             for npm_id in sorted(resolves):
                 reason += '* https://npmjs.com/advisories/%s\n' % npm_id
                 advisory_info = audit['advisories'][str(npm_id)]
@@ -527,7 +527,7 @@ class LibraryUpgrader(shell.ShellMixin):
                     if i == 0:
                         text = text.replace(
                             RULE,
-                            RULE + '\n\t\t<exclude name="{}" />'.format(sniff)
+                            RULE + f'\n\t\t<exclude name="{sniff}" />'
                         )
                     else:
                         text = re.sub(
@@ -709,7 +709,7 @@ class LibraryUpgrader(shell.ShellMixin):
             return '[DNM] there are no updates'
         if len(self.updates) == 1:
             update = self.updates[0]
-            msg = 'build: Updating %s to %s\n' % (update.name, update.new)
+            msg = f'build: Updating {update.name} to {update.new}\n'
             if update.reason:
                 msg += '\n' + update.reason.strip() + '\n'
         else:
@@ -719,7 +719,7 @@ class LibraryUpgrader(shell.ShellMixin):
                 if len(list(by_manager)) == 1:
                     msg = 'build: Updating %s dependencies\n\n' % self.updates[0].manager
                     for update in self.updates:
-                        msg += '* %s: %s → %s\n' % (update.name, update.old, update.new)
+                        msg += f'* {update.name}: {update.old} → {update.new}\n'
                         if update.reason:
                             msg += self._indent(update.reason, by='  ') + '\n'
                 else:
@@ -727,7 +727,7 @@ class LibraryUpgrader(shell.ShellMixin):
                     for manager, updates in sorted(by_manager.items()):
                         msg += '%s:\n' % manager
                         for update in updates:
-                            msg += '* %s: %s → %s\n' % (update.name, update.old, update.new)
+                            msg += f'* {update.name}: {update.old} → {update.new}\n'
                             if update.reason:
                                 msg += self._indent(update.reason, by='  ') + '\n'
                         msg += '\n'

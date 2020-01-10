@@ -38,7 +38,7 @@ class PackageJson:
             self.data['devDependencies'][package] = version
             return
 
-        raise RuntimeError('Unable to set version for %s to %s' % (package, version))
+        raise RuntimeError(f'Unable to set version for {package} to {version}')
 
     def remove_package(self, package):
         del self.data['devDependencies'][package]
@@ -92,7 +92,7 @@ class ComposerJson:
                 self.data['extra'][suffix] = version
                 return
 
-        raise RuntimeError('Unable to set version for %s to %s' % (package, version))
+        raise RuntimeError(f'Unable to set version for {package} to {version}')
 
     def save(self):
         utils.save_pretty_json(self.data, self.fname)

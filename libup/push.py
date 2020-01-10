@@ -85,7 +85,7 @@ class Pusher(shell.ShellMixin):
         for upd in updates:
             # We use a ; instead of : because the latter can't be used in git
             # commands apparently.
-            hashtags.append('%s;%s=%s' % (upd.manager[0], upd.name, upd.new))
+            hashtags.append('{};{}={}'.format(upd.manager[0], upd.name, upd.new))
         hashtags.extend(info['cves'])
         plus2 = self.can_autoapprove()
         # Flood control, don't overload zuul...

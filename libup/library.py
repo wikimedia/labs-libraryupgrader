@@ -109,7 +109,7 @@ def is_greater_than(first, second) -> bool:
 # FIXME Don't use functools/lru_cache
 @functools.lru_cache()
 def _get_composer_metadata(package: str) -> dict:
-    r = session.get('%s/packages/%s.json' % (PACKAGIST_MIRROR, package))
+    r = session.get(f'{PACKAGIST_MIRROR}/packages/{package}.json')
     try:
         resp = r.json()['package']
     except (KeyError, json.decoder.JSONDecodeError):
