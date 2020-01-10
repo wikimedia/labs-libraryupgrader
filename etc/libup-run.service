@@ -6,7 +6,5 @@ After=rabbitmq-server.target
 User=libup
 Group=libup
 WorkingDirectory=/srv/libraryupgrader/
-ExecStart=/srv/libraryupgrader/venv/bin/libup-run
+ExecStart=/home/libup/.poetry/bin/poetry run libup-run
 PrivateTmp=true
-
-
