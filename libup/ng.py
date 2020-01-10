@@ -37,7 +37,7 @@ from .files import ComposerJson, PackageJson, PackageLockJson
 from .update import Update
 
 RULE = '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">'
-RULE_NO_EXCLUDE = r'<rule ref="(\./)?vendor/mediawiki/mediawiki-codesniffer/MediaWiki"( )?/>'
+RULE_NO_EXCLUDE = r'<rule (ref="(?:\./)?vendor/mediawiki/mediawiki-codesniffer/MediaWiki")(?: )?/>'
 FIND_RULE = re.compile(
     '(' + re.escape(RULE) + '(.*?)' + re.escape('</rule>') +
     '|' + RULE_NO_EXCLUDE +
@@ -537,6 +537,12 @@ class LibraryUpgrader(shell.ShellMixin):
             for i, sniff in enumerate(failing):
                 if sniff in now_failing:
                     if i == 0:
+                        # Expand self-closing rule tag
+                        text = re.sub(
+                            RULE_NO_EXCLUDE,
+                            r'<rule \g<1>>\n\t</rule>',
+                            text
+                        )
                         text = text.replace(
                             RULE,
                             RULE + f'\n\t\t<exclude name="{sniff}" />'
