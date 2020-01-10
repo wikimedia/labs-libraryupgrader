@@ -5,7 +5,7 @@ RUN apt-get update && \
     ruby ruby-dev rubygems-integration \
     python build-essential pkg-config \
     php-cli php-ast php-xml php-zip php-gd \
-    php-gmp php-mbstring php-curl \
+    php-gmp php-mbstring php-curl php-intl \
     python3 python3-dev python3-pip python3-venv \
     python3-virtualenv python3-setuptools \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
