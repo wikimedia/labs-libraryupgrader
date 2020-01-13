@@ -281,3 +281,47 @@ def test_sha1(mocker):
     check_call.return_value = \
         '44560cc7288485f23988bf2e35cc20518f37b2ee refs/remotes/origin/HEAD'
     assert '44560cc7288485f23988bf2e35cc20518f37b2ee' == libup.sha1()
+
+
+@pytest.mark.parametrize('line,rule,expected', (
+    (
+        '\tconsole.log("foo") // eslint-disable-line',
+        'no-console',
+        '\tconsole.log("foo")\n',
+    ),
+    (
+        '\tconsole.log("foo") // eslint-disable-line no-console',
+        'no-console',
+        '\tconsole.log("foo")\n',
+    ),
+    (
+        '\tconsole.log("foo") // eslint-disable-line no-console,max-len',
+        'no-console',
+        '\tconsole.log("foo") // eslint-disable-line max-len\n',
+    ),
+    (
+        '\tconsole.log("foo") // eslint-disable-line no-console,max-len,foo2',
+        'no-console',
+        '\tconsole.log("foo") // eslint-disable-line max-len, foo2\n',
+    ),
+    (
+        '\t// eslint-disable-next-line\n\tconsole.log("foo")',
+        'no-console',
+        '\tconsole.log("foo")\n',
+    ),
+    (
+        '\t// eslint-disable-next-line no-console\n\tconsole.log("foo")',
+        'no-console',
+        '\tconsole.log("foo")\n',
+    ),
+    (
+        '\t// eslint-disable-next-line no-console,max-len\n\tconsole.log("foo")',
+        'no-console',
+        '\t// eslint-disable-next-line max-len\n\tconsole.log("foo")\n',
+    ),
+))
+def test_remove_eslint_disable(tempfs, line, rule, expected):
+    tempfs.create_file('test.js', line + '\n')
+    libup = LibraryUpgrader()
+    libup.remove_eslint_disable('test.js', rule, 1)
+    assert tempfs.contents('test.js') == expected

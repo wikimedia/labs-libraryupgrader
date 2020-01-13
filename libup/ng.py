@@ -47,6 +47,8 @@ FIND_RULE = re.compile(
 # Can have up to 2-4 number parts, and can't have any
 # text like dev-master or -next
 VALID_NPM_VERSION = re.compile(r'^(\d+?\.?){2,4}$')
+ESLINT_DISABLE_RULE = re.compile(r"\(no problems were reported from '(.*?)'\)")
+ESLINT_DISABLE_LINE = re.compile(r'// eslint-disable-(next-)?line( (.*?))?$')
 
 
 class LibraryUpgrader(shell.ShellMixin):
@@ -686,11 +688,21 @@ class LibraryUpgrader(shell.ShellMixin):
             './node_modules/.bin/eslint'] + files + ['-f', 'json'], ignore_returncode=True))
         disable = set()
         for error in errors:
+            fname = error['filePath']
             for message in error['messages']:
                 # eslint severity: 1 = warning, 2 = error.
                 # We only care about errors.
                 if message['ruleId'] and message['severity'] > 1:
                     disable.add(message['ruleId'])
+                elif message['ruleId'] is None \
+                        and 'Unused eslint-disable directive' in message['message']:
+                    disable_match = ESLINT_DISABLE_RULE.search(message['message'])
+                    if not disable_match:
+                        # ???
+                        self.log(f"Error: couldn't parse rule out of '{message['message']}'")
+                        continue
+                    disable = disable_match.group(1)
+                    self.remove_eslint_disable(fname, disable, message['line'])
 
         if disable:
             eslint_cfg = utils.load_ordered_json('.eslintrc.json')
@@ -704,6 +716,41 @@ class LibraryUpgrader(shell.ShellMixin):
             msg += '\n'
             utils.save_pretty_json(eslint_cfg, '.eslintrc.json')
             update.reason = msg
+
+    def remove_eslint_disable(self, fname: str, rule: str, lineno: int):
+        with open(fname) as f:
+            text = f.read()
+        lines = text.splitlines()
+        line = lines[lineno - 1]
+        disable_line = ESLINT_DISABLE_LINE.search(line)
+        if disable_line:
+            rules_being_disabled = disable_line.group(2)
+            if rules_being_disabled is None or rules_being_disabled.strip() == rule:
+                # easy peasy
+                newline = ESLINT_DISABLE_LINE.sub('', line).rstrip()
+            elif ',' in rules_being_disabled:
+                sp = [x.strip() for x in rules_being_disabled.split(',')]
+                if rule not in sp:
+                    # ??? it's not being disabled
+                    return
+                sp.remove(rule)
+                newline = line.replace(rules_being_disabled, ' ' + ', '.join(sp))
+            else:
+                # ???
+                return
+            if newline.strip():
+                lines[lineno - 1] = newline
+            else:
+                # If the line is empty now, get rid of it
+                del lines[lineno - 1]
+
+        newtext = '\n'.join(lines)
+        if newtext != text:
+            self.log(f'Removing eslint-disable-line from {fname}')
+            if not newtext.endswith('\n'):
+                newtext += '\n'
+            with open(fname, 'w') as f:
+                f.write(newtext)
 
     def commit(self, files: list, msg: str):
         f = tempfile.NamedTemporaryFile(delete=False)
