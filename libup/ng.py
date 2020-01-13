@@ -427,6 +427,8 @@ class LibraryUpgrader(shell.ShellMixin):
         new = ComposerJson('composer.json')
         updates = []
         for lib in deps:
+            # Get the current version from composer.json
+            lib.version = prior.get_version(lib.name)
             if lib.is_newer() and lib.is_latest_safe() and \
                     (self.is_canary or data.check_canaries(lib.get_latest())):
                 # Upgrade!
@@ -585,6 +587,8 @@ class LibraryUpgrader(shell.ShellMixin):
         new = PackageJson('package.json')
         updates = []
         for lib in deps:
+            # Get the current version from package.json
+            lib.version = prior.get_version(lib.name)
             if lib.is_newer() and lib.is_latest_safe() and \
                     (self.is_canary or data.check_canaries(lib.get_latest())):
                 # Upgrade!
