@@ -22,11 +22,6 @@ import wikimediaci_utils as ci
 from . import gerrit
 
 
-BLACKLIST = [
-    # Per https://gerrit.wikimedia.org/r/375513
-    'mediawiki/extensions/MediaWikiFarm',
-]
-
 # Gerrit repos not under mediawiki/libs/
 OTHER_LIBRARIES = [
     'AhoCorasick',
@@ -63,13 +58,9 @@ OTHER_LIBRARIES = [
 ]
 
 
-def get_everything(exclude=BLACKLIST):
-    for x in sorted(ci.mw_things_repos()):
-        if x not in exclude:
-            yield x
-    for x in sorted(get_library_list()):
-        if x not in exclude:
-            yield x
+def get_everything():
+    yield from sorted(ci.mw_things_repos())
+    yield from sorted(get_library_list())
 
 
 def get_library_list():
