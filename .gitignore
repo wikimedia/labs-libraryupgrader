@@ -2,5 +2,5 @@ data/logs/*
 data/cache/*
 data/current/*.json
 .tox
-tests/__pycache__
+*/__pycache__
 libup.egg-info/
