@@ -690,6 +690,7 @@ class LibraryUpgrader(shell.ShellMixin):
         errors = json.loads(self.check_call([
             './node_modules/.bin/eslint'] + files + ['-f', 'json'], ignore_returncode=True))
         disable = set()
+        to_undisable = defaultdict(set)
         for error in errors:
             fname = error['filePath']
             for message in error['messages']:
@@ -705,7 +706,10 @@ class LibraryUpgrader(shell.ShellMixin):
                         self.log(f"Error: couldn't parse rule out of '{message['message']}'")
                         continue
                     disabled_rule = disable_match.group(1)
-                    self.remove_eslint_disable(fname, disabled_rule, message['line'])
+                    to_undisable[fname].add((message['line'], disabled_rule))
+
+        for fname, disabled_rules in to_undisable.items():
+            self.remove_eslint_disable(fname, disabled_rules)
 
         if disable:
             eslint_cfg = utils.load_ordered_json('.eslintrc.json')
@@ -720,36 +724,42 @@ class LibraryUpgrader(shell.ShellMixin):
             utils.save_pretty_json(eslint_cfg, '.eslintrc.json')
             update.reason = msg
 
-    def remove_eslint_disable(self, fname: str, rule: str, lineno: int):
+    def remove_eslint_disable(self, fname: str, disabled_rules):
         with open(fname) as f:
             text = f.read()
+        # Keep track of how many lines we delete
+        offset = 0
         lines = text.splitlines()
-        line = lines[lineno - 1]
-        disable_line = ESLINT_DISABLE_LINE.search(line)
-        if disable_line:
-            rules_being_disabled = disable_line.group(2)
-            if rules_being_disabled is None or rules_being_disabled.strip() == rule:
-                # easy peasy
-                newline = ESLINT_DISABLE_LINE.sub('', line).rstrip()
-            elif ',' in rules_being_disabled:
-                sp = [x.strip() for x in rules_being_disabled.split(',')]
-                if rule not in sp:
-                    # ??? it's not being disabled
+        for lineno, rule in disabled_rules:
+            idx = lineno - 1 - offset
+            line = lines[idx]
+            disable_line = ESLINT_DISABLE_LINE.search(line)
+            if disable_line:
+                rules_being_disabled = disable_line.group(2)
+                if rules_being_disabled is None or rules_being_disabled.strip() == rule:
+                    # easy peasy
+                    newline = ESLINT_DISABLE_LINE.sub('', line).rstrip()
+                elif ',' in rules_being_disabled:
+                    sp = [x.strip() for x in rules_being_disabled.split(',')]
+                    if rule not in sp:
+                        # ??? it's not being disabled
+                        return
+                    sp.remove(rule)
+                    newline = line.replace(rules_being_disabled, ' ' + ', '.join(sp))
+                else:
+                    # ???
                     return
-                sp.remove(rule)
-                newline = line.replace(rules_being_disabled, ' ' + ', '.join(sp))
-            else:
-                # ???
-                return
-            if newline.strip():
-                lines[lineno - 1] = newline
-            else:
-                # If the line is empty now, get rid of it
-                del lines[lineno - 1]
+                if newline.strip():
+                    lines[idx] = newline
+                else:
+                    # If the line is empty now, get rid of it
+                    del lines[idx]
+                    offset += 1
 
         newtext = '\n'.join(lines)
         if newtext != text:
-            self.log(f'Removing eslint-disable-line from {fname}')
+            count = len(disabled_rules)
+            self.log(f'Removing eslint-disable-line (x{count}) from {fname}')
             if not newtext.endswith('\n'):
                 newtext += '\n'
             with open(fname, 'w') as f:

@@ -323,5 +323,5 @@ def test_sha1(mocker):
 def test_remove_eslint_disable(tempfs, line, rule, expected):
     tempfs.create_file('test.js', line + '\n')
     libup = LibraryUpgrader()
-    libup.remove_eslint_disable('test.js', rule, 1)
+    libup.remove_eslint_disable('test.js', ((1, rule),))
     assert tempfs.contents('test.js') == expected
