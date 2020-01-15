@@ -72,7 +72,10 @@ def zuul_queue_length(q='gate-and-submit'):
         count = 0
         for change_q in pipeline['change_queues']:
             if change_q['heads']:
-                count += sum(len(head) for head in change_q['heads'])
+                for head in change_q['heads']:
+                    for patch in head:
+                        if patch['jobs']:
+                            count += 1
 
         return count
 
