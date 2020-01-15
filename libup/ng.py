@@ -816,6 +816,8 @@ class LibraryUpgrader(shell.ShellMixin):
             'repo': repo,
             'log': [],
         }, fname=output)
+        # Output the date we run as first thing
+        self.check_call(['date'])
         self.clone(repo)
         self.is_canary = repo in CANARIES
         self.output['sha1'] = self.sha1()
