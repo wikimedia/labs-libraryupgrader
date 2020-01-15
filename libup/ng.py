@@ -701,8 +701,8 @@ class LibraryUpgrader(shell.ShellMixin):
                         # ???
                         self.log(f"Error: couldn't parse rule out of '{message['message']}'")
                         continue
-                    disable = disable_match.group(1)
-                    self.remove_eslint_disable(fname, disable, message['line'])
+                    disabled_rule = disable_match.group(1)
+                    self.remove_eslint_disable(fname, disabled_rule, message['line'])
 
         if disable:
             eslint_cfg = utils.load_ordered_json('.eslintrc.json')
