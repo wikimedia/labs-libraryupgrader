@@ -186,6 +186,9 @@ class LibraryUpgrader(shell.ShellMixin):
                 continue
             reason = ''
             resolves = {r['id'] for r in action['resolves']}
+            if 118 in resolves:
+                # This one is broken (T242703)
+                continue
             for npm_id in sorted(resolves):
                 reason += '* https://npmjs.com/advisories/%s\n' % npm_id
                 advisory_info = audit['advisories'][str(npm_id)]
