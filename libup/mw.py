@@ -45,7 +45,7 @@ OTHER_LIBRARIES = [
     'mediawiki/tools/phan',
     'mediawiki/tools/phan/SecurityCheckPlugin',
     'mediawiki/tools/phpunit-patch-coverage',
-    'oojs',
+    'oojs/core',
     'oojs/ui',
     'php-session-serializer',
     'purtle',
