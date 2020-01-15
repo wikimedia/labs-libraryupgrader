@@ -730,7 +730,7 @@ class LibraryUpgrader(shell.ShellMixin):
         # Keep track of how many lines we delete
         offset = 0
         lines = text.splitlines()
-        for lineno, rule in disabled_rules:
+        for lineno, rule in sorted(disabled_rules):
             idx = lineno - 1 - offset
             line = lines[idx]
             disable_line = ESLINT_DISABLE_LINE.search(line)
