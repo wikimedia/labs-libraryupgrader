@@ -21,9 +21,10 @@ from flask_bootstrap import Bootstrap
 import json
 from markdown import markdown
 import os
+import re
 import wikimediaci_utils
 
-from .. import LOGS, MANAGERS, TYPES
+from .. import DATA_ROOT, LOGS, MANAGERS, TYPES
 from ..data import Data
 
 app = Flask(__name__)
@@ -67,14 +68,17 @@ def r(repo):
         info = data.get_repo_data(repo)
     except ValueError:
         return make_response('Sorry, I don\'t know this repository.', 404)
+    return _render_r_template(info)
 
-    deps = data.get_deps(info)
+
+def _render_r_template(info):
+    deps = Data().get_deps(info)
     return render_template(
         'r.html',
         success=info.get('done'),
         log='\n'.join(info.get('log', [])),
         patch=info.get('patch'),
-        repo=repo,
+        repo=info.get('repo'),
         deps=deps,
         # FIXME: find_logs() is way too slow
         # logs=sorted(find_logs(repo))
@@ -184,9 +188,20 @@ def library_(manager, name):
     )
 
 
-@app.route('/logs')
-def logs():
-    return 'Not yet implemented'
+@app.route('/logs/<date>/<logname>')
+def logs(date, logname):
+    # Input validation to prevent against directory traversal attacks
+    if not re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+        return make_response('Invalid date', 404)
+    if not re.match(r'^[A-z]{15}$', logname):
+        return make_response('Invalid filename', 404)
+    path = os.path.join(DATA_ROOT, date, f'{logname}.json')
+    if not os.path.exists(path):
+        return make_response('Can\'t find log file', 404)
+
+    with open(path) as f:
+        info = json.load(f)
+    return _render_r_template(info)
 
 
 @app.route('/errors')
