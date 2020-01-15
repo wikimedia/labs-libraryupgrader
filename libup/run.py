@@ -33,8 +33,11 @@ def main():
     args = parser.parse_args()
     count = 0
     everything = None
+    data = Data()
     if args.repo == 'canaries':
         gen = CANARIES
+    elif args.repo == 'errors':
+        gen = data.get_errors()
     elif args.repo:
         gen = [args.repo]
     else:
@@ -49,7 +52,6 @@ def main():
 
     if everything is None:
         everything = list(mw.get_everything())
-    data = Data()
     for path in data.find_files():
         with open(path) as f:
             jdata = json.load(f)
