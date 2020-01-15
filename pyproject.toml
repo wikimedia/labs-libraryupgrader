@@ -25,7 +25,6 @@ flake8 = "^3.7"
 [tool.poetry.scripts]
 libup-run = 'libup.run:main'
 libup-ng = 'libup.ng:main'
-libup-push = 'libup.push:main'
 
 [build-system]
 requires = ["poetry>=0.12"]

@@ -14,7 +14,6 @@ setup(
         'console_scripts': [
             'libup-run = libup.run:main',
             'libup-ng = libup.ng:main',
-            'libup-push = libup.push:main'
         ]
     }
 

@@ -62,6 +62,9 @@ def run_check(repo: str, data_root: str, log_dir: str):
             text = fr.read()
             fw.write(text)
     data = json.loads(text)
+    log_url_path = output.replace('/srv/', '').replace('.json', '')
+    data['message'] = f'View logs for this commit at ' \
+                      f'https://libraryupgrader2.wmflabs.org/{log_url_path}'
     if data.get('push') and ssh.is_key_loaded():
         with tempfile.TemporaryDirectory() as tmpdir:
             with utils.cd(tmpdir):

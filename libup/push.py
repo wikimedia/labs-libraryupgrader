@@ -15,9 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import argparse
-import json
 import subprocess
+import urllib.parse
 
 from . import GERRIT_USER, SSH_AUTH_SOCK, config, gerrit, shell, utils
 from .update import Update
@@ -51,12 +50,14 @@ class Pusher(shell.ShellMixin):
     def can_autoapprove(self):
         return self.changed_files().issubset(AUTO_APPROVE_FILES)
 
-    def git_push(self, repo: str, hashtags: list, plus2=False, push=False):
+    def git_push(self, repo: str, hashtags: list, message='', plus2=False, push=False):
         per = '%topic=bump-dev-deps'
         for hashtag in hashtags:
             per += ',t=' + hashtag
         if plus2:
             per += ',l=Code-Review+2'
+        if message:
+            per += ',m=' + urllib.parse.quote_plus(message)
         push_cmd = ['git', 'push',
                     utils.gerrit_url(repo, GERRIT_USER, ssh=True),
                     'HEAD:refs/for/master' + per]
@@ -89,22 +90,10 @@ class Pusher(shell.ShellMixin):
             # commands apparently.
             hashtags.append('{};{}={}'.format(upd.manager[0], upd.name, upd.new))
         hashtags.extend(info['cves'])
+        message = info.get('message', '')
         plus2 = self.can_autoapprove()
         # Flood control, don't overload zuul...
         gerrit.wait_for_zuul_test_gate(count=3)
         push = config.should_push()
-        self.git_push(info['repo'], hashtags=hashtags, plus2=plus2, push=push)
-
-
-def main():
-    parser = argparse.ArgumentParser(description='Push patches')
-    parser.add_argument('instructions', help='Filename of instructions')
-    args = parser.parse_args()
-    with open(args.instructions) as f:
-        info = json.load(f)
-    pusher = Pusher()
-    pusher.run(info)
-
-
-if __name__ == '__main__':
-    main()
+        self.git_push(info['repo'], hashtags=hashtags, message=message,
+                      plus2=plus2, push=push)
