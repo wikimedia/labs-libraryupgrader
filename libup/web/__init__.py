@@ -24,7 +24,7 @@ import os
 import re
 import wikimediaci_utils
 
-from .. import DATA_ROOT, LOGS, MANAGERS, TYPES
+from .. import LOGS, MANAGERS, TYPES
 from ..data import Data
 
 app = Flask(__name__)
@@ -195,7 +195,7 @@ def logs(date, logname):
         return make_response('Invalid date', 404)
     if not re.match(r'^[A-z]{15}$', logname):
         return make_response('Invalid filename', 404)
-    path = os.path.join(DATA_ROOT, date, f'{logname}.json')
+    path = os.path.join(LOGS, date, f'{logname}.json')
     if not os.path.exists(path):
         return make_response('Can\'t find log file', 404)
 
