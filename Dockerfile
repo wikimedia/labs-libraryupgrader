@@ -4,7 +4,7 @@ RUN apt-get update && \
     apt-get install -y nodejs git ssh \
     ruby ruby-dev rubygems-integration \
     python build-essential pkg-config \
-    php-cli php-ast php-xml php-zip php-gd \
+    php-cli php-xml php-zip php-gd \
     php-gmp php-mbstring php-curl php-intl \
     python3 python3-dev python3-pip python3-venv \
     python3-virtualenv python3-setuptools \
