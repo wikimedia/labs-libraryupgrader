@@ -30,7 +30,6 @@ ENV PYTHONUNBUFFERED 1
 ENV POETRY_VIRTUALENVS_PATH /nonexistent/virtualenvs
 COPY pyproject.toml /src/
 COPY poetry.lock /src/
-COPY setup.py /src/
 COPY ./libup /src/libup
 RUN cd /src && poetry install --no-dev
 ENV COMPOSER_PROCESS_TIMEOUT 1800
