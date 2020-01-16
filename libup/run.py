@@ -37,7 +37,7 @@ def main():
     if args.repo == 'canaries':
         gen = CANARIES
     elif args.repo == 'errors':
-        gen = data.get_errors()
+        gen = sorted(data.get_errors())
     elif args.repo:
         gen = [args.repo]
     else:
