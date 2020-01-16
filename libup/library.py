@@ -15,10 +15,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from distutils.version import LooseVersion
 import functools
 import json
+import re
 import semver
+import semver.exceptions
 
 from . import PACKAGIST_MIRROR, session
 from .config import config
@@ -86,25 +87,15 @@ class Library:
 
 def is_greater_than(first, second) -> bool:
     """if second > first"""
-    # Try and detect some operators to see if the current is a constraint
-    # TODO: I don't think semver supports ^
-    if any(True for x in '^><=|' if x in first):
-        try:
-            # Split on | since semver doesn't support that
-            if any(
-                    semver.match(second, part)
-                    for part in first.split('|')
-            ):
-                return True
-        except ValueError:
-            pass
-        return False
-    # Just do a safer/more basic semver comparison
-    try:
-        return LooseVersion(second) > LooseVersion(first)
-    except TypeError:
-        # bug in distutils I think
-        return False
+    # Try and detect some operators to see if the current is a multi-constraint
+    if re.search(r'[|,]', first):
+        constraint = semver.parse_constraint(first)
+        return constraint.allows(semver.Version.parse(second))
+
+    # Remove some constraint stuff because we just want versions
+    first = re.sub(r'[\^><=]', '', first)
+
+    return semver.Version.parse(second) > semver.Version.parse(first)
 
 
 # FIXME Don't use functools/lru_cache
@@ -128,9 +119,10 @@ def _get_composer_metadata(package: str) -> dict:
     version = max(normalized)
     for normal in normalized:
         try:
-            if LooseVersion(normal) > LooseVersion(version):
+            if semver.Version.parse(normal) > semver.Version.parse(version):
                 version = normal
-        except ValueError:
+        except semver.exceptions.ParseVersionError:
+            # TODO: log these exceptions
             pass
     # print('Latest %s: %s' % (package, version))
     return {

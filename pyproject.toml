@@ -13,9 +13,9 @@ flask = "^1.1"
 flask-bootstrap = "^3.3"
 gunicorn = "^20.0"
 markdown = "^3.1"
-semver = "^2.9"
 celery = "^4.4"
 wikimediaci-utils = "^0.2.1"
+poetry-semver = "^0.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.3"

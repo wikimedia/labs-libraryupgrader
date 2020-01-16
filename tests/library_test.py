@@ -61,9 +61,10 @@ def test_is_latest_safe(mocker):
         ('1.0.0', '1.1.0', True),
         ('0.99.0', '0.0.5', False),
         ('1.0.0', '1.1.0', True),
-        # Broken
-        # ('.5 | 1.0', '1.1.0', True),
-        # ('^1.0.0', '1.1.0', True),
+        # constraintish stuff
+        ('^0.10.0', '0.15.0', True),
+        ('^1.0.0', '1.1.0', True),
+        ('0.5 | >=1.0', '1.1.0', True),
     )
 )
 def test_is_greater_than(first, second, expected):
