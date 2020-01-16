@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
 
-from libup.library import Library
+from libup.library import Library, is_greater_than
 
 
 def test_sort():
@@ -52,3 +52,19 @@ def test_is_latest_safe(mocker):
     assert lib.is_latest_safe() is True
     lib.version = '19.2.0'
     assert lib.is_latest_safe() is False
+
+
+@pytest.mark.parametrize(
+    'first,second,expected',
+    (
+        ('1.0.0', '1.0.0', False),
+        ('1.0.0', '1.1.0', True),
+        ('0.99.0', '0.0.5', False),
+        ('1.0.0', '1.1.0', True),
+        # Broken
+        # ('.5 | 1.0', '1.1.0', True),
+        # ('^1.0.0', '1.1.0', True),
+    )
+)
+def test_is_greater_than(first, second, expected):
+    assert is_greater_than(first, second) is expected
