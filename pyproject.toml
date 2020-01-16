@@ -14,7 +14,7 @@ flask-bootstrap = "^3.3"
 gunicorn = "^20.0"
 markdown = "^3.1"
 celery = "^4.4"
-wikimediaci-utils = "^0.2.1"
+wikimediaci-utils = "^1.0.0"
 poetry-semver = "^0.1.0"
 
 [tool.poetry.dev-dependencies]
