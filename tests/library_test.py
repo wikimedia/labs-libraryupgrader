@@ -62,6 +62,7 @@ def test_is_latest_safe(mocker):
         ('0.99.0', '0.0.5', False),
         ('1.0.0', '1.1.0', True),
         # constraintish stuff
+        ('~0.5', '0.6.0', True),
         ('^0.10.0', '0.15.0', True),
         ('^1.0.0', '1.1.0', True),
         ('0.5 | >=1.0', '1.1.0', True),

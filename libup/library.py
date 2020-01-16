@@ -93,7 +93,7 @@ def is_greater_than(first, second) -> bool:
         return constraint.allows(semver.Version.parse(second))
 
     # Remove some constraint stuff because we just want versions
-    first = re.sub(r'[\^><=]', '', first)
+    first = re.sub(r'[\^~><=]', '', first)
 
     return semver.Version.parse(second) > semver.Version.parse(first)
 
