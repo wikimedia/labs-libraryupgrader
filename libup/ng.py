@@ -450,6 +450,9 @@ class LibraryUpgrader(shell.ShellMixin):
         for lib in deps:
             # Get the current version from composer.json
             lib.version = prior.get_version(lib.name)
+            if lib.version is None:
+                # Might've been removed like eslint/stylelint (T242845)
+                continue
             if lib.is_newer() and lib.is_latest_safe() and \
                     (self.is_canary or data.check_canaries(lib.get_latest())):
                 # Upgrade!
@@ -610,6 +613,9 @@ class LibraryUpgrader(shell.ShellMixin):
         for lib in deps:
             # Get the current version from package.json
             lib.version = prior.get_version(lib.name)
+            if lib.version is None:
+                # Might've been removed like eslint/stylelint (T242845)
+                continue
             if lib.is_newer() and lib.is_latest_safe() and \
                     (self.is_canary or data.check_canaries(lib.get_latest())):
                 # Upgrade!
