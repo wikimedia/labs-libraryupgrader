@@ -325,3 +325,23 @@ def test_remove_eslint_disable(tempfs, line, rule, expected):
     libup = LibraryUpgrader()
     libup.remove_eslint_disable('test.js', ((1, rule),))
     assert tempfs.contents('test.js') == expected
+
+
+def test_fix_phpunit_result_cache(tempfs):
+    tempfs.create_file('composer.json',
+                       contents="""
+    {
+        "require-dev": {
+            "phpunit/phpunit": "0.0.0"
+        }
+    }
+    """)
+    tempfs.create_file('.gitignore')
+    libup = LibraryUpgrader()
+    libup.fix_phpunit_result_cache()
+    assert tempfs.contents('.gitignore') == '/.phpunit.result.cache\n'
+    # Reset
+    libup.msg_fixes = []
+    libup.fix_phpunit_result_cache()
+    # It didn't run again to add it
+    assert libup.msg_fixes == []

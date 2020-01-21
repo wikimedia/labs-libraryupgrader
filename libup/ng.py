@@ -419,6 +419,22 @@ class LibraryUpgrader(shell.ShellMixin):
             with open('.gitignore', 'w') as f:
                 f.write(ignore)
 
+    def fix_phpunit_result_cache(self):
+        if not self.has_composer:
+            return
+
+        composer = ComposerJson('composer.json')
+        if composer.get_version('phpunit/phpunit') is None:
+            return
+        with open('.gitignore') as f:
+            ignore = f.read()
+        if '.phpunit.result.cache' in ignore:
+            return
+        ignore += '/.phpunit.result.cache\n'
+        with open('.gitignore', 'w') as f:
+            f.write(ignore)
+        self.msg_fixes.append('.gitignore: Added .phpunit.result.cache (T242727).')
+
     def sha1(self):
         return self.check_call(['git', 'show-ref', 'HEAD']).split(' ')[0]
 
@@ -887,6 +903,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_root_eslintrc()
         self.fix_eslint_config()
         self.fix_add_vendor_node_modules_to_gitignore()
+        self.fix_phpunit_result_cache()
 
         # Commit
         msg = self.build_message()
