@@ -667,6 +667,9 @@ class LibraryUpgrader(shell.ShellMixin):
             return
         # TODO: whaaaat. Why no consistency??
         gf_key = 'all' if 'all' in stylelint else 'src'
+        if not isinstance(stylelint[gf_key], list):
+            # It's a str
+            stylelint[gf_key] = [stylelint[gf_key]]
         files = grunt.expand_glob(stylelint[gf_key])
         errors = json.loads(self.check_call(['./node_modules/.bin/stylelint'] + files + [
             '-f', 'json'
@@ -705,6 +708,9 @@ class LibraryUpgrader(shell.ShellMixin):
             return
         # TODO: whaaaat. Why no consistency??
         gf_key = 'all' if 'all' in eslint else 'src'
+        if not isinstance(eslint[gf_key], list):
+            # It's a str
+            eslint[gf_key] = [eslint[gf_key]]
         files = grunt.expand_glob(eslint[gf_key])
 
         self.check_call(['./node_modules/.bin/eslint'] + files + ['--fix'],
