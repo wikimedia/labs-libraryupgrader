@@ -41,6 +41,8 @@ def test_is_newer(mocker):
     latest_version = mocker.patch.object(lib, 'latest_version')
     latest_version.return_value = '26.0.0'
     assert lib.is_newer() is True
+    lib.version = '*'
+    assert lib.is_newer() is False
 
 
 def test_is_latest_safe(mocker):

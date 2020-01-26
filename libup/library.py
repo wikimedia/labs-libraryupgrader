@@ -82,6 +82,9 @@ class Library:
         return self.is_safe_upgrade(self.latest_version())
 
     def is_newer(self) -> bool:
+        if self.version.strip() == '*':
+            # special case, T243262
+            return False
         return is_greater_than(self.version, self.latest_version())
 
 
