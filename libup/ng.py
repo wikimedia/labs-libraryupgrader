@@ -376,6 +376,12 @@ class LibraryUpgrader(shell.ShellMixin):
             changes = True
             self.msg_fixes.append('Remove direct "eslint" dependency in favor of "grunt-eslint".')
 
+        if pkg.get_version('eslint-config-wikimedia') and pkg.get_version('eslint-config-node-services'):
+            pkg.remove_package('eslint-config-node-services')
+            changes = True
+            msg = 'Remove deprecated "eslint-config-node-services" in favor of "eslint-config-wikimedia".'
+            self.msg_fixes.append(msg)
+
         if pkg.get_version('grunt-stylelint') and pkg.get_version('stylelint'):
             pkg.remove_package('stylelint')
             changes = True
