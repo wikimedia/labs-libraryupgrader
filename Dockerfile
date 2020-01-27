@@ -1,5 +1,7 @@
 FROM docker-registry.wikimedia.org/wikimedia-buster
 ENV LANG C.UTF-8
+ENV CHROME_BIN /usr/bin/chromium
+ENV CHROMIUM_FLAGS "--no-sandbox"
 RUN apt-get update && \
     apt-get install -y nodejs git ssh \
     ruby ruby-dev rubygems-integration \
@@ -8,6 +10,7 @@ RUN apt-get update && \
     php-gmp php-mbstring php-curl php-intl \
     python3 python3-dev python3-pip python3-venv \
     python3-virtualenv python3-setuptools \
+    firefox-esr chromium \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 RUN git clone --depth 1 https://gerrit.wikimedia.org/r/integration/npm.git /srv/npm \
     && rm -rf /srv/npm/.git \
