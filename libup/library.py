@@ -20,6 +20,7 @@ import json
 import re
 import semver
 import semver.exceptions
+import traceback
 
 from . import PACKAGIST_MIRROR, session
 from .config import config
@@ -29,7 +30,6 @@ class Library:
     def __init__(self, manager: str, name: str, version: str):
         self.manager = manager
         self.name = name
-        # TODO: should version be optional?
         self.version = version
 
     def __lt__(self, other):
@@ -89,16 +89,19 @@ class Library:
 
 
 def is_greater_than(first, second) -> bool:
-    """if second > first"""
-    # Try and detect some operators to see if the current is a multi-constraint
-    if re.search(r'[|,]', first):
-        constraint = semver.parse_constraint(first)
-        return constraint.allows(semver.Version.parse(second))
+    try:
+        """if second > first"""
+        # Try and detect some operators to see if the current is a multi-constraint
+        if re.search(r'[|,]', first):
+            constraint = semver.parse_constraint(first)
+            return constraint.allows(semver.Version.parse(second))
 
-    # Remove some constraint stuff because we just want versions
-    first = re.sub(r'[\^~><=]', '', first)
-
-    return semver.Version.parse(second) > semver.Version.parse(first)
+        # Remove some constraint stuff because we just want versions
+        first = re.sub(r'[\^~><=]', '', first)
+        return semver.Version.parse(second) > semver.Version.parse(first)
+    except semver.exceptions.ParseVersionError:
+        traceback.print_exc()
+        return False
 
 
 def is_greater_than_or_equal_to(first, second) -> bool:
