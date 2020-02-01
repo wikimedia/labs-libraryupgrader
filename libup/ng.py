@@ -653,30 +653,33 @@ class LibraryUpgrader(shell.ShellMixin):
         self.npm_test()
 
     def _handle_stylelint(self, update: Update):
-        try:
-            self.check_call(['./node_modules/.bin/grunt', 'stylelint'])
-            # Didn't fail, all good
-            return
-        except subprocess.CalledProcessError:
-            pass
-        # TODO: Support autofix once stylelint improves it
-        gf = grunt.Gruntfile()
-        try:
-            stylelint = gf.parse_section('stylelint')
-        except grunt.NoSuchSection:
-            # ???
-            return
-        except:  # noqa
-            # Some bug with the parser
-            tb = traceback.format_exc()
-            self.log(tb)
-            return
-        # TODO: whaaaat. Why no consistency??
-        gf_key = 'all' if 'all' in stylelint else 'src'
-        if not isinstance(stylelint[gf_key], list):
-            # It's a str
-            stylelint[gf_key] = [stylelint[gf_key]]
-        files = grunt.expand_glob(stylelint[gf_key])
+        files = []
+        if os.path.exists('Gruntfile.js'):
+            try:
+                self.check_call(['./node_modules/.bin/grunt', 'stylelint'])
+                # Didn't fail, all good
+                return
+            except subprocess.CalledProcessError:
+                pass
+            # TODO: Support autofix once stylelint improves it
+            gf = grunt.Gruntfile()
+            try:
+                stylelint = gf.parse_section('stylelint')
+            except grunt.NoSuchSection:
+                # ???
+                return
+            except:  # noqa
+                # Some bug with the parser
+                tb = traceback.format_exc()
+                self.log(tb)
+                return
+            # TODO: whaaaat. Why no consistency??
+            gf_key = 'all' if 'all' in stylelint else 'src'
+            if not isinstance(stylelint[gf_key], list):
+                # It's a str
+                stylelint[gf_key] = [stylelint[gf_key]]
+            files = grunt.expand_glob(stylelint[gf_key])
+
         errors = json.loads(self.check_call(['./node_modules/.bin/stylelint'] + files + [
             '-f', 'json'
         ], ignore_returncode=True))
@@ -701,23 +704,25 @@ class LibraryUpgrader(shell.ShellMixin):
         # eslint exits with status code of 1 if there are any
         # errors left, so ignore that. Just try and fix as much
         # as possible
-        gf = grunt.Gruntfile()
-        try:
-            eslint = gf.parse_section('eslint')
-        except grunt.NoSuchSection:
-            # ???
-            return
-        except:  # noqa
-            # Some bug with the parser
-            tb = traceback.format_exc()
-            self.log(tb)
-            return
-        # TODO: whaaaat. Why no consistency??
-        gf_key = 'all' if 'all' in eslint else 'src'
-        if not isinstance(eslint[gf_key], list):
-            # It's a str
-            eslint[gf_key] = [eslint[gf_key]]
-        files = grunt.expand_glob(eslint[gf_key])
+        files = []
+        if os.path.exists('Gruntfile.js'):
+            gf = grunt.Gruntfile()
+            try:
+                eslint = gf.parse_section('eslint')
+            except grunt.NoSuchSection:
+                # ???
+                return
+            except:  # noqa
+                # Some bug with the parser
+                tb = traceback.format_exc()
+                self.log(tb)
+                return
+            # TODO: whaaaat. Why no consistency??
+            gf_key = 'all' if 'all' in eslint else 'src'
+            if not isinstance(eslint[gf_key], list):
+                # It's a str
+                eslint[gf_key] = [eslint[gf_key]]
+            files = grunt.expand_glob(eslint[gf_key])
 
         self.check_call(['./node_modules/.bin/eslint'] + files + ['--fix'],
                         ignore_returncode=True)
