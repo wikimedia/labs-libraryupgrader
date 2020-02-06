@@ -901,10 +901,8 @@ class LibraryUpgrader(shell.ShellMixin):
 
         # Do a pull to get the latest safe versions
         library.get_good_releases(pull=True)
+
         # Now let's fix and upgrade stuff!
-        if self.output['npm-audit']:
-            self.npm_audit_fix(self.output['npm-audit'])
-        # TODO: composer audit
 
         # We need to do this first because it can cause problems
         # with later eslint/stylelint upgrades
@@ -913,6 +911,12 @@ class LibraryUpgrader(shell.ShellMixin):
         # Try upgrades
         self.npm_upgrade(self.output)
         self.composer_upgrade(self.output)
+
+        # Re-run npm audit since upgrades might change stuff
+        new_npm_audit = self.npm_audit()
+        if new_npm_audit:
+            self.npm_audit_fix(new_npm_audit)
+        # TODO: composer audit
 
         self.output['push'] = bool(self.updates) and not self.output['open-changes']
 
