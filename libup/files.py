@@ -94,5 +94,11 @@ class ComposerJson:
 
         raise RuntimeError(f'Unable to set version for {package} to {version}')
 
+    def add_package(self, package: str, version: str):
+        self.data['require-dev'][package] = version
+
+    def remove_package(self, package):
+        del self.data['require-dev'][package]
+
     def save(self):
         utils.save_pretty_json(self.data, self.fname)

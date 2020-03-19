@@ -345,3 +345,24 @@ def test_fix_phpunit_result_cache(tempfs):
     libup.fix_phpunit_result_cache()
     # It didn't run again to add it
     assert libup.msg_fixes == []
+
+
+def test_fix_php_parallel_lint_migration(tempfs):
+    tempfs.create_file('composer.json',
+                       contents="""
+    {
+        "require-dev": {
+            "jakub-onderka/php-parallel-lint": "0.1.0",
+            "jakub-onderka/php-console-highlighter": "0.2.0"
+        }
+    }
+    """)
+    libup = LibraryUpgrader()
+    libup.fix_php_parallel_lint_migration()
+    composer = tempfs.json_contents('composer.json')
+    assert 'php-parallel-lint/php-parallel-lint' in composer['require-dev']
+    assert 'jakub-onderka/php-parallel-lint' not in composer['require-dev']
+    assert composer['require-dev']['php-parallel-lint/php-parallel-lint'] == '0.1.0'
+    assert 'php-parallel-lint/php-console-highlighter' in composer['require-dev']
+    assert 'jakub-onderka/php-console-highlighter' not in composer['require-dev']
+    assert composer['require-dev']['php-parallel-lint/php-console-highlighter'] == '0.2.0'

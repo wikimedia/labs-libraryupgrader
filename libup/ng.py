@@ -396,6 +396,28 @@ class LibraryUpgrader(shell.ShellMixin):
                 shutil.rmtree('node_modules')
             self.check_call(['npm', 'install'])
 
+    def fix_php_parallel_lint_migration(self):
+        if not self.has_composer:
+            return
+        composer = ComposerJson('composer.json')
+        migrate = {
+            'jakub-onderka/php-parallel-lint': 'php-parallel-lint/php-parallel-lint',
+            'jakub-onderka/php-console-highlighter': 'php-parallel-lint/php-console-highlighter',
+        }
+        changes = False
+        for old, new in migrate.items():
+            version = composer.get_version(old)
+            if version is not None:
+                composer.remove_package(old)
+                composer.add_package(new, version)
+                composer.save()
+            changes = True
+
+        if changes:
+            self.msg_fixes.append(
+                'Replaced "jakub-onderka" packages with '
+                '"php-parallel-lint".')
+
     def fix_add_vendor_node_modules_to_gitignore(self):
         """see T200620"""
         # TODO: Provde an abstraction for .gitignore
@@ -907,6 +929,8 @@ class LibraryUpgrader(shell.ShellMixin):
         # We need to do this first because it can cause problems
         # with later eslint/stylelint upgrades
         self.fix_remove_eslint_stylelint_if_grunt()
+        # Also swap in the new php-parallel-lint
+        self.fix_php_parallel_lint_migration()
 
         # Try upgrades
         self.npm_upgrade(self.output)
