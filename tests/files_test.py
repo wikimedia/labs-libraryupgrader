@@ -78,3 +78,26 @@ def test_composer_json(tempfs):
     assert tempfs.json_contents('composer.json')[
         'require-dev'
     ]['mediawiki/mediawiki-codesniffer'] == '26.0.0'
+
+
+def test_composer_sorts_require_dev(tempfs):
+    tempfs.create_file('composer.json',
+                       contents="""
+    {
+        "require-dev": {
+            "def": "0.1.0",
+            "zzz": "0.1.0",
+            "abc": "0.1.0"
+        }
+    }
+    """)
+    pkg = ComposerJson('composer.json')
+    pkg.save()
+    assert tempfs.contents('composer.json') == """{
+\t"require-dev": {
+\t\t"abc": "0.1.0",
+\t\t"def": "0.1.0",
+\t\t"zzz": "0.1.0"
+\t}
+}
+"""

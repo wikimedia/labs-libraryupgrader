@@ -15,6 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from collections import OrderedDict
+
 from . import utils
 
 
@@ -101,4 +103,6 @@ class ComposerJson:
         del self.data['require-dev'][package]
 
     def save(self):
+        # Re-sort dependencies by package name
+        self.data['require-dev'] = OrderedDict(sorted(self.data['require-dev'].items(), key=lambda x: x[0]))
         utils.save_pretty_json(self.data, self.fname)
