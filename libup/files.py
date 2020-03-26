@@ -84,6 +84,13 @@ class ComposerJson:
 
         return None
 
+    def get_extra(self, extra):
+        if 'extra' in self.data:
+            if extra in self.data['extra']:
+                return self.data['extra'][extra]
+
+        return None
+
     def set_version(self, package, version):
         if package in self.data['require-dev']:
             self.data['require-dev'][package] = version
@@ -100,7 +107,21 @@ class ComposerJson:
         self.data['require-dev'][package] = version
 
     def remove_package(self, package):
-        del self.data['require-dev'][package]
+        if package in self.data['require-dev']:
+            del self.data['require-dev'][package]
+            return
+
+        raise RuntimeError(f'Unable to remove {package}')
+
+    def remove_extra(self, extra):
+        if 'extra' in self.data:
+            if extra in self.data['extra']:
+                del self.data['extra'][extra]
+                if len(self.data['extra']) == 0:
+                    del self.data['extra']
+                return
+
+        raise RuntimeError(f'Unable to remove {extra}')
 
     def save(self):
         # Re-sort dependencies by package name

@@ -76,7 +76,7 @@ class Library:
         # HACK HACK HACK
         if self.name == 'mediawiki/mediawiki-codesniffer' \
                 and (self.version.startswith('19.') or self.version.startswith('26.')):
-            # Don't upgrade codesniffer 19.x (T228186)
+            # Don't upgrade codesniffer 19.x as it is the last version with php5 support (T228186)
             # Don't upgrade codesniffer 26.x as it is the last version with php7 support
             return False
         return self.is_safe_upgrade(self.latest_version())

@@ -468,6 +468,24 @@ class LibraryUpgrader(shell.ShellMixin):
             with open('.gitignore', 'w') as f:
                 f.write(ignore)
 
+    def fix_phan_taint_check_plugin_merge_to_phan(self):
+        if not self.has_composer:
+            return
+
+        composer = ComposerJson('composer.json')
+
+        phanVersion = composer.get_version('mediawiki/mediawiki-phan-config')
+        if (
+            phanVersion is None or
+            not library.is_greater_than_or_equal_to('0.10.0', phanVersion) or
+            composer.get_extra('phan-taint-check-plugin') is None
+        ):
+            return
+
+        composer.remove_extra('phan-taint-check-plugin')
+        composer.save()
+        self.msg_fixes.append('Removed phan-taint-check-plugin from extra, now inherited from mediawiki-phan-config.')
+
     def fix_phpunit_result_cache(self):
         if not self.has_composer:
             return
@@ -953,6 +971,7 @@ class LibraryUpgrader(shell.ShellMixin):
         # We need to do this first because it can cause problems
         # with later eslint/stylelint upgrades
         self.fix_remove_eslint_stylelint_if_grunt()
+
         # Also swap in the new php-parallel-lint
         self.fix_php_parallel_lint_migration()
 
@@ -979,6 +998,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_eslint_config()
         self.fix_add_vendor_node_modules_to_gitignore()
         self.fix_phpunit_result_cache()
+        self.fix_phan_taint_check_plugin_merge_to_phan()
 
         # Commit
         msg = self.build_message()

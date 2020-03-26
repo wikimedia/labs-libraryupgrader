@@ -397,3 +397,39 @@ def test_fix_php_parallel_lint_migration(tempfs):
     assert 'php-parallel-lint/php-console-highlighter' in composer['require-dev']
     assert 'jakub-onderka/php-console-highlighter' not in composer['require-dev']
     assert composer['require-dev']['php-parallel-lint/php-console-highlighter'] == '0.2.0'
+
+
+def test_fix_phan_taint_check_plugin_merge_to_phan_old(tempfs):
+    tempfs.create_file('composer.json',
+                       contents="""
+    {
+        "require-dev": {
+            "mediawiki/mediawiki-phan-config": "0.9.2"
+        },
+        "extra": {
+            "phan-taint-check-plugin": "2.0.1"
+        }
+    }
+    """)
+    libup = LibraryUpgrader()
+    libup.fix_phan_taint_check_plugin_merge_to_phan()
+    composer = tempfs.json_contents('composer.json')
+    assert 'phan-taint-check-plugin' in composer['extra']
+
+
+def test_fix_phan_taint_check_plugin_merge_to_phan_current(tempfs):
+    tempfs.create_file('composer.json',
+                       contents="""
+    {
+        "require-dev": {
+            "mediawiki/mediawiki-phan-config": "0.10.0"
+        },
+        "extra": {
+            "phan-taint-check-plugin": "2.0.1"
+        }
+    }
+    """)
+    libup = LibraryUpgrader()
+    libup.fix_phan_taint_check_plugin_merge_to_phan()
+    composer = tempfs.json_contents('composer.json')
+    assert 'extra' not in composer
