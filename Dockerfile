@@ -41,5 +41,5 @@ ENV COMPOSER_PROCESS_TIMEOUT 1800
 ENV NPM_CONFIG_CACHE=/cache
 ENV XDG_CACHE_HOME=/cache
 WORKDIR /src
-ENTRYPOINT ["poetry", "run"]
+ENTRYPOINT ["/src/libup/timeout-wrapper.sh"]
 CMD ["libup-ng"]
