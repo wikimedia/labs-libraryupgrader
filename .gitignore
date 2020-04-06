@@ -1,6 +1,7 @@
-data/logs/*
+*/__pycache__
+.idea/
+.tox
 data/cache/*
 data/current/*.json
-.tox
-*/__pycache__
+data/logs/*
 libup.egg-info/
