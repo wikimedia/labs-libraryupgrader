@@ -222,7 +222,7 @@ class LibraryUpgrader(shell.ShellMixin):
         if not self.has_composer:
             return
         self.check_call(['composer', 'install'])
-        self.check_call(['composer', 'test', '.'])
+        self.check_call(['composer', 'test'])
 
     def fix_coc(self):
         if not os.path.exists('CODE_OF_CONDUCT.md'):
@@ -588,7 +588,7 @@ class LibraryUpgrader(shell.ShellMixin):
             with open(phpcs_xml, 'w') as f:
                 f.write(text)
             try:
-                subprocess.check_call(['composer', 'test', '.'])
+                subprocess.check_call(['composer', 'test'])
             except subprocess.CalledProcessError:
                 self.log('Tests still failing. Skipping')
                 return False
