@@ -3,7 +3,7 @@ ENV LANG C.UTF-8
 ENV CHROME_BIN /usr/bin/chromium
 ENV CHROMIUM_FLAGS "--no-sandbox"
 RUN apt-get update && \
-    apt-get install -y nodejs git ssh \
+    apt-get install -y nodejs git ssh curl \
     ruby ruby-dev rubygems-integration \
     python build-essential pkg-config \
     php-cli php-xml php-zip php-gd \
