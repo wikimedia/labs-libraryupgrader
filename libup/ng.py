@@ -411,7 +411,7 @@ class LibraryUpgrader(shell.ShellMixin):
                 composer.remove_package(old)
                 composer.add_package(new, version)
                 composer.save()
-            changes = True
+                changes = True
 
         if changes:
             self.msg_fixes.append(
