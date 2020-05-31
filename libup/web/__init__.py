@@ -35,7 +35,7 @@ SEVERITIES = ['critical', 'high', 'moderate', 'low', 'info']
 COLORS = ['danger', 'danger', 'warning', 'warning', 'info']
 TABLE_PRESETS = {
     '/ci': ','.join([
-        'composer:jakub-onderka/php-parallel-lint',
+        'composer:php-parallel-lint/php-parallel-lint',
         'composer:mediawiki/mediawiki-codesniffer',
         'composer:mediawiki/minus-x',
         'composer:mediawiki/mediawiki-phan-config',
