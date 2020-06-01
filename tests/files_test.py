@@ -68,16 +68,19 @@ def test_composer_json(tempfs):
     # p-t-c-p is in extra
     assert pkg.get_version('mediawiki/phan-taint-check-plugin') == '1.5.0'
     assert pkg.get_version('not-here') is None
+    assert pkg.get_extra('phan-taint-check-plugin') == '1.5.0'
+    assert pkg.get_extra('not-here') is None
     pkg.set_version('mediawiki/mediawiki-codesniffer', '26.0.0')
     pkg.set_version('mediawiki/phan-taint-check-plugin', '1.6.0')
     assert pkg.get_version('mediawiki/mediawiki-codesniffer') == '26.0.0'
     assert pkg.get_version('mediawiki/phan-taint-check-plugin') == '1.6.0'
     with pytest.raises(RuntimeError):
         pkg.set_version('not-here', '0.0.0')
+    pkg.remove_extra('phan-taint-check-plugin')
     pkg.save()
-    assert tempfs.json_contents('composer.json')[
-        'require-dev'
-    ]['mediawiki/mediawiki-codesniffer'] == '26.0.0'
+    new = tempfs.json_contents('composer.json')
+    assert new['require-dev']['mediawiki/mediawiki-codesniffer'] == '26.0.0'
+    assert 'extra' not in new
 
 
 def test_composer_sorts_require_dev(tempfs):
