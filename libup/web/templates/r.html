@@ -2,6 +2,7 @@
 {% block subtitle %}{{repo}}{% endblock %}
 {% block main %}
 <h1>{{repo}}</h1>
+<a href="https://gerrit.wikimedia.org/g/{{repo}}">source</a> • <a href="https://gerrit.wikimedia.org/r/q/project:{{repo}}">patches</a>
 {% if patch %}
 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#patch" aria-expanded="false" aria-controls="patch">
   View proposed patch
