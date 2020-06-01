@@ -675,7 +675,6 @@ class LibraryUpgrader(shell.ShellMixin):
         self.npm_test()
 
     def _handle_stylelint(self, update: Update):
-        files = []
         if os.path.exists('Gruntfile.js'):
             try:
                 self.check_call(['./node_modules/.bin/grunt', 'stylelint'])
@@ -701,6 +700,10 @@ class LibraryUpgrader(shell.ShellMixin):
                 # It's a str
                 stylelint[gf_key] = [stylelint[gf_key]]
             files = grunt.expand_glob(stylelint[gf_key])
+        else:
+            # If grunt isn't being used, lint all CSS/LESS files
+            # https://phabricator.wikimedia.org/T248801#6031367
+            files = grunt.expand_glob(['**/*.{css,less}'])
 
         errors = json.loads(self.check_call(['./node_modules/.bin/stylelint'] + files + [
             '-f', 'json'
