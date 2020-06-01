@@ -256,6 +256,31 @@ class LibraryUpgrader(shell.ShellMixin):
             self.check_call(['git', 'mv', 'phpcs.xml', '.phpcs.xml'])
             self.msg_fixes.append('And moved phpcs.xml to .phpcs.xml (T177256).')
 
+    def fix_phpcs_xml_configuration(self):
+        if os.path.exists('.phpcs.xml'):
+            ENCODING_RE = re.compile(r"^(\s*<arg name=\"encoding\" value=\")((?!UTF-8)\S*)(\" />)$", re.MULTILINE)
+
+            PHP5_RE = re.compile(r"^(\s*<arg name=\"extensions\" value=\".*)(,php5)(.*\" />)$", re.MULTILINE)
+            # TODO: Not removing .inc files yet, as they're still used in production code(!)
+            # INC_RE = re.compile(r"^(\s*<arg name=\"extensions\" value=\".*)(,inc)(.*\" />)$", re.MULTILINE)
+
+            with open('.phpcs.xml', 'r') as f:
+                phpcs_xml = f.read()
+            changes = False
+            if ENCODING_RE.search(phpcs_xml):
+                phpcs_xml = re.sub(ENCODING_RE, r'\1UTF-8\3', phpcs_xml)
+                changes = True
+                self.msg_fixes.append('Consolidated .phpcs.xml encoding to "UTF-8" (T200956).')
+
+            if PHP5_RE.search(phpcs_xml):
+                phpcs_xml = re.sub(PHP5_RE, r'\1\3', phpcs_xml)
+                changes = True
+                self.msg_fixes.append('Dropped .php5 files from .phpcs.xml (T200956).')
+
+            if changes:
+                with open('.phpcs.xml', 'w') as f:
+                    f.write(phpcs_xml)
+
     def fix_eslintrc_json_location(self):
         if os.path.exists('.eslintrc') and not os.path.exists('.eslintrc.json'):
             self.check_call(['git', 'mv', '.eslintrc', '.eslintrc.json'])
@@ -1015,6 +1040,7 @@ class LibraryUpgrader(shell.ShellMixin):
         # General fixes:
         self.fix_coc()
         self.fix_phpcs_xml_location()
+        self.fix_phpcs_xml_configuration()
         self.fix_composer_fix()
         self.fix_private_package_json(repo)
         self.fix_eslintrc_json_location()
