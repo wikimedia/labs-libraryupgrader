@@ -287,6 +287,27 @@ class LibraryUpgrader(shell.ShellMixin):
             composerjson.data = j
             composerjson.save()
 
+    def fix_composer_phan(self):
+        if not self.has_composer:
+            return
+
+        composerjson = ComposerJson('composer.json')
+        phanVersion = composerjson.get_version('mediawiki/mediawiki-phan-config')
+        if phanVersion is None:
+            return
+
+        j = composerjson.data
+        if 'phan' not in j['scripts']:
+            if not library.is_greater_than_or_equal_to('0.9.0', phanVersion):
+                phanCommand = 'phan -d . -p'
+            else:
+                phanCommand = 'phan -d . --long-progress-bar'
+
+            j['scripts']['phan'] = phanCommand
+            self.msg_fixes.append('Added the "composer phan" command to conveniently run phan.')
+            composerjson.data = j
+            composerjson.save()
+
     def fix_private_package_json(self, repo):
         if not repo.startswith(('mediawiki/extensions/', 'mediawiki/skins/')):
             # Only MW extensions and skins

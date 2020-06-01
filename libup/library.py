@@ -101,6 +101,19 @@ def is_greater_than(first, second) -> bool:
     return semver.Version.parse(second) > semver.Version.parse(first)
 
 
+def is_greater_than_or_equal_to(first, second) -> bool:
+    """if second >= first"""
+    # Try and detect some operators to see if the current is a multi-constraint
+    if re.search(r'[|,]', first):
+        constraint = semver.parse_constraint(first)
+        return constraint.allows(semver.Version.parse(second))
+
+    # Remove some constraint stuff because we just want versions
+    first = re.sub(r'[\^~><=]', '', first)
+
+    return semver.Version.parse(second) >= semver.Version.parse(first)
+
+
 # FIXME Don't use functools/lru_cache
 @functools.lru_cache()
 def _get_composer_metadata(package: str) -> dict:

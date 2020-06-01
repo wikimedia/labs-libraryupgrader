@@ -212,6 +212,37 @@ def test_fix_composer_fix(tempfs, scripts, expected):
     assert tempfs.json_contents('composer.json')['scripts'] == expected
 
 
+@pytest.mark.parametrize('version,scripts,expected', (
+    ('0.6.0', {}, {'phan': 'phan -d . -p'}),
+    ('0.9.0', {}, {'phan': 'phan -d . --long-progress-bar'}),
+    ('0.9.0', {'phan': 'thisIsWrongAndWillNotChange'}, {'phan': 'thisIsWrongAndWillNotChange'}),
+    ('0.9.0', {'fix': 'foo'}, {'phan': 'phan -d . --long-progress-bar', 'fix': 'foo'}),
+    ('0.9.0', {'fix': ['foo', 'bar']}, {'phan': 'phan -d . --long-progress-bar', 'fix': ['foo', 'bar']}),
+))
+def test_fix_composer_phan(tempfs, version, scripts, expected):
+    tempfs.create_file('composer.json', contents=json.dumps({
+        'require-dev': {
+            'mediawiki/mediawiki-phan-config': version,
+        },
+        'scripts': scripts
+    }))
+    libup = LibraryUpgrader()
+    libup.fix_composer_phan()
+    assert tempfs.json_contents('composer.json')['scripts'] == expected
+
+
+def test_fix_composer_phan_noop(tempfs):
+    tempfs.create_file('composer.json', contents=json.dumps({
+        'require-dev': {
+            'mediawiki/mediawiki-codesniffer': '24.0.0',
+        },
+        'scripts': {}
+    }))
+    libup = LibraryUpgrader()
+    libup.fix_composer_phan()
+    assert tempfs.json_contents('composer.json')['scripts'] == {}
+
+
 def test_fix_eslint_config(tempfs):
     tempfs.create_file('Gruntfile.js',
                        contents=tempfs.fixture('ng', 'Gruntfile.js.before'))
