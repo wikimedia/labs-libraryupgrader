@@ -56,6 +56,9 @@ class Pusher(shell.ShellMixin):
             per += ',t=' + hashtag
         if plus2:
             per += ',l=Code-Review+2'
+        else:
+            # If we're not automerging, vote V+1 to trigger jenkins (T254070)
+            per += ',l=Verified+1'
         if message:
             per += ',m=' + urllib.parse.quote_plus(message)
         push_cmd = ['git', 'push',
@@ -71,7 +74,9 @@ class Pusher(shell.ShellMixin):
                     push_cmd[-1] = push_cmd[-1].replace(',l=Code-Review+2', '')
                     self.check_call(push_cmd, env=env)
                 else:
-                    raise
+                    # Try again without V+1
+                    push_cmd[-1] = push_cmd[-1].replace(',l=Verified+1', '')
+                    self.check_call(push_cmd, env=env)
         else:
             print('SIMULATE: '.join(push_cmd))
 
