@@ -938,6 +938,9 @@ class LibraryUpgrader(shell.ShellMixin):
         self.is_canary = repo in CANARIES
         self.output['sha1'] = self.sha1()
 
+        # Swap in the new php-parallel-lint package names
+        self.fix_php_parallel_lint_migration()
+
         # Collect current dependencies
         self.output['npm-deps'] = self.npm_deps()
         self.output['composer-deps'] = self.composer_deps()
@@ -971,9 +974,6 @@ class LibraryUpgrader(shell.ShellMixin):
         # We need to do this first because it can cause problems
         # with later eslint/stylelint upgrades
         self.fix_remove_eslint_stylelint_if_grunt()
-
-        # Also swap in the new php-parallel-lint
-        self.fix_php_parallel_lint_migration()
 
         # Try upgrades
         self.npm_upgrade(self.output)
