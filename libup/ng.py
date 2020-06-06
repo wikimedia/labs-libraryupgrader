@@ -538,6 +538,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.check_call(['composer', 'update'])
         hooks = {
             'mediawiki/mediawiki-codesniffer': self._handle_codesniffer,
+            'wikibase/wikibase-codesniffer': self._handle_codesniffer,
         }
         for update in updates:
             if update.name in hooks:
@@ -553,6 +554,10 @@ class LibraryUpgrader(shell.ShellMixin):
             phpcs_xml = '.phpcs.xml'
         else:
             phpcs_xml = 'phpcs.xml'
+        if update.name == 'wikibase/wikibase-codesniffer':
+            ref_name = 'vendor/wikibase/wikibase-codesniffer/Wikibase'
+        else:
+            ref_name = 'vendor/mediawiki/mediawiki-codesniffer/MediaWiki'
         failing = set()
         now_failing = set()
         now_pass = set()
@@ -565,7 +570,7 @@ class LibraryUpgrader(shell.ShellMixin):
         previously_failing = set()
         for child in root:
             if child.tag == 'rule' and child.attrib.get('ref') \
-                    and 'vendor/mediawiki/mediawiki-codesniffer/MediaWiki' in child.attrib.get('ref'):
+                    and ref_name in child.attrib.get('ref'):
                 for grandchild in child:
                     if grandchild.tag == 'exclude':
                         previously_failing.add(grandchild.attrib['name'])
@@ -574,7 +579,7 @@ class LibraryUpgrader(shell.ShellMixin):
         # Re-enable all disabled rules
         with open(phpcs_xml, 'w') as f:
             new = FIND_RULE.sub(
-                '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki" />',
+                '<rule ref="./' + ref_name + '" />',
                 old
             )
             f.write(new)
