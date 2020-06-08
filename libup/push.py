@@ -50,35 +50,50 @@ class Pusher(shell.ShellMixin):
     def can_autoapprove(self):
         return self.changed_files().issubset(AUTO_APPROVE_FILES)
 
-    def git_push(self, repo: str, hashtags: list, message='', plus2=False, push=False):
+    def build_push_command(self, options: dict) -> list:
         per = '%topic=bump-dev-deps'
-        for hashtag in hashtags:
+        for hashtag in options['hashtags']:
             per += ',t=' + hashtag
+        if options.get('vote'):
+            per += ',l=' + options['vote']
+            # If we're not automerging, vote V+1 to trigger jenkins (T254070)
+        if options.get('message'):
+            per += ',m=' + urllib.parse.quote_plus(options['message'])
+        return ['git', 'push',
+                utils.gerrit_url(options['repo'], GERRIT_USER, ssh=True),
+                'HEAD:refs/for/master' + per]
+
+    def git_push(self, repo: str, hashtags: list, message='', plus2=False, push=False):
+        options = {
+            'repo': repo,
+            'hashtags': hashtags,
+            'message': message,
+        }
         if plus2:
-            per += ',l=Code-Review+2'
+            options['vote'] = 'Code-Review+2'
         else:
             # If we're not automerging, vote V+1 to trigger jenkins (T254070)
-            per += ',l=Verified+1'
-        if message:
-            per += ',m=' + urllib.parse.quote_plus(message)
-        push_cmd = ['git', 'push',
-                    utils.gerrit_url(repo, GERRIT_USER, ssh=True),
-                    'HEAD:refs/for/master' + per]
+            options['vote'] = 'Verified+1'
         env = {'SSH_AUTH_SOCK': SSH_AUTH_SOCK}
         if push:
             try:
-                self.check_call(push_cmd, env=env)
+                self.check_call(self.build_push_command(options), env=env)
             except subprocess.CalledProcessError:
-                if plus2:
+                if options['vote'] == 'Code-Review+2':
                     # Try again without CR+2
-                    push_cmd[-1] = push_cmd[-1].replace(',l=Code-Review+2', '')
-                    self.check_call(push_cmd, env=env)
+                    options['vote'] = 'Verified+1'
+                    try:
+                        self.check_call(self.build_push_command(options), env=env)
+                    except subprocess.CalledProcessError:
+                        # And try again again without V+1
+                        options['vote'] = ''
+                        self.check_call(self.build_push_command(options), env=env)
                 else:
                     # Try again without V+1
-                    push_cmd[-1] = push_cmd[-1].replace(',l=Verified+1', '')
-                    self.check_call(push_cmd, env=env)
+                    options['vote'] = ''
+                    self.check_call(self.build_push_command(options), env=env)
         else:
-            print('SIMULATE: '.join(push_cmd))
+            print('SIMULATE: '.join(self.build_push_command(options)))
 
     def run(self, info):
         if not info.get('patch'):
