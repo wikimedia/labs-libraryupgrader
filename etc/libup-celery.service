@@ -8,10 +8,12 @@ User=libup
 Group=libup
 RuntimeDirectory=celery
 WorkingDirectory=/srv/libraryupgrader/
-ExecStart=/home/libup/.poetry/bin/poetry run celery -A libup.tasks worker --loglevel=info \
+ExecStart=/srv/libraryupgrader/venv/bin/celery -A libup.tasks worker --loglevel=info \
           --pidfile /run/celery/pid --concurrency=1
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
 
 [Install]
 WantedBy=multi-user.target
+
+

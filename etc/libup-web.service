@@ -8,7 +8,7 @@ User=libup
 Group=libup
 RuntimeDirectory=gunicorn
 WorkingDirectory=/srv/libraryupgrader
-ExecStart=/home/libup/.poetry/bin/poetry run gunicorn --pid /run/gunicorn/pid   \
+ExecStart=/srv/libraryupgrader/venv/bin/gunicorn --pid /run/gunicorn/pid   \
           -w 4 -b 0.0.0.0:3002 libup.web:app
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
@@ -16,3 +16,5 @@ PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
+
+
