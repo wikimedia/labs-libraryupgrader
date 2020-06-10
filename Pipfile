@@ -14,7 +14,7 @@ flask = "*"
 flask-bootstrap = "*"
 gunicorn = "*"
 markdown = "*"
-semver = "*"
+poetry-semver = "*"
 celery = "*"
 wikimediaci-utils = "*"
 
