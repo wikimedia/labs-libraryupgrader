@@ -1,10 +1,9 @@
 [tool.poetry]
 name = "libup"
 version = "0.1.0"
-description = "semi-automated tool that manages upgrades of libraries"
+description = ""
 authors = ["Kunal Mehta <legoktm@member.fsf.org>"]
 license = "AGPL-3.0-or-later"
-homepage = "https://www.mediawiki.org/wiki/Libraryupgrader"
 
 [tool.poetry.dependencies]
 python = "^3.7"
