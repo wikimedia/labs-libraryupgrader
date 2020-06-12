@@ -64,6 +64,8 @@ class Gruntfile:
             return 'true' if data else 'false'
         elif isinstance(data, str):
             return "'%s'" % data
+        elif isinstance(data, int):
+            return str(data)
         elif isinstance(data, list):
             if len(data) == 1:
                 return "[ '%s' ]" % data[0]
@@ -211,7 +213,7 @@ def expand_glob(paths: list) -> list:
 
 
 def __check_everything():
-    files = glob.glob('/home/km/gerrit/mediawiki/core/extensions/*/Gruntfile.js')
+    files = glob.glob('/home/user/gerrit/mediawiki/core/extensions/*/Gruntfile.js')
     for fname in sorted(files):
         if '/Popups/' in fname:
             # Whatever.
