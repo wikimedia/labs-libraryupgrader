@@ -39,7 +39,6 @@ TABLE_PRESETS = {
         'composer:mediawiki/mediawiki-codesniffer',
         'composer:mediawiki/minus-x',
         'composer:mediawiki/mediawiki-phan-config',
-        'composer:mediawiki/phan-taint-check-plugin',
         'npm:grunt-eslint', 'npm:eslint-config-wikimedia',
         'npm:grunt-stylelint', 'npm:stylelint-config-wikimedia',
         'npm:grunt-jsonlint', 'npm:grunt-banana-checker'
