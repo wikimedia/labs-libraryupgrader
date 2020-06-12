@@ -44,6 +44,14 @@ FIND_RULE = re.compile(
     ')',
     re.DOTALL
 )
+WB_RULE = '<rule ref="./vendor/wikibase/wikibase-codesniffer/Wikibase">'
+WB_RULE_NO_EXCLUDE = r'<rule (ref="(?:\./)?vendor/wikibase/wikibase-codesniffer/Wikibase")(?: )?/>'
+WB_FIND_RULE = re.compile(
+    '(' + re.escape(WB_RULE) + '(.*?)' + re.escape('</rule>') +
+    '|' + WB_RULE_NO_EXCLUDE +
+    ')',
+    re.DOTALL
+)
 # Can have up to 2-4 number parts, and can't have any
 # text like dev-master or -next
 VALID_NPM_VERSION = re.compile(r'^(\d+?\.?){2,4}$')
@@ -262,7 +270,8 @@ class LibraryUpgrader(shell.ShellMixin):
         if not self.has_composer:
             return
         composerjson = ComposerJson('composer.json')
-        if composerjson.get_version('mediawiki/mediawiki-codesniffer') is None:
+        if composerjson.get_version('mediawiki/mediawiki-codesniffer') is None and \
+                composerjson.get_version('wikibase/wikibase-codesniffer') is None:
             return
         changes = False
         j = composerjson.data
@@ -556,8 +565,14 @@ class LibraryUpgrader(shell.ShellMixin):
             phpcs_xml = 'phpcs.xml'
         if update.name == 'wikibase/wikibase-codesniffer':
             ref_name = 'vendor/wikibase/wikibase-codesniffer/Wikibase'
+            find_rule = FIND_RULE
+            rule_no_exclude = RULE_NO_EXCLUDE
+            rule = RULE
         else:
             ref_name = 'vendor/mediawiki/mediawiki-codesniffer/MediaWiki'
+            find_rule = WB_FIND_RULE
+            rule_no_exclude = WB_RULE_NO_EXCLUDE
+            rule = WB_RULE
         failing = set()
         now_failing = set()
         now_pass = set()
@@ -578,7 +593,7 @@ class LibraryUpgrader(shell.ShellMixin):
 
         # Re-enable all disabled rules
         with open(phpcs_xml, 'w') as f:
-            new = FIND_RULE.sub(
+            new = find_rule.sub(
                 '<rule ref="./' + ref_name + '" />',
                 old
             )
@@ -637,13 +652,13 @@ class LibraryUpgrader(shell.ShellMixin):
                     if i == 0:
                         # Expand self-closing rule tag
                         text = re.sub(
-                            RULE_NO_EXCLUDE,
+                            rule_no_exclude,
                             r'<rule \g<1>>\n\t</rule>',
                             text
                         )
                         text = text.replace(
-                            RULE,
-                            RULE + f'\n\t\t<exclude name="{sniff}" />'
+                            rule,
+                            rule + f'\n\t\t<exclude name="{sniff}" />'
                         )
                     else:
                         text = re.sub(
