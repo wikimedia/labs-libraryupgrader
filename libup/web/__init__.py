@@ -24,7 +24,7 @@ import os
 import re
 import wikimediaci_utils
 
-from .. import LOGS, MANAGERS, TYPES
+from .. import CANARIES, LOGS, MANAGERS, TYPES
 from ..data import Data
 
 app = Flask(__name__)
@@ -184,6 +184,7 @@ def library_(manager, name):
         name=name,
         used=used,
         library=found,
+        canaries=CANARIES,
     )
 
 
