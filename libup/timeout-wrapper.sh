@@ -1,3 +1,3 @@
 #!/bin/bash
 
-timeout 1800 poetry run $@
+timeout 1800 /venv/bin/$@

@@ -21,22 +21,24 @@ RUN git clone --depth 1 https://gerrit.wikimedia.org/r/integration/npm.git /srv/
     && rm -rf /srv/composer/.git \
     && ln -s /srv/composer/vendor/bin/composer /usr/bin/composer
 # TODO move grr into venv
-RUN pip3 install grr poetry
+RUN pip3 install grr
 RUN gem install --no-rdoc --no-ri jsduck
 
 RUN install --owner=nobody --group=nogroup --directory /src
+RUN install --owner=nobody --group=nogroup --directory /venv
 # Some tooling (e.g. git config) is easier if we have a home dir.
 RUN install --owner=nobody --group=nogroup --directory /nonexistent
 
 USER nobody
 COPY files/known_hosts /nonexistent/.ssh/known_hosts
 ENV PYTHONUNBUFFERED 1
-ENV POETRY_VIRTUALENVS_PATH /nonexistent/virtualenvs
-COPY pyproject.toml /src/
-COPY poetry.lock /src/
+RUN python3 -m venv /venv/ && /venv/bin/pip install -U pip wheel
 COPY setup.py /src/
+COPY requirements.txt /src/
 COPY ./libup /src/libup
-RUN cd /src && poetry install --no-dev
+RUN cd src/ \
+    && /venv/bin/pip install -r requirements.txt \
+    && /venv/bin/python setup.py install
 ENV COMPOSER_PROCESS_TIMEOUT 1800
 # Shared cache
 ENV NPM_CONFIG_CACHE=/cache
