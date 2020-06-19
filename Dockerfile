@@ -1,3 +1,7 @@
+FROM rust:latest AS rust-builder
+RUN apt-get update && apt-get install -y libssl-dev
+RUN cargo install gerrit-grr
+
 FROM docker-registry.wikimedia.org/wikimedia-buster
 ENV LANG C.UTF-8
 ENV CHROME_BIN /usr/bin/chromium
@@ -8,9 +12,9 @@ RUN apt-get update && \
     python build-essential pkg-config \
     php-cli php-xml php-zip php-gd \
     php-gmp php-mbstring php-curl php-intl \
-    python3 python3-dev python3-pip python3-venv \
-    python3-virtualenv python3-setuptools \
-    python3-wheel \
+    python3 python3-dev python3-venv \
+    # explicitly include libssl, for grr
+    libssl1.1 \
     firefox-esr chromium \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 RUN git clone --depth 1 https://gerrit.wikimedia.org/r/integration/npm.git /srv/npm \
@@ -20,8 +24,7 @@ RUN git clone --depth 1 https://gerrit.wikimedia.org/r/integration/npm.git /srv/
     && git clone --depth 1 https://gerrit.wikimedia.org/r/integration/composer.git /srv/composer \
     && rm -rf /srv/composer/.git \
     && ln -s /srv/composer/vendor/bin/composer /usr/bin/composer
-# TODO move grr into venv
-RUN pip3 install grr
+COPY --from=rust-builder /usr/local/cargo/bin/grr /usr/bin/grr
 RUN gem install --no-rdoc --no-ri jsduck
 
 RUN install --owner=nobody --group=nogroup --directory /src
