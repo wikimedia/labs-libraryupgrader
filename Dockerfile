@@ -35,7 +35,7 @@ RUN install --owner=nobody --group=nogroup --directory /nonexistent
 USER nobody
 COPY files/known_hosts /nonexistent/.ssh/known_hosts
 ENV PYTHONUNBUFFERED 1
-RUN python3 -m venv /venv/ && /venv/bin/pip install -U pip wheel
+RUN python3 -m venv /venv/ && /venv/bin/pip install -U wheel
 COPY setup.py /src/
 COPY requirements.txt /src/
 COPY ./libup /src/libup
