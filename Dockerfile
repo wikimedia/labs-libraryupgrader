@@ -27,6 +27,7 @@ RUN git clone --depth 1 https://gerrit.wikimedia.org/r/integration/npm.git /srv/
 COPY --from=rust-builder /usr/local/cargo/bin/grr /usr/bin/grr
 RUN gem install --no-rdoc --no-ri jsduck
 
+RUN install --owner=nobody --group=nogroup --directory /cache
 RUN install --owner=nobody --group=nogroup --directory /src
 RUN install --owner=nobody --group=nogroup --directory /venv
 # Some tooling (e.g. git config) is easier if we have a home dir.
