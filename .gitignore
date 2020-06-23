@@ -5,3 +5,5 @@ data/cache/*
 data/current/*.json
 data/logs/*
 libup.egg-info/
+diff-libraries/target/
+diff-libraries/*.db

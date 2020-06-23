@@ -1,0 +1,18 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>change #{{change}} - libup - diff libraries</title>
+    {% if status == "pending" %}<meta http-equiv="refresh" content="5">{% endif %}
+</head>
+<body>
+< <a href="/">Index</a>
+<h1>Diff libraries:</h1>
+<p><a href="https://gerrit.wikimedia.org/r/{{change}}">Gerrit change #{{change}}</a> - <a href="https://gerrit.wikimedia.org/g/{{project}}">{{project}}</a></p>
+{% if txtdiff %}
+<pre>{{txtdiff | safe}}</pre>
+{% else %}
+<p>Status: <b>{{status}}</b></p>
+{% endif %}
+<p><a href="https://gerrit.wikimedia.org/g/labs/libraryupgrader">Source code</a> available under the AGPLv3+.</p>
+</body>
+</html>

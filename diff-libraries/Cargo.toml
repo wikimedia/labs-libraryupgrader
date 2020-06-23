@@ -1,0 +1,19 @@
+[package]
+name = "diff-libraries"
+version = "0.1.0"
+authors = ["Kunal Mehta <legoktm@member.fsf.org>"]
+edition = "2018"
+license = "AGPL-3.0-or-later"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+git2 = "0.13.6"
+gerrit-grr = {version = "2.2.0", default-features = false}
+regex = "1"
+diesel = {version = "1.4.4", features = ["sqlite"]}
+diesel_migrations = {version = "1.4.0", features = ["sqlite"]}
+rocket = "0.4.5"
+rocket_contrib = {version = "0.4.5", default-features = false, features = ["tera_templates"]}
+serde = {version = "1.0", features = ["derive"]}
+tera = "0.11.20"

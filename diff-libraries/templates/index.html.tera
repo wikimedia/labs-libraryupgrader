@@ -1,0 +1,28 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>libup - diff libraries</title>
+</head>
+<body>
+<h1>Diff libraries</h1>
+<p>Get a full diff of a patch that upgrades some libraries.</p>
+{% if error %}
+<p><b>Error: </b> {{error}}</p>
+{% endif %}
+<form action="/" method="post">
+    <label for="change">Gerrit change #</label>
+    <input type="text" id="change" name="change" placeholder="12345">
+    <input type="submit" value="Go!">
+</form>
+
+<h1>Recent diffs</h1>
+<ul>
+    <!-- TODO: use url macro?? -->
+    {% for diff in recent %}
+    <li><a href="/change/{{diff.change}}">Gerrit change #{{diff.change}}</a> ({{diff.project}})</li>
+    {% endfor %}
+</ul>
+
+<p><a href="https://gerrit.wikimedia.org/g/labs/libraryupgrader">Source code</a> available under the AGPLv3+.</p>
+</body>
+</html>
