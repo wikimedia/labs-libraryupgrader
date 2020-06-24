@@ -33,7 +33,7 @@
 <p><code>{{version}}</code>: {{len(repos)}} repositories</p>
 <ul>
     {% for repo in repos|sort %}
-    <li><a href="{{url_for('r', repo=repo)}}"><code>{{repo}}</code></a></li>
+    <li>{% if repo in canaries %}🦆 {% endif %}<a href="{{url_for('r', repo=repo)}}"><code>{{repo}}</code></a></li>
     {% endfor %}
 </ul>
 {% endfor %}
