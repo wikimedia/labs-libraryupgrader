@@ -30,6 +30,7 @@ def test_gruntfile(tempfs):
         'options': {
             'cache': True,
             'reportUnusedDisableDirectives': True,
+            'fix': '!!GRUNT FIX!!',
         }
     }
     stylelint = gf.parse_section('stylelint')

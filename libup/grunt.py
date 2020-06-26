@@ -63,6 +63,8 @@ class Gruntfile:
         elif isinstance(data, bool):
             return 'true' if data else 'false'
         elif isinstance(data, str):
+            if data == '!!GRUNT FIX!!':
+                return "grunt.option( 'fix' )"
             return "'%s'" % data
         elif isinstance(data, int):
             return str(data)
@@ -113,6 +115,8 @@ class Gruntfile:
             inp = 'True'
         elif inp == 'false':
             inp = 'False'
+        elif inp == "grunt.option( 'fix' )":
+            inp = '"!!GRUNT FIX!!"'
         return inp
 
     def _inner_parse(self, lines: list) -> OrderedDict:

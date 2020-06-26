@@ -15,7 +15,8 @@ module.exports = function ( grunt ) {
 			all: '.',
 			options: {
 				cache: true,
-				reportUnusedDisableDirectives: true
+				reportUnusedDisableDirectives: true,
+				fix: grunt.option( 'fix' )
 			}
 		},
 		jsonlint: {
