@@ -166,13 +166,13 @@ class Gruntfile:
         return data
 
     def _find_tasks(self):
-        return re.search(r"registerTask\( '(lint|test)', \[ (.*?) \] \);", self.text)
+        return re.search(r"registerTask\(\s*?'(lint|test)',\s*?\[\s*?(.*?)\s*?\]\s*?\);", self.text, flags=re.DOTALL)
 
     def tasks(self) -> list:
         return ast.literal_eval('[' + self._find_tasks().group(2) + ']')
 
     def set_tasks(self, new_tasks: list):
-        self.text = self.text.replace(self._find_tasks().group(2), str(new_tasks)[1:-1])
+        self.text = self.text.replace(self._find_tasks().group(2), ' ' + str(new_tasks)[1:-1])
 
 
 def expand_braces(path: str) -> list:
@@ -225,10 +225,10 @@ def __check_everything():
         gf = Gruntfile(fname)
         if 'grunt-eslint' in gf.text:
             print(fname)
-            gf.tasks()
+            print(gf.tasks())
             original = gf.text
             data = gf.parse_section('eslint')
-            assert data.get('all') or data.get('shared')
+            assert data.get('all') or data.get('shared') or data.get('target')
             print(json.dumps(data))
             gf.set_section('eslint', data)
             if gf.text != original:
