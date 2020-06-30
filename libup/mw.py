@@ -37,6 +37,7 @@ OTHER_LIBRARIES = [
     'cdb',
     'css-sanitizer',
     'integration/docroot',
+    'labs/tools/coverme',
     'labs/tools/stewardbots',
     'mediawiki/oauthclient-php',
     'mediawiki/services/parsoid',
