@@ -261,8 +261,7 @@ class LibraryUpgrader(shell.ShellMixin):
             ENCODING_RE = re.compile(r"^(\s*<arg name=\"encoding\" value=\")((?!UTF-8)\S*)(\" />)$", re.MULTILINE)
 
             PHP5_RE = re.compile(r"^(\s*<arg name=\"extensions\" value=\".*)(,php5)(.*\" />)$", re.MULTILINE)
-            # TODO: Not removing .inc files yet, as they're still used in production code(!)
-            # INC_RE = re.compile(r"^(\s*<arg name=\"extensions\" value=\".*)(,inc)(.*\" />)$", re.MULTILINE)
+            INC_RE = re.compile(r"^(\s*<arg name=\"extensions\" value=\".*)(,inc)(.*\" />)$", re.MULTILINE)
 
             with open('.phpcs.xml', 'r') as f:
                 phpcs_xml = f.read()
@@ -272,10 +271,21 @@ class LibraryUpgrader(shell.ShellMixin):
                 changes = True
                 self.msg_fixes.append('Consolidated .phpcs.xml encoding to "UTF-8" (T200956).')
 
-            if PHP5_RE.search(phpcs_xml):
+            if PHP5_RE.search(phpcs_xml) and INC_RE.search(phpcs_xml):
                 phpcs_xml = re.sub(PHP5_RE, r'\1\3', phpcs_xml)
+                phpcs_xml = re.sub(INC_RE, r'\1\3', phpcs_xml)
                 changes = True
-                self.msg_fixes.append('Dropped .php5 files from .phpcs.xml (T200956).')
+                self.msg_fixes.append('Dropped .php5 and .inc files from .phpcs.xml (T200956).')
+            else:
+                if PHP5_RE.search(phpcs_xml):
+                    phpcs_xml = re.sub(PHP5_RE, r'\1\3', phpcs_xml)
+                    changes = True
+                    self.msg_fixes.append('Dropped .php5 files from .phpcs.xml (T200956).')
+
+                if INC_RE.search(phpcs_xml):
+                    phpcs_xml = re.sub(INC_RE, r'\1\3', phpcs_xml)
+                    changes = True
+                    self.msg_fixes.append('Dropped .inc files from .phpcs.xml (T200956).')
 
             if changes:
                 with open('.phpcs.xml', 'w') as f:

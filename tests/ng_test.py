@@ -98,7 +98,7 @@ def test_fix_phpcs_xml_configuration_noop(tempfs):
         contents="<?xml version=\"1.0\" encoding=\"UTF-8\"?><ruleset>\n" +
                  "\t<rule ref=\"./vendor/mediawiki/mediawiki-codesniffer/MediaWiki\" />\n" +
                  "\t<file>.</file>\n" +
-                 "\t<arg name=\"extensions\" value=\"php,inc\" />\n" +
+                 "\t<arg name=\"extensions\" value=\"php\" />\n" +
                  "\t<arg name=\"encoding\" value=\"UTF-8\" />\n" +
                  "</ruleset>\n"
     )
@@ -113,7 +113,7 @@ def test_fix_phpcs_xml_configuration_encodingchange(tempfs):
         contents="<?xml version=\"1.0\" encoding=\"UTF-8\"?><ruleset>\n" +
                  "\t<rule ref=\"./vendor/mediawiki/mediawiki-codesniffer/MediaWiki\" />\n" +
                  "\t<file>.</file>\n" +
-                 "\t<arg name=\"extensions\" value=\"php,inc\" />\n" +
+                 "\t<arg name=\"extensions\" value=\"php\" />\n" +
                  "\t<arg name=\"encoding\" value=\"utf-8\" />\n" +
                  "</ruleset>\n"
     )
@@ -129,7 +129,7 @@ def test_fix_fix_phpcs_xml_configuration_filetypes_php5removal(tempfs):
         contents="<?xml version=\"1.0\" encoding=\"UTF-8\"?><ruleset>\n" +
                  "\t<rule ref=\"./vendor/mediawiki/mediawiki-codesniffer/MediaWiki\" />\n" +
                  "\t<file>.</file>\n" +
-                 "\t<arg name=\"extensions\" value=\"php,php5,inc\" />\n" +
+                 "\t<arg name=\"extensions\" value=\"php,php5\" />\n" +
                  "\t<arg name=\"encoding\" value=\"UTF-8\" />\n" +
                  "</ruleset>\n"
     )
@@ -137,6 +137,39 @@ def test_fix_fix_phpcs_xml_configuration_filetypes_php5removal(tempfs):
     libup.fix_phpcs_xml_configuration()
     assert 'php5' not in tempfs.contents('.phpcs.xml')
     assert libup.msg_fixes == ['Dropped .php5 files from .phpcs.xml (T200956).']
+
+
+def test_fix_fix_phpcs_xml_configuration_filetypes_incremoval(tempfs):
+    tempfs.create_file(
+        '.phpcs.xml',
+        contents="<?xml version=\"1.0\" encoding=\"UTF-8\"?><ruleset>\n" +
+                 "\t<rule ref=\"./vendor/mediawiki/mediawiki-codesniffer/MediaWiki\" />\n" +
+                 "\t<file>.</file>\n" +
+                 "\t<arg name=\"extensions\" value=\"php,inc\" />\n" +
+                 "\t<arg name=\"encoding\" value=\"UTF-8\" />\n" +
+                 "</ruleset>\n"
+    )
+    libup = LibraryUpgrader()
+    libup.fix_phpcs_xml_configuration()
+    assert 'inc' not in tempfs.contents('.phpcs.xml')
+    assert libup.msg_fixes == ['Dropped .inc files from .phpcs.xml (T200956).']
+
+
+def test_fix_fix_phpcs_xml_configuration_filetypes_php5andincremoval(tempfs):
+    tempfs.create_file(
+        '.phpcs.xml',
+        contents="<?xml version=\"1.0\" encoding=\"UTF-8\"?><ruleset>\n" +
+                 "\t<rule ref=\"./vendor/mediawiki/mediawiki-codesniffer/MediaWiki\" />\n" +
+                 "\t<file>.</file>\n" +
+                 "\t<arg name=\"extensions\" value=\"php,php5,inc\" />\n" +
+                 "\t<arg name=\"encoding\" value=\"UTF-8\" />\n" +
+                 "</ruleset>\n"
+    )
+    libup = LibraryUpgrader()
+    libup.fix_phpcs_xml_configuration()
+    assert 'php5' not in tempfs.contents('.phpcs.xml')
+    assert 'inc' not in tempfs.contents('.phpcs.xml')
+    assert libup.msg_fixes == ['Dropped .php5 and .inc files from .phpcs.xml (T200956).']
 
 
 def test_fix_fix_phpcs_xml_configuration_encodingchange_and_filetypes_php5removal(tempfs):
@@ -153,8 +186,9 @@ def test_fix_fix_phpcs_xml_configuration_encodingchange_and_filetypes_php5remova
     libup.fix_phpcs_xml_configuration()
     assert 'utf' not in tempfs.contents('.phpcs.xml')
     assert 'php5' not in tempfs.contents('.phpcs.xml')
+    assert 'inc' not in tempfs.contents('.phpcs.xml')
     assert 'Consolidated .phpcs.xml encoding to "UTF-8" (T200956).' in libup.msg_fixes
-    assert 'Dropped .php5 files from .phpcs.xml (T200956).' in libup.msg_fixes
+    assert 'Dropped .php5 and .inc files from .phpcs.xml (T200956).' in libup.msg_fixes
 
 
 def test_fix_phpcs_xml_location_exists(tempfs, mocker):
