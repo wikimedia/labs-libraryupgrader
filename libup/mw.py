@@ -51,6 +51,7 @@ OTHER_LIBRARIES = [
     'php-session-serializer',
     'purtle',
     'testing-access-wrapper',
+    'translatewiki',
     'unicodejs',
     'utfnormal',
     'wikimedia/lucene-explain-parser',
