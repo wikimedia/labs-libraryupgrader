@@ -61,6 +61,14 @@ def test_package_json(tempfs):
     assert tempfs.json_contents('package.json')['devDependencies']['grunt'] == '1.0.5'
 
 
+def test_package_json_without_dev_dependencies(tempfs):
+    tempfs.create_file('package.json', contents="{}")
+    pkg = PackageJson('package.json')
+    assert pkg.get_version('abc') is None
+    pkg.save()
+    assert tempfs.contents('package.json') == '{}\n'
+
+
 def test_composer_json(tempfs):
     tempfs.create_file('composer.json', contents=composer_json)
     pkg = ComposerJson('composer.json')
@@ -101,6 +109,24 @@ def test_composer_sorts_require_dev(tempfs):
 \t\t"abc": "0.1.0",
 \t\t"def": "0.1.0",
 \t\t"zzz": "0.1.0"
+\t}
+}
+"""
+
+
+def test_composer_works_without_require_dev_section(tempfs):
+    tempfs.create_file('composer.json', contents="{}")
+    pkg = ComposerJson('composer.json')
+    assert pkg.get_version('abc') is None
+    pkg.save()
+    assert tempfs.contents('composer.json') == '{}\n'
+
+    pkg.add_package('def', '0.1.0')
+    assert pkg.get_version('def') == '0.1.0'
+    pkg.save()
+    assert tempfs.contents('composer.json') == """{
+\t"require-dev": {
+\t\t"def": "0.1.0"
 \t}
 }
 """

@@ -27,23 +27,27 @@ class PackageJson:
         self.data = utils.load_ordered_json(self.fname)
 
     def get_packages(self):
-        return list(self.data['devDependencies'])
+        return list(self.data.get('devDependencies', {}))
 
     def get_version(self, package):
-        if package in self.data['devDependencies']:
+        try:
             return self.data['devDependencies'][package]
-
-        return None
+        except KeyError:
+            return None
 
     def set_version(self, package, version):
-        if package in self.data['devDependencies']:
+        if package in self.data.get('devDependencies', {}):
             self.data['devDependencies'][package] = version
             return
 
         raise RuntimeError(f'Unable to set version for {package} to {version}')
 
     def remove_package(self, package):
-        del self.data['devDependencies'][package]
+        if 'devDependencies' in self.data:
+            del self.data['devDependencies'][package]
+            return
+
+        raise RuntimeError(f'Unable to remove {package}')
 
     def save(self):
         utils.save_pretty_json(self.data, self.fname)
@@ -55,10 +59,10 @@ class PackageLockJson:
         self.data = utils.load_ordered_json(self.fname)
 
     def get_version(self, package):
-        if package in self.data['dependencies']:
+        try:
             return self.data['dependencies'][package]['version']
-
-        return None
+        except KeyError:
+            return None
 
     def set_version(self, package, version):
         raise NotImplementedError
@@ -75,7 +79,7 @@ class ComposerJson:
         self.data = utils.load_ordered_json(self.fname)
 
     def get_version(self, package):
-        if package in self.data['require-dev']:
+        if package in self.data.get('require-dev', {}):
             return self.data['require-dev'][package]
         if 'extra' in self.data:
             suffix = package.split('/')[-1]
@@ -92,7 +96,7 @@ class ComposerJson:
         return None
 
     def set_version(self, package, version):
-        if package in self.data['require-dev']:
+        if package in self.data.get('require-dev', {}):
             self.data['require-dev'][package] = version
             return
         if 'extra' in self.data:
@@ -104,10 +108,13 @@ class ComposerJson:
         raise RuntimeError(f'Unable to set version for {package} to {version}')
 
     def add_package(self, package: str, version: str):
+        if 'require-dev' not in self.data:
+            self.data['require-dev'] = {}
+
         self.data['require-dev'][package] = version
 
     def remove_package(self, package):
-        if package in self.data['require-dev']:
+        if package in self.data.get('require-dev', {}):
             del self.data['require-dev'][package]
             return
 
@@ -124,6 +131,7 @@ class ComposerJson:
         raise RuntimeError(f'Unable to remove {extra}')
 
     def save(self):
-        # Re-sort dependencies by package name
-        self.data['require-dev'] = OrderedDict(sorted(self.data['require-dev'].items(), key=lambda x: x[0]))
+        if 'require-dev' in self.data:
+            # Re-sort dependencies by package name
+            self.data['require-dev'] = OrderedDict(sorted(self.data['require-dev'].items(), key=lambda x: x[0]))
         utils.save_pretty_json(self.data, self.fname)
