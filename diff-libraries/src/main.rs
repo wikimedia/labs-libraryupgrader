@@ -14,7 +14,6 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#![feature(decl_macro)]
 
 mod backend;
 mod models;
@@ -32,7 +31,8 @@ extern crate rocket;
 // Ship all the SQL stuff in the binary
 embed_migrations!();
 
-fn main() {
+#[rocket::launch]
+fn launch() -> rocket::Rocket {
     embedded_migrations::run(&backend::establish_connection()).unwrap();
-    web::run();
+    web::rocket()
 }

@@ -1,4 +1,4 @@
-FROM rustlang/rust:nightly AS builder
+FROM rust:latest AS builder
 
 COPY Cargo.* /src/
 COPY diesel.toml /src/

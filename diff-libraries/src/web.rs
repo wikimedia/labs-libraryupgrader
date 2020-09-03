@@ -132,9 +132,10 @@ fn handle_change(change: String) -> Template {
     }
 }
 
-pub fn run() {
+rocket_healthz::healthz!();
+
+pub fn rocket() -> rocket::Rocket {
     rocket::ignite()
         .attach(Template::fairing())
-        .mount("/", routes![index, handle_post, handle_change])
-        .launch();
+        .mount("/", routes![index, handle_post, handle_change, rocket_healthz])
 }
