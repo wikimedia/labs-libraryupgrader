@@ -720,18 +720,23 @@ class LibraryUpgrader(shell.ShellMixin):
             return
         self.check_call(['npm', 'install'])
         hooks = {
-            'eslint-config-wikimedia': self._handle_eslint,
-            'stylelint-config-wikimedia': self._handle_stylelint,
+            'eslint-config-wikimedia': [self._bump_eslint, self._handle_eslint],
+            'stylelint-config-wikimedia': [self._handle_stylelint],
         }
 
         for update in updates:
-            if update.name in hooks:
+            for hook in hooks.get(update.name, []):
                 # Pass the Update to the hook so
                 # they can adjust reason, etc.
-                hooks[update.name](update)
+                hook(update)
 
         # TODO: support rollback if this fails
         self.npm_test()
+
+    def _bump_eslint(self, update: Update):
+        # TODO: figure out how to update the commit message here
+        # See T261520 for why we need to force update eslint sometimes
+        self.check_call(['npm', 'update', 'eslint', '-depth', '1'])
 
     def _handle_stylelint(self, update: Update):
         if os.path.exists('Gruntfile.js'):
