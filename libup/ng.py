@@ -368,6 +368,47 @@ class LibraryUpgrader(shell.ShellMixin):
         utils.save_pretty_json(data, '.eslintrc.json')
         self.msg_fixes.append('Set `root: true` in .eslintrc.json (T206485).')
 
+    def fix_eslintrc_use_mediawiki_profile(self, repo):
+        if not repo.startswith(('mediawiki/extensions/', 'mediawiki/skins/')):
+            # Only MW extensions and skins
+            return
+        if not os.path.exists('.eslintrc.json'):
+            return
+        data = utils.load_ordered_json('.eslintrc.json')
+        if 'extends' not in data:
+            # Something's wrong. Let's do nothing rather than make things worse.
+            return
+
+        if 'wikimedia/mediawiki' not in data['extends']:
+            data['extends'].append('wikimedia/mediawiki')
+            self.msg_fixes.append('Added the `wikimedia/mediawiki` profile in .eslintrc.json (T262222).')
+
+        if 'globals' in data:
+            fixed_mw_globals = []
+            for fixable in ['mw', 'OO', 'require', 'module']:
+                if fixable in data['globals']:
+                    del data['globals'][fixable]
+                    fixed_mw_globals.append(fixable)
+            if '$' in data['globals']:
+                if 'wikimedia/jquery' not in data['extends']:
+                    data['extends'].append('wikimedia/jquery')
+                    self.msg_fixes.append('Added the `wikimedia/jquery` profile in .eslintrc.json (T262222).')
+                del data['globals']['$']
+                self.msg_fixes.append('Removed global `$`, included in the `wikimedia/jquery` profile (T262222).')
+            if fixed_mw_globals:
+                if len(fixed_mw_globals) == 1:
+                    msg = 'Removed global `{}`, included via `wikimedia/mediawiki` profile (T262222).'.format(
+                        fixed_mw_globals[0])
+                else:
+                    msg = 'Removed globals `{}`, included via `wikimedia/mediawiki` profile (T262222).'.format(
+                        '`, `'.join(fixed_mw_globals))
+                self.msg_fixes.append(msg)
+            if not data['globals']:
+                del data['globals']
+                self.msg_fixes.append('Dropped the emtpy global definition in .eslintrc.json.')
+
+        utils.save_pretty_json(data, '.eslintrc.json')
+
     def fix_eslint_config(self):
         if not os.path.exists('Gruntfile.js'):
             return
@@ -1046,6 +1087,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_eslintrc_json_location()
         self.fix_stylelintrc_json_location()
         self.fix_root_eslintrc()
+        self.fix_eslintrc_use_mediawiki_profile(repo)
         self.fix_eslint_config()
         self.fix_add_vendor_node_modules_to_gitignore()
         self.fix_phpunit_result_cache()

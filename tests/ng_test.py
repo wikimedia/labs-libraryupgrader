@@ -498,3 +498,81 @@ def test_fix_phan_taint_check_plugin_merge_to_phan_current(tempfs):
     libup.fix_phan_taint_check_plugin_merge_to_phan()
     composer = tempfs.json_contents('composer.json')
     assert 'extra' not in composer
+
+
+def test_fix_eslintrc_use_mediawiki_profile(tempfs):
+    tempfs.create_file('.eslintrc.json',
+                       contents="""
+    {
+        "root": true,
+        "extends": [
+            "wikimedia/client"
+        ],
+        "globals": {
+            "OO": false,
+            "mw": false
+        }
+    }
+    """)
+    libup = LibraryUpgrader()
+    libup.fix_eslintrc_use_mediawiki_profile('mediawiki/extensions/Test')
+    eslintrc = tempfs.json_contents('.eslintrc.json')
+    assert len(eslintrc) == 2
+    assert len(eslintrc['extends']) == 2
+    assert 'wikimedia/mediawiki' in eslintrc['extends']
+    assert 'wikimedia/jquery' not in eslintrc['extends']
+    assert 'globals' not in eslintrc
+
+
+def test_fix_eslintrc_use_mediawiki_profile_and_jquery_one_too(tempfs):
+    tempfs.create_file('.eslintrc.json',
+                       contents="""
+    {
+        "root": true,
+        "extends": [
+            "wikimedia/client"
+        ],
+        "globals": {
+            "$": false,
+            "OO": false,
+            "mw": false
+        }
+    }
+    """)
+    libup = LibraryUpgrader()
+    libup.fix_eslintrc_use_mediawiki_profile('mediawiki/extensions/Test')
+    eslintrc = tempfs.json_contents('.eslintrc.json')
+    assert len(eslintrc) == 2
+    assert len(eslintrc['extends']) == 3
+    assert 'wikimedia/client' in eslintrc['extends']
+    assert 'wikimedia/mediawiki' in eslintrc['extends']
+    assert 'wikimedia/jquery' in eslintrc['extends']
+    assert 'globals' not in eslintrc
+
+
+def test_fix_eslintrc_use_mediawiki_profile_but_keep_other_stuff(tempfs):
+    tempfs.create_file('.eslintrc.json',
+                       contents="""
+    {
+        "root": true,
+        "extends": [
+            "wikimedia/client"
+        ],
+        "globals": {
+            "testValue": false,
+            "OO": false,
+            "mw": false
+        }
+    }
+    """)
+    libup = LibraryUpgrader()
+    libup.fix_eslintrc_use_mediawiki_profile('mediawiki/extensions/Test')
+    eslintrc = tempfs.json_contents('.eslintrc.json')
+    assert len(eslintrc) == 3
+    assert len(eslintrc['extends']) == 2
+    assert 'wikimedia/client' in eslintrc['extends']
+    assert 'wikimedia/mediawiki' in eslintrc['extends']
+    assert len(eslintrc['globals']) == 1
+    assert 'OO' not in eslintrc['globals']
+    assert 'mw' not in eslintrc['globals']
+    assert 'testValue' in eslintrc['globals']
