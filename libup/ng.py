@@ -818,7 +818,7 @@ class LibraryUpgrader(shell.ShellMixin):
         # eslint exits with status code of 1 if there are any
         # errors left, so ignore that. Just try and fix as much
         # as possible
-        files = []
+        files = ['.']
         if os.path.exists('Gruntfile.js'):
             gf = grunt.Gruntfile()
             try:
