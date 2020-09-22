@@ -25,6 +25,7 @@ RUN git clone --depth 1 https://gerrit.wikimedia.org/r/integration/npm.git /srv/
     && rm -rf /srv/composer/.git \
     && ln -s /srv/composer/vendor/bin/composer /usr/bin/composer
 COPY --from=rust-builder /usr/local/cargo/bin/grr /usr/bin/grr
+COPY files/gitconfig /etc/gitconfig
 RUN gem install --no-rdoc --no-ri jsduck
 
 RUN install --owner=nobody --group=nogroup --directory /cache
