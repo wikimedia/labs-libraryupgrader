@@ -389,6 +389,10 @@ class LibraryUpgrader(shell.ShellMixin):
             # Something's wrong. Let's do nothing rather than make things worse.
             return
 
+        # If it's a string, turn it into an array
+        if isinstance(data['extends'], str):
+            data['extends'] = [data['extends']]
+
         if 'wikimedia/mediawiki' not in data['extends']:
             data['extends'].append('wikimedia/mediawiki')
             self.msg_fixes.append('Added the `wikimedia/mediawiki` profile in .eslintrc.json (T262222).')
