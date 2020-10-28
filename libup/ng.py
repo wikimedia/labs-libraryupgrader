@@ -645,14 +645,14 @@ class LibraryUpgrader(shell.ShellMixin):
             phpcs_xml = 'phpcs.xml'
         if update.name == 'wikibase/wikibase-codesniffer':
             ref_name = 'vendor/wikibase/wikibase-codesniffer/Wikibase'
-            find_rule = FIND_RULE
-            rule_no_exclude = RULE_NO_EXCLUDE
-            rule = RULE
-        else:
-            ref_name = 'vendor/mediawiki/mediawiki-codesniffer/MediaWiki'
             find_rule = WB_FIND_RULE
             rule_no_exclude = WB_RULE_NO_EXCLUDE
             rule = WB_RULE
+        else:
+            ref_name = 'vendor/mediawiki/mediawiki-codesniffer/MediaWiki'
+            find_rule = FIND_RULE
+            rule_no_exclude = RULE_NO_EXCLUDE
+            rule = RULE
         failing = set()
         now_failing = set()
         now_pass = set()
