@@ -866,6 +866,11 @@ class LibraryUpgrader(shell.ShellMixin):
                 stylelint_cfg['rules'][rule] = None
                 msg += '* ' + rule + '\n'
             msg += '\n'
+
+            if not stylelint_cfg['rules']:
+                del stylelint_cfg['rules']
+                self.msg_fixes.append('stylelint: Dropping empty `rules` definition.')
+
             utils.save_pretty_json(stylelint_cfg, '.stylelintrc.json')
             update.reason = msg
 
@@ -929,6 +934,11 @@ class LibraryUpgrader(shell.ShellMixin):
                 eslint_cfg['rules'][rule] = 'warn'
                 msg += '* ' + rule + '\n'
             msg += '\n'
+
+            if not eslint_cfg['rules']:
+                del eslint_cfg['rules']
+                self.msg_fixes.append('eslint: Dropping empty `rules` definition.')
+
             utils.save_pretty_json(eslint_cfg, '.eslintrc.json')
             update.reason = msg
 
