@@ -12,6 +12,7 @@ RUN apt-get update && \
     python build-essential pkg-config \
     php-cli php-xml php-zip php-gd \
     php-gmp php-mbstring php-curl php-intl \
+    php-xdebug \
     python3 python3-dev python3-venv \
     # explicitly include libssl, for grr
     libssl1.1 \
