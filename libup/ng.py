@@ -419,7 +419,7 @@ class LibraryUpgrader(shell.ShellMixin):
                 self.msg_fixes.append(msg)
             if not data['globals']:
                 del data['globals']
-                self.msg_fixes.append('Dropped the emtpy global definition in .eslintrc.json.')
+                self.msg_fixes.append('Dropped the empty global definition in .eslintrc.json.')
 
         utils.save_pretty_json(data, '.eslintrc.json')
 
