@@ -91,7 +91,8 @@ def r_index():
     repos = list(data.get_data())
     return render_template(
         'r_index.html',
-        repos=repos
+        repos=repos,
+        errors=data.get_errors(),
     )
 
 
@@ -153,6 +154,7 @@ def library_table():
         want=want,
         display=display,
         ci_utils=wikimediaci_utils,
+        errors=data.get_errors(),
     )
 
 
@@ -185,6 +187,7 @@ def library_(manager, name):
         used=used,
         library=found,
         canaries=CANARIES,
+        errors=data.get_errors(),
     )
 
 
@@ -235,10 +238,10 @@ def _new_log_search(repo, files):
 
 @app.route('/vulns/npm')
 def vulns_npm():
-    data = Data().get_data()
+    data = Data()
     advisories = {}
     affected = defaultdict(dict)
-    for repo, info in data.items():
+    for repo, info in data.get_data().items():
         if not info.get('npm-audit'):
             continue
         if 'error' in info['npm-audit']:
@@ -272,6 +275,7 @@ def vulns_npm():
         COLORS=COLORS,
         dev_all=lambda x: all(y.get('dev') for y in x),
         via=via,
+        errors=data.get_errors(),
     )
 
 

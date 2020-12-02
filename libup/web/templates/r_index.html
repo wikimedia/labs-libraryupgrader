@@ -4,7 +4,7 @@
 <h1>tracked repositories</h1>
 <ul>
     {% for repo in sorted(repos) %}
-    <li><a href="{{url_for('r', repo=repo)}}">{{repo}}</a></li>
+    <li>{% if repo in errors %}❌ {% endif %}<a href="{{url_for('r', repo=repo)}}">{{repo}}</a></li>
     {% endfor %}
 </ul>
 
