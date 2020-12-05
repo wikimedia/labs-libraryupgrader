@@ -85,6 +85,9 @@ class Library:
         if self.version.strip() in ['*', 'latest']:
             # special case, T243262
             return False
+        elif self.version.startswith('git'):
+            # see T268254#6670861
+            return False
         return is_greater_than(self.version, self.latest_version())
 
 
