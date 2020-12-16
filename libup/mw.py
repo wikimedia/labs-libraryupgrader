@@ -63,6 +63,7 @@ OTHER_LIBRARIES = [
     'utfnormal',
     'wikibase/javascript-api',
     'wikimedia/lucene-explain-parser',
+    'wikipeg',
     'wikimedia/portals',
     'wikimedia/textcat',
 ]
