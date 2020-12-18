@@ -34,15 +34,9 @@ elif os.path.exists('/.dockerenv'):
 else:
     CONFIG_REPO = os.path.join(DATA_ROOT, 'config')
 RELEASES = os.path.join(CONFIG_REPO, 'releases.json')
+REPOSITORIES = os.path.join(CONFIG_REPO, 'repositories.json')
 MANAGERS = ['composer', 'npm']
 TYPES = ['deps', 'dev']
-CANARIES = [
-    'mediawiki/extensions/Linter',
-    'mediawiki/extensions/MassMessage',
-    'mediawiki/extensions/VisualEditor',
-    'mediawiki/skins/MonoBook',
-    'oojs/ui',
-]
 GERRIT_USER = 'libraryupgrader'
 GIT_NAME = 'libraryupgrader'
 GIT_EMAIL = 'tools.libraryupgrader@tools.wmflabs.org'

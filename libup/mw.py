@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Common functions for MediaWiki stuff things.
-Copyright (C) 2017-2018 Kunal Mehta <legoktm@member.fsf.org>
+Copyright (C) 2017-2018, 2020 Kunal Mehta <legoktm@member.fsf.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -19,55 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import wikimediaci_utils as ci
 
-from . import gerrit
-
-
-# Gerrit repos not under mediawiki/libs/
-OTHER_LIBRARIES = [
-    'AhoCorasick',
-    'CLDRPluralRuleParser',
-    'HtmlFormatter',
-    'IPSet',
-    'RelPath',
-    'RunningStat',
-    'VisualEditor/VisualEditor',
-    'WrappedString',
-    'at-ease',
-    'base-convert',
-    'cdb',
-    'css-sanitizer',
-    'data-values/value-view',
-    'integration/docroot',
-    'labs/tools/coverme',
-    'labs/tools/stewardbots',
-    'mediawiki/oauthclient-php',
-    'mediawiki/services/change-propagation',
-    'mediawiki/services/chromium-render',
-    'mediawiki/services/citoid',
-    'mediawiki/services/cxserver',
-    'mediawiki/services/eventstreams',
-    'mediawiki/services/kartotherian',
-    'mediawiki/services/parsoid',
-    'mediawiki/tools/codesniffer',
-    'mediawiki/tools/minus-x',
-    'mediawiki/tools/phan',
-    'mediawiki/tools/phan/SecurityCheckPlugin',
-    'mediawiki/tools/phpunit-patch-coverage',
-    'oojs/core',
-    'oojs/ui',
-    'performance/arc-lamp',
-    'php-session-serializer',
-    'purtle',
-    'testing-access-wrapper',
-    'translatewiki',
-    'unicodejs',
-    'utfnormal',
-    'wikibase/javascript-api',
-    'wikimedia/lucene-explain-parser',
-    'wikipeg',
-    'wikimedia/portals',
-    'wikimedia/textcat',
-]
+from . import config, gerrit
 
 
 def get_everything():
@@ -76,5 +28,11 @@ def get_everything():
 
 
 def get_library_list():
-    yield from gerrit.list_projects('mediawiki/libs/')
-    yield from OTHER_LIBRARIES
+    """Get the list of repositories from the config repo"""
+    repos = config.repositories(pull=True)['repositories']
+    for repo in repos:
+        if repo.endswith('/*'):
+            # Strip the * before searching for the prefix
+            yield from gerrit.list_projects(repo[:-1])
+        else:
+            yield repo

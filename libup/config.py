@@ -1,5 +1,5 @@
 """
-Copyright (C) 2019 Kunal Mehta <legoktm@member.fsf.org>
+Copyright (C) 2019-2020 Kunal Mehta <legoktm@member.fsf.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -19,10 +19,11 @@ import json
 import os
 import subprocess
 
-from . import CONFIG_REPO, RELEASES
+from . import CONFIG_REPO, RELEASES, REPOSITORIES
 
 
-def config(pull=False) -> dict:
+def ensure(pull=False):
+    """ensure the config repo exists"""
     if not os.path.exists(RELEASES):
         subprocess.check_call([
             'git', 'clone',
@@ -32,10 +33,21 @@ def config(pull=False) -> dict:
     elif pull:
         subprocess.check_call(['git', 'pull'], cwd=CONFIG_REPO)
 
+
+def releases(pull=False) -> dict:
+    ensure(pull=pull)
+
     with open(RELEASES) as f:
+        return json.load(f)
+
+
+def repositories(pull=False) -> dict:
+    ensure(pull=pull)
+
+    with open(REPOSITORIES) as f:
         return json.load(f)
 
 
 def should_push(pull=True) -> bool:
     """whether to push changes"""
-    return config(pull=pull)['push']
+    return releases(pull=pull)['push']

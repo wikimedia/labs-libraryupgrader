@@ -20,7 +20,7 @@ import json
 import os
 from typing import Dict, List
 
-from . import CANARIES, DATA_ROOT, MANAGERS, TYPES
+from . import DATA_ROOT, MANAGERS, TYPES, config
 from .library import Library
 
 
@@ -68,7 +68,7 @@ class Data:
         return deps
 
     def check_canaries(self, lib: Library):
-        for repo in CANARIES:
+        for repo in config.repositories()['canaries']:
             try:
                 info = self.get_repo_data(repo)
             except ValueError:

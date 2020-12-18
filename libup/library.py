@@ -22,8 +22,7 @@ import semver
 import semver.exceptions
 import traceback
 
-from . import PACKAGIST_MIRROR, session
-from .config import config
+from . import PACKAGIST_MIRROR, config, session
 
 
 class Library:
@@ -170,4 +169,4 @@ def _get_npm_metadata(package: str) -> dict:
 
 def get_good_releases(pull=False) -> dict:
     # TODO: do we need this wrapper?
-    return config(pull=pull)
+    return config.releases(pull=pull)

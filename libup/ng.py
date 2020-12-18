@@ -30,7 +30,7 @@ import traceback
 from typing import List
 from xml.etree import ElementTree
 
-from . import CANARIES, PHP_SECURITY_CHECK, gerrit, grunt, library, session, shell, utils
+from . import PHP_SECURITY_CHECK, config, gerrit, grunt, library, session, shell, utils
 from .collections import SaveDict
 from .data import Data
 from .files import ComposerJson, PackageJson, PackageLockJson
@@ -1050,7 +1050,7 @@ class LibraryUpgrader(shell.ShellMixin):
         # Output the date we run as first thing
         self.check_call(['date'])
         self.clone(repo)
-        self.is_canary = repo in CANARIES
+        self.is_canary = repo in config.repositories()['canaries']
         self.output['sha1'] = self.sha1()
 
         # Swap in the new php-parallel-lint package names

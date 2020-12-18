@@ -21,7 +21,7 @@ import argparse
 import json
 import os
 
-from . import CANARIES, DATA_ROOT, mw, utils
+from . import DATA_ROOT, config, mw, utils
 from .data import Data
 from .tasks import run_check
 
@@ -35,7 +35,7 @@ def main():
     everything = None
     data = Data()
     if args.repo == 'canaries':
-        gen = CANARIES
+        gen = config.repositories()['canaries']
     elif args.repo == 'errors':
         gen = sorted(data.get_errors())
     elif args.repo:
