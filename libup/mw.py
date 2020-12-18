@@ -55,6 +55,7 @@ OTHER_LIBRARIES = [
     'mediawiki/tools/phpunit-patch-coverage',
     'oojs/core',
     'oojs/ui',
+    'performance/arc-lamp',
     'php-session-serializer',
     'purtle',
     'testing-access-wrapper',
