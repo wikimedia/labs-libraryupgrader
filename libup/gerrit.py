@@ -60,16 +60,16 @@ def query_changes(repo: str, status=None, topic=None, limit=5) -> List[Dict]:
     })
 
 
-def zuul_queue_length(q='gate-and-submit'):
+def zuul_queue_length(prefixes=('test', 'gate-and-submit')):
     # ?time is for cache busting, just like jQuery does
     r = session.get('https://integration.wikimedia.org/zuul/status.json?' + str(time.time()))
     r.raise_for_status()
 
     data = r.json()
+    count = 0
     for pipeline in data['pipelines']:
-        if pipeline['name'] != q:
+        if not pipeline['name'].startswith(prefixes):
             continue
-        count = 0
         for change_q in pipeline['change_queues']:
             if change_q['heads']:
                 for head in change_q['heads']:
@@ -77,15 +77,12 @@ def zuul_queue_length(q='gate-and-submit'):
                         if patch['jobs']:
                             count += 1
 
-        return count
-
-    # We never found the gate-and-submit queue?
-    return 0
+    return count
 
 
 def wait_for_zuul_test_gate(count: int):
-    zuul = zuul_queue_length('gate-and-submit') + zuul_queue_length('test')
+    zuul = zuul_queue_length()
     while zuul > count:
         print('test+gate-and-submit has %s jobs, waiting...' % zuul)
         time.sleep(10)
-        zuul = zuul_queue_length('gate-and-submit') + zuul_queue_length('test')
+        zuul = zuul_queue_length()
