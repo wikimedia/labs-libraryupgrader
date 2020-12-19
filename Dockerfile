@@ -17,7 +17,9 @@ RUN apt-get update && \
     # explicitly include libssl, for grr
     libssl1.1 \
     firefox-esr chromium \
-    --no-install-recommends && rm -rf /var/lib/apt/lists/*
+    --no-install-recommends && rm -rf /var/lib/apt/lists/* && \
+    # xdebug slows everything down, it'll be manually enabled as needed
+    phpdismod xdebug
 RUN git clone --depth 1 https://gerrit.wikimedia.org/r/integration/npm.git /srv/npm \
     && rm -rf /srv/npm/.git \
     && ln -s /srv/npm/bin/npm-cli.js /usr/bin/npm \
