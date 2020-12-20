@@ -38,6 +38,8 @@ def main():
         gen = config.repositories()['canaries']
     elif args.repo == 'errors':
         gen = sorted(data.get_errors())
+    elif args.repo == 'libraries':
+        gen = list(mw.get_library_list())
     elif args.repo:
         gen = [args.repo]
     else:
