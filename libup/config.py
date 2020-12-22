@@ -38,7 +38,23 @@ def releases(pull=False) -> dict:
     ensure(pull=pull)
 
     with open(RELEASES) as f:
-        return json.load(f)
+        data = json.load(f)
+
+    version = data.get('version', 1)
+    if version == 1:
+        return data
+    elif version == 2:
+        # Rewrite v2 into the v1 format for now
+        rewrite = {
+            'push': data['push']
+        }
+        for manager, updates in data['master'].items():
+            rewrite[manager] = {}
+            for name, info in updates.items():
+                rewrite[manager][name] = [info['to']]
+        return rewrite
+    else:
+        raise ValueError(f"Unexpected config version: {version}")
 
 
 def repositories(pull=False) -> dict:
