@@ -33,6 +33,9 @@ def get_library_list():
     for repo in repos:
         if repo.endswith('/*'):
             # Strip the * before searching for the prefix
-            yield from gerrit.list_projects(repo[:-1])
+            for found in gerrit.list_projects(repo[:-1]):
+                # Ignore deploy repositories
+                if not found.endswith(('/deploy', '-deploy')):
+                    yield found
         else:
             yield repo
