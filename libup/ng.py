@@ -1060,19 +1060,6 @@ class LibraryUpgrader(shell.ShellMixin):
         self.output['npm-deps'] = self.npm_deps()
         self.output['composer-deps'] = self.composer_deps()
 
-        # Run tests
-        self.log('Running tests to verify repository integrity')
-        try:
-            self.npm_test()
-            self.output['npm-test'] = {'result': True}
-        except subprocess.CalledProcessError as e:
-            self.output['npm-test'] = {'result': False, 'error': e.output.decode()}
-        try:
-            self.composer_test()
-            self.output['composer-test'] = {'result': True}
-        except subprocess.CalledProcessError as e:
-            self.output['composer-test'] = {'result': False, 'error': e.output.decode()}
-
         # npm audit
         self.output['npm-audit'] = self.npm_audit()
         self.output['composer-audit'] = self.composer_audit()
