@@ -22,7 +22,7 @@
                 <li>{{repo_icons(repo)}}<a href="{{url_for('r', repo=repo)}}">{{repo}}</a></li>
             {% endfor %}
             </ul>
-        {% else %}
+        {% endif %}
         <div class="progress">
           <div class="progress-bar" role="progressbar" aria-valuenow="{{info.stats.canaries.percent}}" aria-valuemin="0" aria-valuemax="100" style="min-width: 7em; width: {{info.stats.canaries.percent}}%;">
             {{info.stats.canaries.percent}}%
@@ -35,8 +35,10 @@
                 <li>{{repo_icons(repo)}}<a href="{{url_for('r', repo=repo)}}">{{repo}}</a></li>
             {% endfor %}
             </ul>
-        {% else %}
+        {% endif %}
     {% endif %}
+{% endfor %}
+
 {% endfor %}
 
 {% endblock %}
