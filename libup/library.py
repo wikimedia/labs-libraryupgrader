@@ -60,7 +60,7 @@ class Library:
         return self._metadata()['description']
 
     def safe_versions(self) -> list:
-        safes = get_good_releases()
+        safes = config.releases_v1()
         try:
             return safes[self.manager][self.name]
         except KeyError:
@@ -165,8 +165,3 @@ def _get_npm_metadata(package: str) -> dict:
         'latest': resp['dist-tags']['latest'],
         'description': resp['description'],
     }
-
-
-def get_good_releases(pull=False) -> dict:
-    # TODO: do we need this wrapper?
-    return config.releases(pull=pull)
