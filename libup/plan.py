@@ -122,13 +122,13 @@ class Plan:
                 canaries = self.status_canaries(dep, info['to'])
                 canaries_total = len(canaries['missing']) + len(canaries['updated'])
                 if canaries_total > 0:
-                    canaries_percent = int(len(canaries['updated']) / canaries_total)
+                    canaries_percent = int(100 * len(canaries['updated']) / canaries_total)
                 else:
                     canaries_percent = 100
                 repositories = self.status_repositories(dep, info['to'])
                 repositories_total = len(repositories['missing']) + len(repositories['updated'])
                 if repositories_total > 0:
-                    repositories_percent = int(len(repositories['updated']) / repositories_total)
+                    repositories_percent = int(100 * len(repositories['updated']) / repositories_total)
                 else:
                     repositories_percent = 100
                 status[manager][name] = {
