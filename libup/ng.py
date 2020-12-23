@@ -1094,6 +1094,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_phpcs_xml_location()
         self.fix_phpcs_xml_configuration()
         self.fix_composer_fix()
+        self.fix_composer_phan()
         self.fix_private_package_json(repo)
         self.fix_eslintrc_json_location()
         self.fix_stylelintrc_json_location()
