@@ -117,22 +117,30 @@ class Plan:
         status = {}
         for manager, packages in self.releases.items():
             status[manager] = {}
-            for name, info in packages:
+            for name, info in packages.items():
                 dep = Dependency(name=name, manager=manager)
                 canaries = self.status_canaries(dep, info['to'])
                 canaries_total = len(canaries['missing']) + len(canaries['updated'])
+                if canaries_total > 0:
+                    canaries_percent = int(len(canaries['updated']) / canaries_total)
+                else:
+                    canaries_percent = 100
                 repositories = self.status_repositories(dep, info['to'])
                 repositories_total = len(repositories['missing']) + len(repositories['updated'])
+                if repositories_total > 0:
+                    repositories_percent = int(len(repositories['updated']) / repositories_total)
+                else:
+                    repositories_percent = 100
                 status[manager][name] = {
                     'info': info,
                     'stats': {
                         'canaries': {
                             'total': canaries_total,
-                            'percent': int(len(canaries['updated']) / canaries_total)
+                            'percent': canaries_percent
                         },
                         'repositories': {
                             'total': repositories_total,
-                            'percent': int(len(repositories['updated']) / repositories_total)
+                            'percent': repositories_percent
                         }
                     },
                     'canaries': canaries,
