@@ -24,7 +24,7 @@ import os
 import re
 import wikimediaci_utils
 
-from .. import LOGS, MANAGERS, TYPES, config, db
+from .. import LOGS, MANAGERS, TYPES, config, db, library
 from ..data import Data
 from ..model import Dependency
 
@@ -161,30 +161,27 @@ def library_table():
 def library_(manager, name):
     if manager not in MANAGERS:
         return make_response('Unknown manager.', 404)
+    branch = request.args.get('branch', 'master')
+    used = {'prod': defaultdict(set), 'dev': defaultdict(set)}
 
-    used = {'deps': defaultdict(set), 'dev': defaultdict(set)}
-
-    found = None
+    db.connect()
+    session = db.Session()
+    deps = session.query(Dependency).filter_by(
+        manager=manager, name=name, branch=branch).all()
+    if not deps:
+        return make_response('Unknown library.', 404)
+    for dep in deps:
+        used[dep.mode][dep.version].add(dep.repo)
     data = Data()
-    for repo, info in data.get_data().items():
-        deps = data.get_deps(info)
-        if manager in deps:
-            mdeps = deps[manager]
-            for type_ in TYPES:
-                for lib in mdeps[type_]:
-                    if lib.name == name:
-                        used[type_][lib.version].add(repo)
-                        found = lib
 
-    if not found:
-        return make_response('Unknown repository.', 404)
+    lib = library.Library(deps[0].manager, deps[0].name, deps[0].version)
 
     return render_template(
         'library.html',
         manager=manager,
         name=name,
         used=used,
-        library=found,
+        library=lib,
         canaries=config.repositories()['canaries'],
         errors=data.get_errors(),
     )

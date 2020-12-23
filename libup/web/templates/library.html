@@ -15,9 +15,9 @@
     {% endif %}
 </p>
 <h3>Repositories using:</h3>
-{% if used.deps %}
+{% if used.prod %}
 <h5>Dependencies</h5>
-{% for version, repos in used.deps.items()|sort|reverse %}
+{% for version, repos in used.prod.items()|sort|reverse %}
 <p><code>{{version}}</code>: {{len(repos)}} repositories</p>
 <ul>
     {% for repo in repos|sort %}
