@@ -24,7 +24,8 @@ import subprocess
 import tempfile
 import traceback
 
-from . import DATA_ROOT, docker, push, utils, ssh
+from . import DATA_ROOT, db, docker, push, utils, ssh
+from .extract import extract_dependencies
 
 app = Celery('tasks', broker='amqp://localhost')
 
@@ -36,6 +37,15 @@ def _random_string():
 @app.task
 def run_check(repo: str, data_root: str, log_dir: str):
     rand = _random_string()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with utils.cd(tmpdir):
+            # TODO: Move this logic out of pusher?
+            pusher = push.Pusher()
+            pusher.clone(repo)
+            deps = extract_dependencies(repo, "master")
+            db.update_dependencies(repo, "master", deps)
+            # FIXME: don't throw this clone away
+
     try:
         docker.run(
             name=rand,
@@ -54,7 +64,7 @@ def run_check(repo: str, data_root: str, log_dir: str):
         traceback.print_exc()
     output = os.path.join(log_dir, '%s.json' % rand)
     assert os.path.exists(output)
-    # Copy it over to the current directory,
+    # Copy it over to the "current" directory,
     # potentially overwriting existing results
     with open(output) as fr:
         fname = os.path.join(data_root, 'current', repo.replace('/', '_') + '.json')

@@ -17,6 +17,10 @@ markdown = "*"
 poetry-semver = "*"
 celery = "*"
 wikimediaci-utils = "*"
+alembic = "*"
+sqlalchemy = "*"
+pymysql = "*"
+libup = {editable = true, path = "."}
 
 [requires]
 python_version = "3.7"
