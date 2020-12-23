@@ -91,7 +91,7 @@ class Plan:
             # No updates
             return []
 
-    def _check_canary(self, repo: str, deps: List[Dependency]) -> List[(Dependency, str)]:
+    def _check_canary(self, repo: str, deps: List[Dependency]) -> list:
         updates = []
         weight = 0
         for dep in deps:
