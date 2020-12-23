@@ -15,8 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from __future__ import annotations
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+from typing import List, Optional
 
 
 Base = declarative_base()
@@ -31,3 +33,34 @@ class Dependency(Base):
     mode = Column(String(4), nullable=False)  # "prod" or "dev"
     repo = Column(String(150), nullable=False)  # TODO: normalize?
     branch = Column(String(30), nullable=False)  # TODO: normalize or combine with repo?
+
+    def key(self):
+        return f"{self.mode}:{self.manager}:{self.name}"
+
+    def same_package(self, other: Dependency):
+        """whether other is the same package"""
+        return self.name == other.name and self.manager == other.manager and self.mode == self.mode
+
+    def same_version(self, other: Dependency):
+        """whether other is the same package and version"""
+        return self.same_package(other) and self.version == other.version
+
+
+class Dependencies:
+    """container around multiple dependencies"""
+    def __init__(self, deps: List[Dependency]):
+        self.deps = {}
+        for dep in deps:
+            self.deps[dep.key()] = dep
+
+    def find(self, dep: Dependency) -> Optional[Dependency]:
+        return self.deps.get(dep.key())
+
+    def pop(self, dep: Dependency) -> Optional[Dependency]:
+        try:
+            return self.deps.pop(dep.key())
+        except KeyError:
+            return None
+
+    def all(self) -> List[Dependency]:
+        return list(self.deps.values())

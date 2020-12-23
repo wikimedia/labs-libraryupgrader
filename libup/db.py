@@ -19,7 +19,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from .model import Dependency
+from .model import Dependency, Dependencies
 
 
 Session = sessionmaker()
@@ -42,12 +42,33 @@ def connect():
 def update_dependencies(repo, branch, deps):
     if not deps:
         return
-    # FIXME: Minimally update this table, avoid deleting everything
-    # and readding it
+
+    to_delete = []
+    to_add = []
+
     connect()
     session = Session()
-    existing = session.query(Dependency).filter_by(repo=repo, branch=branch).all()
-    if existing:
-        session.delete(existing)
-    session.add_all(deps)
+    existing = Dependencies(session.query(Dependency).filter_by(repo=repo, branch=branch).all())
+    for dep in deps:
+        found = existing.pop(dep)
+        if not found:
+            to_add.append(dep)
+            continue
+        if found.same_version(dep):
+            # Nothing to do
+            continue
+        else:
+            # session automatically tracks dirty objects
+            found.version = dep.version
+            continue
+
+    # Delete all the remaining existing that wasn't popped
+    to_delete.extend(existing.all())
+
+    # TODO: bulk operations?
+    for add in to_add:
+        session.add(add)
+    for delete in to_delete:
+        session.delete(delete)
+
     session.commit()
