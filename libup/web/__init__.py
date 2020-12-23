@@ -52,7 +52,17 @@ def inject_to_templates():
     return {
         'sorted': sorted,
         'len': len,
+        'repo_icons': repo_icons,
     }
+
+
+def repo_icons(repo):
+    ret = ''
+    if repo in list(Data().get_errors()):
+        ret += '❌'
+    if repo in config.repositories()['canaries']:
+        ret += '🦆'
+    return ret
 
 
 @app.route('/')

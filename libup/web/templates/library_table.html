@@ -16,7 +16,7 @@
     <tbody>
         {% for repo, libs in sorted(display.items()) %}
         <tr>
-            <td>{% if repo in errors %}❌ {% endif %}<a href="{{url_for('r', repo=repo)}}">{{repo}}</a></td>
+            <td>{{repo_icons(repo)}}<a href="{{url_for('r', repo=repo)}}">{{repo}}</a></td>
             <td>{% if ci_utils.is_wikimedia_deployed(repo) %}✓{% else %}—{% endif %}</td>
             {% for lib in libs %}
             {% if lib %}

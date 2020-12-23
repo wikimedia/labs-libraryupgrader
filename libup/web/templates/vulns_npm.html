@@ -21,7 +21,7 @@
 <ul>
 {% for repo, info in sorted(affected[advisory.id].items()) %}
     <li>
-        {% if repo in errors %}❌ {% endif %}
+        {{repo_icons(repo)}}
         <a href="{{url_for('r', repo=repo)}}">{{repo}}</a>
         ({% if dev_all(info.findings) %}dev only{% endif %}, via:
         {% for pkg in via(info.findings) %}
