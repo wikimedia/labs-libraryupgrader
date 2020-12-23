@@ -27,7 +27,7 @@ class Plan:
         self.canaries = config.repositories(pull=pull)['canaries']
         self.releases = config.releases(pull=pull).get(branch, {})
 
-    def check(self, repo: str, deps: List[Dependency]) -> List[(Dependency, str)]:
+    def check(self, repo: str, deps: List[Dependency]) -> list:
         """return all the dependencies that need updating and the new version"""
         if repo in self.canaries:
             return self._check_canary(repo, deps)
@@ -65,7 +65,7 @@ class Plan:
                 ret['updated'].append(repo.repo)
         return ret
 
-    def _check_regular(self, repo: str, deps: List[Dependency]) -> List[(Dependency, str)]:
+    def _check_regular(self, repo: str, deps: List[Dependency]) -> list:
         updates = []
         weight = 0
         for dep in deps:
