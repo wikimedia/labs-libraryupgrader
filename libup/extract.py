@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import os
 
-from .model import Dependencies
+from .model import Dependency
 
 
 def extract_dependencies(repo, branch):
@@ -28,16 +28,18 @@ def extract_dependencies(repo, branch):
         with open('package.json') as f:
             pkg = json.load(f)
         for name, version in pkg.get('dependencies', {}).items():
-            deps.append(Dependencies(
+            deps.append(Dependency(
                 name=name,
                 version=version,
+                manager="npm",
                 mode="prod",
                 **kwargs
             ))
         for name, version in pkg.get('devDependencies', {}).items():
-            deps.append(Dependencies(
+            deps.append(Dependency(
                 name=name,
                 version=version,
+                manager="npm",
                 mode="dev",
                 **kwargs
             ))
@@ -46,16 +48,18 @@ def extract_dependencies(repo, branch):
         with open('composer.json') as f:
             pkg = json.load(f)
         for name, version in pkg.get('require', {}).items():
-            deps.append(Dependencies(
+            deps.append(Dependency(
                 name=name,
                 version=version,
+                manager="composer",
                 mode="prod",
                 **kwargs
             ))
         for name, version in pkg.get('require-dev', {}).items():
-            deps.append(Dependencies(
+            deps.append(Dependency(
                 name=name,
                 version=version,
+                manager="composer",
                 mode="dev",
                 **kwargs
             ))
