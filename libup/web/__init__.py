@@ -25,7 +25,7 @@ import os
 import re
 import wikimediaci_utils
 
-from .. import LOGS, MANAGERS, TYPES, config, db, library
+from .. import LOGS, MANAGERS, TYPES, config, db, library, plan
 from ..data import Data
 from ..model import Dependency
 
@@ -293,6 +293,16 @@ def vulns_npm():
         dev_all=lambda x: all(y.get('dev') for y in x),
         via=via,
         errors=data.get_errors(),
+    )
+
+
+@app.route('/status')
+def status():
+    branch = request.args.get('branch', 'master')
+    planner = plan.Plan(branch)
+    return render_template(
+        'status.html',
+        status=planner.status()
     )
 
 

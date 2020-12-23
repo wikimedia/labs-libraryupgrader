@@ -43,6 +43,7 @@ GIT_EMAIL = 'tools.libraryupgrader@tools.wmflabs.org'
 PACKAGIST_MIRROR = 'https://repo.packagist.org'
 SSH_AUTH_SOCK = '/tmp/ssh-agent.socket'
 PHP_SECURITY_CHECK = 'https://php-security-checker.wmcloud.org/check_lock'
+WEIGHT_NEEDED = 10  # Need to hit this score to trigger an update
 
 
 session = requests.Session()

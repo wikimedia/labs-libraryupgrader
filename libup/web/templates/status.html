@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block subtitle %}status{% endblock %}
+{% block main %}
+{% for manager, packages in status.items() %}
+<h1>{{manager}}</h1>
+{% for name, info in packages.items() %}
+    <h3><a href="{{url_for('library_', manager=manager, name=name)}}">{{name}}</a>: {{info.info.to}}</h3>
+    <p>{{info.stats.canaries.percent}}% of canaries and
+       {{info.stats.repositories.percent}}% of all repositories have been updated.
+    </p>
+    <!-- if canaries are 100, display all, else display canaries -->
+    {% if info.stats.canaries.percent == 100 %}
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="{{info.stats.repositories.percent}}" aria-valuemin="0" aria-valuemax="100" style="min-width: 7em; width: {{info.stats.repositories.percent}}%;">
+            {{info.stats.repositories.percent}}%
+          </div>
+        </div>
+        {% if info.repositories.missing %}
+            <p>The following repositories have not been updated yet:</p>
+            <ul>
+            {% for repo in info.repositories.missing %}
+                <li>{{repo_icons(repo)}}<a href="{{url_for('r', repo=repo)}}">{{repo}}</a></li>
+            {% endfor %}
+            </ul>
+        {% else %}
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="{{info.stats.canaries.percent}}" aria-valuemin="0" aria-valuemax="100" style="min-width: 7em; width: {{info.stats.canaries.percent}}%;">
+            {{info.stats.canaries.percent}}%
+          </div>
+        </div>
+        {% if info.canaries.missing %}
+            <p>The following canaries have not been updated yet:</p>
+            <ul>
+            {% for repo in info.canaries.missing %}
+                <li>{{repo_icons(repo)}}<a href="{{url_for('r', repo=repo)}}">{{repo}}</a></li>
+            {% endfor %}
+            </ul>
+        {% else %}
+    {% endif %}
+{% endfor %}
+
+{% endblock %}
