@@ -99,9 +99,10 @@ def r_index():
 
 @app.route('/library')
 def library_index():
+    branch = request.args.get('branch', 'master')
     db.connect()
     session = db.Session()
-    deps = session.query(Dependency).all()
+    deps = session.query(Dependency).filter_by(branch=branch).all()
     used = defaultdict(lambda: defaultdict(set))
     for dep in deps:
         used[dep.manager][dep.name].add(dep.version)
