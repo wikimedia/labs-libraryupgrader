@@ -24,8 +24,9 @@ import os
 import re
 import wikimediaci_utils
 
-from .. import LOGS, MANAGERS, TYPES, config
+from .. import LOGS, MANAGERS, TYPES, config, db
 from ..data import Data
+from ..model import Dependency
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
@@ -98,15 +99,12 @@ def r_index():
 
 @app.route('/library')
 def library_index():
-    data = Data()
+    db.connect()
+    session = db.Session()
+    deps = session.query(Dependency).all()
     used = defaultdict(lambda: defaultdict(set))
-    for repo, info in data.get_data().items():
-        deps = data.get_deps(info)
-        for manager in MANAGERS:
-            mdeps = deps[manager]
-            for type_ in TYPES:
-                for lib in mdeps[type_]:
-                    used[lib.manager][lib.name].add(lib.version)
+    for dep in deps:
+        used[dep.manager][dep.name].add(dep.version)
 
     return render_template(
         'library_index.html',
