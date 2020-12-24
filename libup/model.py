@@ -72,7 +72,7 @@ class Repository(Base):
     __tablename__ = "repositories"
     id = Column(Integer, primary_key=True)
     name = Column(String(80), nullable=False)
-    branch = Column(String(50), nullable=False)
+    branch = Column(String(80), nullable=False)
     is_error = Column(Boolean, nullable=False, default=False)
 
     def key(self):
