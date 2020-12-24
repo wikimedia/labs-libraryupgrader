@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 Revision ID: c741b11964b3
-Revises: 
+Revises:
 Create Date: 2020-12-22 14:50:41.884246
 """
 
@@ -33,7 +33,8 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table('dependencies',
+    op.create_table(
+        'dependencies',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('name', sa.String(length=80), nullable=False),
         sa.Column('version', sa.String(length=50), nullable=False),

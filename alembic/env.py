@@ -15,7 +15,7 @@ fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from libup import model
+from libup import model  # noqa
 target_metadata = model.Base.metadata
 
 # other values from the config, defined by the needs of env.py,
