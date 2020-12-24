@@ -1069,7 +1069,7 @@ class LibraryUpgrader(shell.ShellMixin):
         )
 
         # Do a pull to get the latest safe versions
-        library.get_good_releases(pull=True)
+        config.releases(pull=True)
 
         # Now let's fix and upgrade stuff!
 
