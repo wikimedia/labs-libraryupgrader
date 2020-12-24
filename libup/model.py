@@ -101,4 +101,11 @@ class Log(Base):
     # Whether the run ended in an error or not
     is_error = Column(Boolean, nullable=False, default=False)
 
+    def get_text(self) -> str:
+        return self.text.decode()
+
+    def get_patch(self) -> Optional[str]:
+        if self.patch is not None:
+            return self.patch.decode()
+
     repositories = relationship("Repository", back_populates="logs")

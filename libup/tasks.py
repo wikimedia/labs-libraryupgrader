@@ -81,8 +81,8 @@ def run_check(repo_name: str, branch: str):
     log = model.Log(
         time=utils.to_mw_time(datetime.utcnow()),
         # TODO: Get this from `docker logs` instead
-        text='\n'.join(data.get('log', [])),
-        patch=data.get('patch'),
+        text='\n'.join(data.get('log', [])).encode(),
+        patch=data['patch'].encode() if 'patch' in data else None,
         is_error='done' not in data,
     )
     repo.logs.append(log)
