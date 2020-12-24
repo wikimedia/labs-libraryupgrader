@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
 
-from . import config, db, gerrit, mw
+from . import BRANCHES, config, db, gerrit, mw
 from .model import Repository
 from .tasks import run_check
 
@@ -34,6 +34,9 @@ def update_repositories():
 
     for repo in mw.get_everything():
         for branch in gerrit.repo_branches(repo):
+            if branch not in BRANCHES:
+                # We don't care about this one
+                continue
             new = Repository(name=repo, branch=branch)
             try:
                 # Exists, remove from list slated for deletion
