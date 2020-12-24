@@ -86,6 +86,7 @@ def run_check(repo_name: str, branch: str):
         is_error='done' not in data,
     )
     repo.logs.append(log)
+    repo.is_error = log.is_error
     # COMMIT the log
     session.commit()
     log_url_path = output.replace(f'{DATA_ROOT}/', '').replace('.json', '')
