@@ -27,7 +27,7 @@ import wikimediaci_utils
 
 from .. import LOGS, MANAGERS, TYPES, config, db, library, plan
 from ..data import Data
-from ..model import Dependency, Log
+from ..model import Dependency, Log, Repository
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
@@ -242,7 +242,12 @@ def logs(date, logname):
 
 @app.route('/errors')
 def errors():
-    repos = list(Data().get_errors())
+    branch = request.args.get('branch', 'master')
+    db.connect()
+    session = db.Session()
+    repos = session.query(Repository)\
+        .filter_by(is_error=True, branch=branch)\
+        .order_by(Repository.name, Repository.branch).all()
     return render_template('errors.html', repos=repos)
 
 

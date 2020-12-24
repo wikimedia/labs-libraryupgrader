@@ -4,8 +4,8 @@
 <h1>errors</h1>
 <p>The following repositories have some kind of error.</p>
 <ul>
-    {% for repo in sorted(repos) %}
-    <li><a href="{{url_for('r', repo=repo)}}">{{repo}}</a></li>
+    {% for repo in repos %}
+    <li><a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a> ({{repo.branch}})</li>
     {% endfor %}
 </ul>
 
