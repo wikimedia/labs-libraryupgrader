@@ -988,7 +988,6 @@ class LibraryUpgrader(shell.ShellMixin):
         f.write(bytes(msg, 'utf-8'))
         f.close()
         self.check_call(['git', 'add'] + files)
-        self.check_call(['grr', 'init'])  # Install commit-msg hook
         try:
             self.check_call(['git', 'commit', '-F', f.name])
         finally:
@@ -1050,6 +1049,7 @@ class LibraryUpgrader(shell.ShellMixin):
         # Output the date we run as first thing
         self.check_call(['date'])
         self.clone(repo)
+        self.check_call(['grr', 'init'])  # Install commit-msg hook
         self.is_canary = repo in config.repositories()['canaries']
         self.output['sha1'] = self.sha1()
 
