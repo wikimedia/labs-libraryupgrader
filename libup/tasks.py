@@ -78,11 +78,15 @@ def run_check(repo_name: str, branch: str):
             text = fr.read()
             fw.write(text)
     data = json.loads(text)
+    if data.get('patch') is not None:
+        encoded_patch = data['patch'].encode()
+    else:
+        encoded_patch = None
     log = model.Log(
         time=utils.to_mw_time(datetime.utcnow()),
         # TODO: Get this from `docker logs` instead
         text='\n'.join(data.get('log', [])).encode(),
-        patch=data['patch'].encode() if 'patch' in data else None,
+        patch=encoded_patch,
         is_error='done' not in data,
     )
     repo.logs.append(log)
