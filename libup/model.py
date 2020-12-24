@@ -91,6 +91,9 @@ class Repository(Base):
     logs = relationship("Log", back_populates="repository",
                         cascade="all, delete, delete-orphan")
 
+    def __lt__(self, other):
+        return self.name < other.name
+
     def key(self):
         return f"{self.name}:{self.branch}"
 
@@ -111,6 +114,9 @@ class Log(Base):
     patch = Column(BLOB, nullable=True)
     # Whether the run ended in an error or not
     is_error = Column(Boolean, nullable=False, default=False)
+
+    def __lt__(self, other):
+        return self.id < other.id
 
     def get_text(self) -> str:
         return self.text.decode()
