@@ -82,22 +82,22 @@ def index():
     return render_template('index.html', count=count)
 
 
-@app.route('/r/<path:repo_name>')
-def r(repo_name):
+@app.route('/r/<path:repo>')
+def r(repo):
     branch = request.args.get('branch', 'master')
     db.connect()
     session = db.Session()
-    repo = session.query(Repository)\
-        .filter_by(name=repo_name, branch=branch).first()
-    if repo is None:
+    repository = session.query(Repository)\
+        .filter_by(name=repo, branch=branch).first()
+    if repository is None:
         return make_response('Sorry, I don\'t know this repository.', 404)
     dependencies = Dependencies(session.query(Dependency)
-                                .filter_by(repo=repo.name, branch=branch)
+                                .filter_by(repo=repository.name, branch=branch)
                                 .all())
     return render_template(
         'r.html',
-        repo=repo,
-        log=repo.logs[0:10],
+        repo=repository,
+        log=repository.logs[0:10],
         dependencies=dependencies,
     )
 
