@@ -17,7 +17,7 @@
 <div class="collapse" id="logtext">
     <pre>{{log[0].get_text()}}</pre>
 </div>
-{% for manager, info in dependencies.items()|sort %}
+{% for manager, info in dependencies.by_manager().items()|sort %}
 {% if info %}
 <h3>{{manager}} dependencies</h3>
 {% if info.prod %}

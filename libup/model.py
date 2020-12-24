@@ -37,6 +37,9 @@ class Dependency(Base):
     repo = Column(String(150), nullable=False)  # TODO: normalize?
     branch = Column(String(30), nullable=False)  # TODO: normalize or combine with repo?
 
+    def __lt__(self, other):
+        return self.name < other.name
+
     def key(self):
         return f"{self.mode}:{self.manager}:{self.name}"
 
