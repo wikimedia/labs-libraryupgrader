@@ -89,9 +89,8 @@ def run_check(repo_name: str, branch: str):
     repo.is_error = log.is_error
     # COMMIT the log
     session.commit()
-    log_url_path = output.replace(f'{DATA_ROOT}/', '').replace('.json', '')
     data['message'] = f'View logs for this commit at ' \
-                      f'https://libraryupgrader2.wmcloud.org/{log_url_path}'
+                      f'https://libraryupgrader2.wmcloud.org/logs2/{log.id}'
     if data.get('push') and ssh.is_key_loaded():
         with tempfile.TemporaryDirectory() as tmpdir:
             with utils.cd(tmpdir):
