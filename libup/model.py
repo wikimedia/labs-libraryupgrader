@@ -16,7 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from __future__ import annotations
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import BLOB, Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from typing import List, Optional
 
@@ -73,10 +74,31 @@ class Repository(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(80), nullable=False)
     branch = Column(String(80), nullable=False)
+    # Same as the most recent `log.is_error`, but in this table for speed
     is_error = Column(Boolean, nullable=False, default=False)
+
+    logs = relationship("Log", back_populates="repositories",
+                        cascade="all, delete, delete-orphan")
 
     def key(self):
         return f"{self.name}:{self.branch}"
 
     def is_canary(self):
         return self.name in config.repositories()['canaries']
+
+
+class Log(Base):
+    """Log of a libup run"""
+    __tablename__ = "logs"
+    id = Column(Integer, primary_key=True)
+    repo_id = Column(Integer, ForeignKey('repositories.id'))
+    # Time of entry in mw time format
+    time = Column(String(15), nullable=False)
+    # The actual log text
+    text = Column(BLOB, nullable=False)
+    # The patch file, if any
+    patch = Column(BLOB, nullable=True)
+    # Whether the run ended in an error or not
+    is_error = Column(Boolean, nullable=False, default=False)
+
+    repository = relationship("Repository", back_populates="logs")

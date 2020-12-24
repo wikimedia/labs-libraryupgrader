@@ -68,3 +68,11 @@ def date_log_dir():
             stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
         )
     return log_dir
+
+
+def to_mw_time(dt: datetime) -> str:
+    return dt.strftime('%Y%m%d%H%M%S')
+
+
+def from_mw_time(mw: str) -> datetime:
+    return datetime.strptime(mw, '%Y%m%d%H%M%S')

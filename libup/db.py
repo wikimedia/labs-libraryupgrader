@@ -19,7 +19,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from .model import Dependency, Dependencies
+from .model import Dependency, Dependencies, Repository
 
 
 Session = sessionmaker()
@@ -39,16 +39,14 @@ def connect():
     return engine
 
 
-def update_dependencies(repo, branch, deps):
+def update_dependencies(session, repo: Repository, deps):
     if not deps:
         return
 
     to_delete = []
     to_add = []
 
-    connect()
-    session = Session()
-    existing = Dependencies(session.query(Dependency).filter_by(repo=repo, branch=branch).all())
+    existing = Dependencies(session.query(Dependency).filter_by(repo=repo.name, branch=repo.branch).all())
     for dep in deps:
         found = existing.pop(dep)
         if not found:

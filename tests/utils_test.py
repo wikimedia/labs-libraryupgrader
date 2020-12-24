@@ -38,3 +38,15 @@ def test_cd():
         assert '/' == os.getcwd()
     # And now we're back
     assert cwd == os.getcwd()
+
+
+def test_mw_time():
+    mw = '20201224070526'
+    dt = utils.from_mw_time(mw)
+    assert dt.year == 2020
+    assert dt.month == 12
+    assert dt.day == 24
+    assert dt.hour == 7
+    assert dt.minute == 5
+    assert dt.second == 26
+    assert utils.to_mw_time(dt) == mw
