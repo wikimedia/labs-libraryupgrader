@@ -27,7 +27,7 @@ import wikimediaci_utils
 
 from .. import LOGS, MANAGERS, TYPES, config, db, library, plan
 from ..data import Data
-from ..model import Dependency, Log, Repository
+from ..model import Dependency, Dependencies, Log, Repository
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
@@ -82,39 +82,37 @@ def index():
     return render_template('index.html', count=count)
 
 
-@app.route('/r/<path:repo>')
-def r(repo):
-    data = Data()
-    try:
-        info = data.get_repo_data(repo)
-    except ValueError:
+@app.route('/r/<path:repo_name>')
+def r(repo_name):
+    branch = request.args.get('branch', 'master')
+    db.connect()
+    session = db.Session()
+    repo = session.query(Repository)\
+        .filter_by(name=repo_name, branch=branch).first()
+    if repo is None:
         return make_response('Sorry, I don\'t know this repository.', 404)
-    return _render_r_template(info)
-
-
-def _render_r_template(info):
-    deps = Data().get_deps(info)
+    dependencies = Dependencies(session.query(Dependency)
+                                .filter_by(repo=repo.name, branch=branch)
+                                .all())
     return render_template(
         'r.html',
-        success=info.get('done'),
-        log='\n'.join(info.get('log', [])),
-        patch=info.get('patch'),
-        repo=info.get('repo'),
-        deps=deps,
-        # FIXME: find_logs() is way too slow
-        # logs=sorted(find_logs(repo))
-        logs=[]
+        repo=repo,
+        log=repo.logs[0:10],
+        dependencies=dependencies,
     )
 
 
 @app.route('/r')
 def r_index():
-    data = Data()
-    repos = list(data.get_data())
+    branch = request.args.get('branch', 'master')
+    db.connect()
+    session = db.Session()
+    repos = session.query(Repository)\
+        .filter_by(branch=branch)\
+        .order_by(Repository.name).all()
     return render_template(
         'r_index.html',
         repos=repos,
-        errors=data.get_errors(),
     )
 
 
@@ -237,7 +235,18 @@ def logs(date, logname):
 
     with open(path) as f:
         info = json.load(f)
-    return _render_r_template(info)
+    deps = Data().get_deps(info)
+    return render_template(
+        'logs.html',
+        success=info.get('done'),
+        log='\n'.join(info.get('log', [])),
+        patch=info.get('patch'),
+        repo=info.get('repo'),
+        deps=deps,
+        # FIXME: find_logs() is way too slow
+        # logs=sorted(find_logs(repo))
+        logs=[]
+    )
 
 
 @app.route('/errors')

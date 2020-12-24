@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from __future__ import annotations
+from collections import defaultdict
 from sqlalchemy import BLOB, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -66,6 +67,13 @@ class Dependencies:
 
     def all(self) -> List[Dependency]:
         return list(self.deps.values())
+
+    def by_manager(self):
+        ret = defaultdict(lambda: defaultdict(list))
+        for dep in self.deps.values():
+            ret[dep.manager][dep.mode].append(dep)
+
+        return ret
 
 
 class Repository(Base):

@@ -3,8 +3,8 @@
 {% block main %}
 <h1>tracked repositories</h1>
 <ul>
-    {% for repo in sorted(repos) %}
-    <li>{{repo_icons(repo)}}<a href="{{url_for('r', repo=repo)}}">{{repo}}</a></li>
+    {% for repo in repos %}
+    <li>{{repo_icons(repo.name)}}<a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a></li>
     {% endfor %}
 </ul>
 

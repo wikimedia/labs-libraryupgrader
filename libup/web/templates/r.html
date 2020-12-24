@@ -1,34 +1,31 @@
 {% extends "base.html" %}
-{% block subtitle %}{{repo}}{% endblock %}
+{% block subtitle %}{{repo.name}}{% endblock %}
 {% block main %}
-<h1>{{repo}}</h1>
-<a href="https://gerrit.wikimedia.org/g/{{repo}}">source</a> • <a href="https://gerrit.wikimedia.org/r/q/project:{{repo}}">patches</a>
-{% if patch %}
+<h1>{{repo.name}} ({{repo.branch}})</h1>
+<a href="https://gerrit.wikimedia.org/g/{{repo.name}}">source</a> • <a href="https://gerrit.wikimedia.org/r/q/project:{{repo.name}}">patches</a>
+{% if log[0].patch %}
 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#patch" aria-expanded="false" aria-controls="patch">
   View proposed patch
 </button>
 <div class="collapse" id="patch">
-    <pre>{{patch}}</pre>
+    <pre>{{log[0].get_patch()}}</pre>
 </div>
 {% endif %}
-{% if log %}
 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#logtext" aria-expanded="false" aria-controls="logtext">
-  {% if success %}View log file{% else %}View error log{% endif %}
+  {% if log[0].is_error %}View error log{% else %}View log file{% endif %}
 </button>
 <div class="collapse" id="logtext">
-    <pre>{{log}}</pre>
+    <pre>{{log[0].get_text()}}</pre>
 </div>
-{% endif %}
-{% for manager, info in deps.items()|sort %}
+{% for manager, info in dependencies.items()|sort %}
 {% if info %}
 <h3>{{manager}} dependencies</h3>
-{% if info.deps %}
+{% if info.prod %}
 <h5>Dependencies</h5>
 <ul>
-    {% for library in info.deps|sort %}
+    {% for dep in info.prod|sort %}
     <li>
-        <a href="{{url_for('library_', manager=manager, name=library.name)}}"><code>{{library.name}}</code></a>: <code>{{library.version}}</code>
-        {% if library.is_newer() %}(<code>{{library.latest_version()}}</code> available{% if library.is_latest_safe() %}✔️{% endif %}){% endif %}
+        <a href="{{url_for('library_', manager=manager, name=dep.name)}}"><code>{{dep.name}}</code></a>: <code>{{dep.version}}</code>
     </li>
     {% endfor %}
 </ul>
@@ -36,10 +33,9 @@
 {% if info.dev %}
 <h5>Development dependencies</h5>
 <ul>
-    {% for library in info.dev|sort %}
+    {% for dep in info.dev|sort %}
     <li>
-        <a href="{{url_for('library_', manager=manager, name=library.name)}}"><code>{{library.name}}</code></a>: <code>{{library.version}}</code>
-        {% if library.is_newer() %}(<code>{{library.latest_version()}}</code> available{% if library.is_latest_safe() %}✔️{% endif %}){% endif %}
+        <a href="{{url_for('library_', manager=manager, name=dep.name)}}"><code>{{dep.name}}</code></a>: <code>{{dep.version}}</code>
     </li>
     {% endfor %}
 </ul>
@@ -50,7 +46,7 @@
 <h3>Logs</h3>
 <ul>
 {% for log in logs %}
-<li>{{log}}</li>
+<li><a href="{{url_for('logs2', log_id=log.id)}}">{{log.id}}</a></li>
 {% endfor %}
 </ul>
 {% endif %}
