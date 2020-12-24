@@ -94,10 +94,12 @@ def r(repo):
     dependencies = Dependencies(session.query(Dependency)
                                 .filter_by(repo=repository.name, branch=branch)
                                 .all())
+    logs = repository.logs[0:10]
+    logs.sort(reverse=True)
     return render_template(
         'r.html',
         repo=repository,
-        logs=repository.logs[0:10],
+        logs=logs,
         dependencies=dependencies,
     )
 
