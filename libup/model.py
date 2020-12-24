@@ -101,4 +101,4 @@ class Log(Base):
     # Whether the run ended in an error or not
     is_error = Column(Boolean, nullable=False, default=False)
 
-    repository = relationship("Repository", back_populates="logs")
+    repositories = relationship("Repository", back_populates="logs")
