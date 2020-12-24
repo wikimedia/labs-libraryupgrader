@@ -30,7 +30,7 @@ class Dependency(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(80), nullable=False)
     version = Column(String(150), nullable=False)
-    manager = Column(String(20))  # "composer", "npm", etc.
+    manager = Column(String(20), nullable=False)  # "composer", "npm", etc.
     mode = Column(String(4), nullable=False)  # "prod" or "dev"
     repo = Column(String(150), nullable=False)  # TODO: normalize?
     branch = Column(String(30), nullable=False)  # TODO: normalize or combine with repo?
