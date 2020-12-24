@@ -97,7 +97,7 @@ def r(repo):
     return render_template(
         'r.html',
         repo=repository,
-        log=repository.logs[0:10],
+        logs=repository.logs[0:10],
         dependencies=dependencies,
     )
 

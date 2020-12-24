@@ -3,19 +3,19 @@
 {% block main %}
 <h1>{{repo.name}} ({{repo.branch}})</h1>
 <a href="https://gerrit.wikimedia.org/g/{{repo.name}}">source</a> • <a href="https://gerrit.wikimedia.org/r/q/project:{{repo.name}}">patches</a>
-{% if log[0].patch %}
+{% if logs[0].patch %}
 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#patch" aria-expanded="false" aria-controls="patch">
   View proposed patch
 </button>
 <div class="collapse" id="patch">
-    <pre>{{log[0].get_patch()}}</pre>
+    <pre>{{logs[0].get_patch()}}</pre>
 </div>
 {% endif %}
 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#logtext" aria-expanded="false" aria-controls="logtext">
-  {% if log[0].is_error %}View error log{% else %}View log file{% endif %}
+  {% if logs[0].is_error %}View error log{% else %}View log file{% endif %}
 </button>
 <div class="collapse" id="logtext">
-    <pre>{{log[0].get_text()}}</pre>
+    <pre>{{logs[0].get_text()}}</pre>
 </div>
 {% for manager, info in dependencies.by_manager().items()|sort %}
 {% if info %}
