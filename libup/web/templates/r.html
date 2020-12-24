@@ -46,7 +46,7 @@
 <h3>Logs</h3>
 <ul>
 {% for log in logs %}
-<li><a href="{{url_for('logs2', log_id=log.id)}}">{{log.id}}</a></li>
+<li><a href="{{url_for('logs2', log_id=log.id)}}">log #{{log.id}}</a></li>
 {% endfor %}
 </ul>
 {% endif %}
