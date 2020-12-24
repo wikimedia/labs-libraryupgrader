@@ -77,7 +77,7 @@ class Repository(Base):
     # Same as the most recent `log.is_error`, but in this table for speed
     is_error = Column(Boolean, nullable=False, default=False)
 
-    logs = relationship("Log", back_populates="repositories",
+    logs = relationship("Log", back_populates="repository",
                         cascade="all, delete, delete-orphan")
 
     def key(self):
@@ -108,4 +108,4 @@ class Log(Base):
         if self.patch is not None:
             return self.patch.decode()
 
-    repositories = relationship("Repository", back_populates="logs")
+    repository = relationship("Repository", back_populates="logs")

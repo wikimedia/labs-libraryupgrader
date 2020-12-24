@@ -27,7 +27,7 @@ import wikimediaci_utils
 
 from .. import LOGS, MANAGERS, TYPES, config, db, library, plan
 from ..data import Data
-from ..model import Dependency
+from ..model import Dependency, Log
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
@@ -205,6 +205,22 @@ def library_(manager, name):
         library=lib,
         canaries=config.repositories()['canaries'],
         errors=data.get_errors(),
+    )
+
+
+@app.route('/logs2/<log_id>')
+def logs2(log_id):
+    db.connect()
+    session = db.Session()
+
+    log = session.query(Log).filter_by(id=log_id).first()
+    if log is None:
+        return make_response('log_id not found', 404)
+
+    return render_template(
+        'logs2.html',
+        log=log,
+        repo=log.repository,
     )
 
 
