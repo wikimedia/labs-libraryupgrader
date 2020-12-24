@@ -35,15 +35,16 @@ def _random_string():
 
 
 @app.task
-def run_check(repo: str, data_root: str, log_dir: str):
+def run_check(repo: str, branch: str):
+    log_dir = utils.date_log_dir()
     rand = _random_string()
     with tempfile.TemporaryDirectory() as tmpdir:
         with utils.cd(tmpdir):
             # TODO: Move this logic out of pusher?
             pusher = push.Pusher()
             pusher.clone(repo)
-            deps = extract_dependencies(repo, "master")
-            db.update_dependencies(repo, "master", deps)
+            deps = extract_dependencies(repo, branch)
+            db.update_dependencies(repo, branch, deps)
             # FIXME: don't throw this clone away
 
     try:
@@ -56,6 +57,7 @@ def run_check(repo: str, data_root: str, log_dir: str):
                 DATA_ROOT: '/srv/data:ro',
             },
             rm=True,
+            # FIXME: pass branch name through
             extra_args=['libup-ng', repo, '/out/%s.json' % rand],
         )
     except subprocess.CalledProcessError:
@@ -67,12 +69,12 @@ def run_check(repo: str, data_root: str, log_dir: str):
     # Copy it over to the "current" directory,
     # potentially overwriting existing results
     with open(output) as fr:
-        fname = os.path.join(data_root, 'current', repo.replace('/', '_') + '.json')
+        fname = os.path.join(DATA_ROOT, 'current', repo.replace('/', '_') + '.json')
         with open(fname, 'w') as fw:
             text = fr.read()
             fw.write(text)
     data = json.loads(text)
-    log_url_path = output.replace(f'{data_root}/', '').replace('.json', '')
+    log_url_path = output.replace(f'{DATA_ROOT}/', '').replace('.json', '')
     data['message'] = f'View logs for this commit at ' \
                       f'https://libraryupgrader2.wmcloud.org/{log_url_path}'
     if data.get('push') and ssh.is_key_loaded():

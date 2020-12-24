@@ -18,48 +18,75 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import argparse
-import json
-import os
 
-from . import DATA_ROOT, config, mw, utils
-from .data import Data
+from . import config, db, gerrit, mw
+from .model import Repository
 from .tasks import run_check
+
+
+def update_repositories():
+    print('Updating list of repositories in database...')
+    session = db.Session()
+    repositories = {}
+    to_add = []
+    for repo in session.query(Repository).all():
+        repositories[repo.key()] = repo
+
+    for repo in mw.get_everything():
+        for branch in gerrit.repo_branches(repo):
+            new = Repository(name=repo, branch=branch)
+            try:
+                # Exists, remove from list slated for deletion
+                repositories.pop(new.key())
+            except KeyError:
+                # Doesn't exist yet
+                to_add.append(new)
+
+    session.add_all(to_add)
+    for old in repositories.values():
+        # TODO: delete out of `dependencies` here too
+        session.delete(old)
+    session.commit()
+    print('Done!')
 
 
 def main():
     parser = argparse.ArgumentParser(description='Queue jobs to run')
     parser.add_argument('--limit', default=0, type=int, help='Limit')
+    parser.add_argument('--fast', action='store_true', help='Skip some database updates')
     parser.add_argument('repo', nargs='?', help='Only queue this repository (optional)')
     args = parser.parse_args()
+
+    db.connect()
+    if not args.fast:
+        # Update the database first
+        update_repositories()
+
+    session = db.Session()
     count = 0
-    everything = None
-    data = Data()
     if args.repo == 'canaries':
-        gen = config.repositories()['canaries']
+        gen = session.query(Repository).filter(
+            Repository.name.in_(config.repositories()['canaries'])
+        ).all()
     elif args.repo == 'errors':
-        gen = sorted(data.get_errors())
+        gen = session.query(Repository).filter_by(is_error=True).all()
     elif args.repo == 'libraries':
-        gen = list(mw.get_library_list())
+        gen = session.query(Repository).filter(
+            Repository.name.in_(list(mw.get_library_list()))
+        ).all()
     elif args.repo:
-        gen = [args.repo]
+        gen = session.query(Repository).filter_by(name=args.repo).all()
     else:
-        gen = list(mw.get_everything())
-        everything = gen
+        gen = session.query(Repository).all()
     for repo in gen:
-        print('Queuing %s' % repo)
-        run_check.delay(repo, DATA_ROOT, utils.date_log_dir())
+        if repo.branch != "master":
+            # TODO: remove this once branch support is ready
+            continue
+        print(f'Queuing {repo.name} ({repo.branch})')
+        run_check.delay(repo.name, repo.branch)
         count += 1
         if args.limit and count >= args.limit:
             break
-
-    if everything is None:
-        everything = list(mw.get_everything())
-    for path in data.find_files():
-        with open(path) as f:
-            jdata = json.load(f)
-        if jdata['repo'] not in everything:
-            print('Removing %s' % path)
-            os.unlink(path)
 
 
 if __name__ == '__main__':

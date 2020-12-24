@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
 import time
+import urllib.parse
 from typing import Dict, List
 
 from . import session
@@ -86,3 +87,16 @@ def wait_for_zuul_test_gate(count: int):
         print('test+gate-and-submit has %s jobs, waiting...' % zuul)
         time.sleep(10)
         zuul = zuul_queue_length()
+
+
+def repo_branches(repo: str):
+    """Get all branches for a repository"""
+    encoded = urllib.parse.quote_plus(repo)
+    req = make_request('GET', f'projects/{encoded}/branches/')
+    branches = set()
+    for item in req:
+        if not item['ref'].startswith('refs/heads/'):
+            continue
+        branches.add(item['ref'][11:])
+
+    return branches

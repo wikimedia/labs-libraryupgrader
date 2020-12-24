@@ -16,10 +16,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from __future__ import annotations
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from typing import List, Optional
 
+from . import config
 
 Base = declarative_base()
 
@@ -64,3 +65,18 @@ class Dependencies:
 
     def all(self) -> List[Dependency]:
         return list(self.deps.values())
+
+
+class Repository(Base):
+    """Represents a repository+branch pair"""
+    __tablename__ = "repositories"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(80), nullable=False)
+    branch = Column(String(50), nullable=False)
+    is_error = Column(Boolean, nullable=False, default=False)
+
+    def key(self):
+        return f"{self.name}:{self.branch}"
+
+    def is_canary(self):
+        return self.name in config.repositories()['canaries']
