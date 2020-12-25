@@ -3,7 +3,8 @@
 {% block main %}
 <h1>{{repo.name}} ({{repo.branch}})</h1>
 <a href="https://gerrit.wikimedia.org/g/{{repo.name}}">source</a> • <a href="https://gerrit.wikimedia.org/r/q/project:{{repo.name}}">patches</a>
-{% if logs[0] and logs[0].patch %}
+{% if logs[0] %}
+{% if logs[0].patch %}
 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#patch" aria-expanded="false" aria-controls="patch">
   View proposed patch
 </button>
@@ -17,6 +18,7 @@
 <div class="collapse" id="logtext">
     <pre>{{logs[0].get_text()}}</pre>
 </div>
+{% endif %}
 {% for manager, info in dependencies.by_manager().items()|sort %}
 {% if info %}
 <h3>{{manager}} dependencies</h3>
