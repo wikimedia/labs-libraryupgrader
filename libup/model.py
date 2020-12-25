@@ -17,12 +17,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
 from collections import defaultdict
+import gzip
 from sqlalchemy import BLOB, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from typing import List, Optional
 
 from . import config
+
+# 2^16 per https://dev.mysql.com/doc/refman/8.0/en/storage-requirements.html
+BLOB_SIZE = 65536
 
 Base = declarative_base()
 
@@ -108,7 +112,7 @@ class Log(Base):
     repo_id = Column(Integer, ForeignKey('repositories.id'))
     # Time of entry in mw time format
     time = Column(String(15), nullable=False)
-    # The actual log text
+    # The actual log text, might be gzipped
     text = Column(BLOB, nullable=False)
     # The patch file, if any
     patch = Column(BLOB, nullable=True)
@@ -119,7 +123,17 @@ class Log(Base):
         return self.id < other.id
 
     def get_text(self) -> str:
-        return self.text.decode()
+        if self.text.startswith(b'g:'):
+            return gzip.decompress(self.text[2:]).decode()
+        else:
+            return self.text.decode()
+
+    def set_text(self, text: str):
+        encoded = text.encode()
+        if len(encoded) >= BLOB_SIZE:
+            self.text = b'g:' + gzip.compress(encoded)
+        else:
+            self.text = encoded
 
     def get_patch(self) -> Optional[str]:
         if self.patch is not None:
