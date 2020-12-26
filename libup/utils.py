@@ -22,7 +22,7 @@ import json
 import os
 import stat
 
-from . import LOGS
+from . import GIT_ROOT, LOGS
 
 
 @contextmanager
@@ -35,13 +35,17 @@ def cd(dirname):
         os.chdir(cwd)
 
 
-def gerrit_url(repo: str, user=None, ssh=False) -> str:
+def gerrit_url(repo: str, user=None, ssh=False, internal=False) -> str:
     if user is not None:
         prefix = user + '@'
     else:
         prefix = ''
+    if ssh and internal:
+        raise RuntimeError('Both ssh and internal cannot be True')
     if ssh:
         return f'ssh://{prefix}gerrit.wikimedia.org:29418/{repo}'
+    elif internal:
+        return f'file://{GIT_ROOT}/{repo.replace("/", "-")}.git'
     else:
         return f'https://{prefix}gerrit-replica.wikimedia.org/r/{repo}.git'
 

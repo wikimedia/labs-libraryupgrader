@@ -25,7 +25,7 @@ import subprocess
 import tempfile
 import traceback
 
-from . import DATA_ROOT, db, docker, model, push, utils, ssh
+from . import DATA_ROOT, GIT_ROOT, db, docker, gerrit, model, push, utils, ssh
 from .extract import extract_dependencies
 
 app = Celery('tasks', broker='amqp://localhost')
@@ -42,14 +42,15 @@ def run_check(repo_name: str, branch: str):
     repo = session.query(model.Repository).filter_by(name=repo_name, branch=branch).first()
     log_dir = utils.date_log_dir()
     rand = _random_string()
+    # Update our local clone
+    gerrit.ensure_clone(repo.name)
     with tempfile.TemporaryDirectory() as tmpdir:
         with utils.cd(tmpdir):
             # TODO: Move this logic out of pusher?
             pusher = push.Pusher()
-            pusher.clone(repo.name)
+            pusher.clone(repo.name, internal=True, branch=repo.branch)
             deps = extract_dependencies(repo.name, repo.branch)
             db.update_dependencies(session, repo, deps)
-            # FIXME: don't throw this clone away
 
     try:
         docker.run(
@@ -59,6 +60,7 @@ def run_check(repo_name: str, branch: str):
             mounts={
                 log_dir: '/out',
                 DATA_ROOT: '/srv/data:ro',
+                GIT_ROOT: f'{GIT_ROOT}:ro'
             },
             rm=True,
             # FIXME: pass branch name through

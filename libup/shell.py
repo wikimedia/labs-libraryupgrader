@@ -38,9 +38,9 @@ class ShellMixin:
             res.check_returncode()
         return res.stdout.decode()
 
-    def clone(self, repo):
-        url = utils.gerrit_url(repo)
-        self.check_call(['git', 'clone', url, 'repo', '--depth=1'])
+    def clone(self, repo, branch='master', internal=False):
+        url = utils.gerrit_url(repo, internal=internal)
+        self.check_call(['git', 'clone', url, 'repo', '--depth=1', '-b', branch])
         os.chdir('repo')
         self.check_call(['git', 'config', 'user.name', GIT_NAME])
         self.check_call(['git', 'config', 'user.email', GIT_EMAIL])

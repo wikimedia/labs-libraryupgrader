@@ -33,6 +33,7 @@ elif os.path.exists('/.dockerenv'):
     CONFIG_REPO = '/tmp/config'
 else:
     CONFIG_REPO = os.path.join(DATA_ROOT, 'config')
+GIT_ROOT = '/srv/git'
 RELEASES = os.path.join(CONFIG_REPO, 'releases.json')
 REPOSITORIES = os.path.join(CONFIG_REPO, 'repositories.json')
 MANAGERS = ['composer', 'npm']

@@ -18,11 +18,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import json
+import os
+import subprocess
 import time
 import urllib.parse
 from typing import Dict, List
 
-from . import session
+from . import GIT_ROOT, session, utils
 
 
 def make_request(method, path, **kwargs):
@@ -100,3 +102,12 @@ def repo_branches(repo: str):
         branches.add(item['ref'][11:])
 
     return branches
+
+
+def ensure_clone(repo):
+    path = f'{GIT_ROOT}/{repo.replace("/", "-")}.git'
+    if os.path.exists(path):
+        # TODO: Can we only do this update every so often?
+        subprocess.check_call(['git', 'remote', 'update'], cwd=path)
+    else:
+        subprocess.check_call(['git', 'clone', utils.gerrit_url(repo), '--bare', path])

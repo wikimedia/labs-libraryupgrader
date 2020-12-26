@@ -27,6 +27,8 @@ def test_gerrit_url():
         == 'https://foo@gerrit-replica.wikimedia.org/r/repo/name.git'
     assert utils.gerrit_url('repo/name', user='foo', ssh=True) \
         == 'ssh://foo@gerrit.wikimedia.org:29418/repo/name'
+    assert utils.gerrit_url('repo/name', internal=True) \
+        == 'file:///srv/git/repo-name.git'
 
 
 def test_cd():

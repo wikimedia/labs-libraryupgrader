@@ -1048,7 +1048,7 @@ class LibraryUpgrader(shell.ShellMixin):
         }, fname=output)
         # Output the date we run as first thing
         self.check_call(['date'])
-        self.clone(repo)
+        self.clone(repo, internal=True)
         self.check_call(['grr', 'init'])  # Install commit-msg hook
         self.is_canary = repo in config.repositories()['canaries']
         self.output['sha1'] = self.sha1()
