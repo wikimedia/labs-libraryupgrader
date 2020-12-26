@@ -77,7 +77,7 @@ class Plan:
         for dep in deps:
             try:
                 info = self.releases[dep.manager][dep.name]
-            except IndexError:
+            except KeyError:
                 # We're not tracking this dependency
                 continue
             if 'skip' in info and dep.version.startswith(info['skip']):
@@ -103,7 +103,7 @@ class Plan:
         for dep in deps:
             try:
                 info = self.releases[dep.manager][dep.name]
-            except IndexError:
+            except KeyError:
                 # We're not tracking this dependency
                 continue
             if 'skip' in info and dep.version.startswith(info['skip']):
