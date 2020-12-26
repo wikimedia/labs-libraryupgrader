@@ -22,7 +22,8 @@ import semver
 import semver.exceptions
 import traceback
 
-from . import PACKAGIST_MIRROR, config, session
+from . import PACKAGIST_MIRROR, session
+from .plan import Plan
 
 
 class Library:
@@ -46,16 +47,13 @@ class Library:
             self.latest_version()
         )
 
-    def safe_versions(self) -> list:
-        safes = config.releases_v1()
-        try:
-            return safes[self.manager][self.name]
-        except KeyError:
-            return []
-
     def is_safe_upgrade(self, version) -> bool:
         """whether the specified version is a good release"""
-        return version in self.safe_versions()
+        plan = Plan('master')
+        safe = plan.safe_version(self.manager, self.name)
+        if safe is None:
+            return False
+        return version == safe
 
     def is_latest_safe(self) -> bool:
         """is the latest version a good release"""

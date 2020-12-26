@@ -43,19 +43,6 @@ def releases(pull=False) -> dict:
     return data
 
 
-def releases_v1(pull=False) -> dict:
-    data = releases(pull=pull)
-    # Rewrite v2 into the v1 format for now
-    rewrite = {
-        'push': data['push']
-    }
-    for manager, updates in data['master'].items():
-        rewrite[manager] = {}
-        for name, info in updates.items():
-            rewrite[manager][name] = [info['to']]
-    return rewrite
-
-
 def repositories(pull=False) -> dict:
     ensure(pull=pull)
 
