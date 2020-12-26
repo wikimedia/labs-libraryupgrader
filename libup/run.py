@@ -67,7 +67,9 @@ def main():
         db.update_upstreams(session)
 
     count = 0
-    if args.repo == 'canaries':
+    if args.repo == 'none':
+        gen = []
+    elif args.repo == 'canaries':
         gen = session.query(Repository).filter(
             Repository.name.in_(config.repositories()['canaries'])
         ).all()
