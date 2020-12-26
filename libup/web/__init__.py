@@ -78,8 +78,11 @@ def repo_icons(repo):
 
 @app.route('/')
 def index():
-    count = len(set(Data().find_files()))
-    return render_template('index.html', count=count)
+    db.connect()
+    session = db.Session()
+    count = session.query(Repository).count()
+    upstreams = session.query(Upstream).count()
+    return render_template('index.html', count=count, upstreams=upstreams)
 
 
 @app.route('/r/<path:repo>')
