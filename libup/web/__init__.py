@@ -174,7 +174,6 @@ def library_table():
         want=want,
         display=display,
         ci_utils=wikimediaci_utils,
-        errors=data.get_errors(),
     )
 
 
@@ -325,7 +324,6 @@ def vulns_npm():
         COLORS=COLORS,
         dev_all=lambda x: all(y.get('dev') for y in x),
         via=via,
-        errors=data.get_errors(),
     )
 
 
