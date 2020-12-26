@@ -32,7 +32,7 @@ def test_link():
     lib = Library('composer', 'test', '0.1')
     assert lib.link == 'https://packagist.org/packages/test'
     bad = Library('nope', 'test', '0.1')
-    with pytest.raises(KeyError):
+    with pytest.raises(RuntimeError):
         z = bad.link  # noqa
 
 

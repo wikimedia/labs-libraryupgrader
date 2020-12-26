@@ -24,9 +24,8 @@ from .model import Repository
 from .tasks import run_check
 
 
-def update_repositories():
+def update_repositories(session):
     print('Updating list of repositories in database...')
-    session = db.Session()
     repositories = {}
     to_add = []
     for repo in session.query(Repository).all():
@@ -61,11 +60,12 @@ def main():
     args = parser.parse_args()
 
     db.connect()
+    session = db.Session()
     if not args.fast:
         # Update the database first
-        update_repositories()
+        update_repositories(session)
+        db.update_upstreams(session)
 
-    session = db.Session()
     count = 0
     if args.repo == 'canaries':
         gen = session.query(Repository).filter(

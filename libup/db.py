@@ -19,7 +19,8 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from .model import Dependency, Dependencies, Repository
+from . import library
+from .model import Dependency, Dependencies, Repository, Upstream
 
 
 Session = sessionmaker()
@@ -68,5 +69,29 @@ def update_dependencies(session, repo: Repository, deps):
         session.add(add)
     for delete in to_delete:
         session.delete(delete)
+
+    session.commit()
+
+
+def update_upstreams(session):
+    print('Fetching upstream metadata for packages...')
+    deps = session.query(Dependency).all()
+    libs = set()
+    for dep in deps:
+        # TODO: do this unique filtering in SQL
+        libs.add((dep.manager, dep.name))
+    to_add = []
+    for manager, name in libs:
+        upstream = session.query(Upstream).filter_by(manager=manager, name=name).first()
+        if upstream is None:
+            upstream = Upstream(manager=manager, name=name)
+            to_add.append(upstream)
+        metadata = library.get_metadata(manager, name)
+        upstream.set_description(metadata['description'])
+        upstream.latest = metadata['latest']
+
+    for add in to_add:
+        session.add(add)
+    # TODO: should we purge this table for libs we no longer track?
 
     session.commit()

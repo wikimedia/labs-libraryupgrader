@@ -140,3 +140,31 @@ class Log(Base):
             return self.patch.decode()
 
     repository = relationship("Repository", back_populates="logs")
+
+
+class Upstream(Base):
+    """Upstream metadata"""
+    __tablename__ = "upstreams"
+    id = Column(Integer, primary_key=True)
+    # "npm" or "composer", etc.
+    manager = Column(String(10), nullable=False)
+    # package name
+    name = Column(String(80), nullable=False)
+    # upstream description
+    description = Column(BLOB, nullable=False)
+    # latest available version
+    latest = Column(String(80), nullable=False)
+
+    def set_description(self, desc: str):
+        self.description = desc.encode()
+
+    def get_description(self) -> str:
+        return self.description.decode()
+
+    def link(self) -> str:
+        if self.manager == 'composer':
+            return f"https://packagist.org/packages/{self.name}"
+        elif self.manager == 'npm':
+            return f"https://www.npmjs.com/package/{self.name}"
+        else:
+            raise RuntimeError(f"Unsupported manager: {self.manager}")

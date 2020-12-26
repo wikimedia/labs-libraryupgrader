@@ -23,6 +23,7 @@ import semver.exceptions
 import traceback
 
 from . import PACKAGIST_MIRROR, config, session
+from .model import Upstream
 
 
 class Library:
@@ -36,16 +37,10 @@ class Library:
 
     @property
     def link(self) -> str:
-        return {
-            'composer': 'https://packagist.org/packages/%s',
-            'npm': 'https://www.npmjs.com/package/%s',
-        }[self.manager] % self.name
+        return Upstream(manager=self.manager, name=self.name).link()
 
     def _metadata(self) -> dict:
-        return {
-            'composer': _get_composer_metadata,
-            'npm': _get_npm_metadata,
-        }[self.manager](self.name)
+        return get_metadata(self.manager, self.name)
 
     def latest_version(self) -> str:
         return self._metadata()['latest']
@@ -121,7 +116,7 @@ def is_greater_than_or_equal_to(first, second) -> bool:
 
 # FIXME Don't use functools/lru_cache
 @functools.lru_cache()
-def _get_composer_metadata(package: str) -> dict:
+def get_composer_metadata(package: str) -> dict:
     r = session.get(f'{PACKAGIST_MIRROR}/packages/{package}.json')
     try:
         resp = r.json()['package']
@@ -157,7 +152,7 @@ def _get_composer_metadata(package: str) -> dict:
 
 
 @functools.lru_cache()
-def _get_npm_metadata(package: str) -> dict:
+def get_npm_metadata(package: str) -> dict:
     r = session.get('https://registry.npmjs.org/%s' % package)
     resp = r.json()
     # print('Latest %s: %s' % (package, version))
@@ -165,3 +160,12 @@ def _get_npm_metadata(package: str) -> dict:
         'latest': resp['dist-tags']['latest'],
         'description': resp['description'],
     }
+
+
+def get_metadata(manager: str, name: str) -> dict:
+    if manager == "composer":
+        return get_composer_metadata(name)
+    elif manager == "npm":
+        return get_npm_metadata(name)
+    else:
+        raise RuntimeError(f"Unknown manager: {manager}")
