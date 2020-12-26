@@ -80,7 +80,7 @@ class Plan:
             except KeyError:
                 # We're not tracking this dependency
                 continue
-            if 'skip' in info and dep.version.startswith(info['skip']):
+            if 'skip' in info and dep.version.startswith(tuple(info['skip'])):
                 # To be skipped
                 continue
             status = self.status_canaries(dep, info['to'])
@@ -106,7 +106,7 @@ class Plan:
             except KeyError:
                 # We're not tracking this dependency
                 continue
-            if 'skip' in info and dep.version.startswith(info['skip']):
+            if 'skip' in info and dep.version.startswith(tuple(info['skip'])):
                 # To be skipped
                 continue
             if dep.version != info['to']:
