@@ -117,6 +117,12 @@ def is_greater_than_or_equal_to(first, second) -> bool:
 # FIXME Don't use functools/lru_cache
 @functools.lru_cache()
 def get_composer_metadata(package: str) -> dict:
+    if package == 'php' or package.startswith('ext-'):
+        # These aren't real composer packages
+        return {
+            'latest': '0.0.0',
+            'description': 'Unknown package',
+        }
     r = session.get(f'{PACKAGIST_MIRROR}/packages/{package}.json')
     try:
         resp = r.json()['package']
