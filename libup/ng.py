@@ -147,6 +147,10 @@ class LibraryUpgrader(shell.ShellMixin):
         if not self.has_composer:
             return {}
         self.ensure_composer_lock()
+        # if there are no dependencies whatsoever, then no lockfile
+        # will be created
+        if not os.path.exists('composer.lock'):
+            return {}
         req = session.post(PHP_SECURITY_CHECK,
                            files={'lock': open('composer.lock', 'rb')},
                            headers={'Accept': 'application/json'})
