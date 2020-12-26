@@ -156,9 +156,15 @@ def get_npm_metadata(package: str) -> dict:
     r = session.get('https://registry.npmjs.org/%s' % package)
     resp = r.json()
     # print('Latest %s: %s' % (package, version))
+    try:
+        latest = resp['dist-tags']['latest']
+        description = resp['description']
+    except KeyError:
+        latest = '0.0.0'
+        description = 'Unknown package'
     return {
-        'latest': resp['dist-tags']['latest'],
-        'description': resp['description'],
+        'latest': latest,
+        'description': description,
     }
 
 
