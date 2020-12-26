@@ -88,7 +88,7 @@ class Plan:
                 # Canaries aren't ready yet
                 continue
             if dep.version != info['to']:
-                updates.append((dep, info['to']))
+                updates.append((dep.manager, dep.name, info['to']))
                 weight += info['weight']
 
         if weight >= WEIGHT_NEEDED:
@@ -110,7 +110,7 @@ class Plan:
                 # To be skipped
                 continue
             if dep.version != info['to']:
-                updates.append((dep, info['to']))
+                updates.append((dep.manager, dep.name, info['to']))
                 weight += info['weight']
 
         if weight >= WEIGHT_NEEDED:

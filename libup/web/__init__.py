@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from collections import defaultdict, OrderedDict
-from flask import Flask, render_template, make_response, request
+from flask import Flask, jsonify, render_template, make_response, request
 from flask_bootstrap import Bootstrap
 import functools
 import json
@@ -337,6 +337,26 @@ def status():
     return render_template(
         'status.html',
         status=planner.status()
+    )
+
+
+@app.route('/plan.json')
+def plan_json():
+    """Keep in sync with HTTPPlan"""
+    repo = request.args.get('repository')
+    branch = request.args.get('branch')
+    if not repo or not branch:
+        return jsonify(
+            status="error",
+            error="Missing repo or branch parameter")
+    planner = plan.Plan(branch)
+    db.connect()
+    session = db.Session()
+    deps = session.query(Dependency).filter_by(repo=repo, branch=branch).all()
+    ret = planner.check(repo, deps)
+    return jsonify(
+        status="ok",
+        plan=ret
     )
 
 
