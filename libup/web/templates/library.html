@@ -1,15 +1,13 @@
 {% extends "base.html" %}
-{% block subtitle %}{{repo}}{% endblock %}
+{% block subtitle %}{{upstream.manager}}: {{upstream.name}}{% endblock %}
 {% block main %}
-<h1>{{manager}}: {{name}}</h1>
-<p><a href="{{library.link}}">{{library.description()}}</a></p>
-<p>Latest version: <code>{{library.latest_version()}}</code></p>
+<h1>{{upstream.manager}}: {{upstream.name}}</h1>
+<p><a href="{{upstream.link()}}">{{upstream.get_description()}}</a></p>
+<p>Latest version: <code>{{upstream.latest}}</code></p>
 <p>
     <a href="https://gerrit.wikimedia.org/g/labs/libraryupgrader/config/+/master/releases.json">Good/approved version</a>:
-    {% if library.safe_versions() %}
-    {% for ver in library.safe_versions() %}
-    <code>{{ver}}</code>,
-    {% endfor %}
+    {% if safe_version %}
+    <code>{{safe_version}}</code>
     {% else %}
     none
     {% endif %}

@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from . import WEIGHT_NEEDED, config, db
 from .model import Dependency
@@ -26,6 +26,12 @@ class Plan:
         self.branch = branch
         self.canaries = config.repositories(pull=pull)['canaries']
         self.releases = config.releases(pull=pull).get(branch, {})
+
+    def safe_version(self, manager: str, name: str) -> Optional[str]:
+        try:
+            return self.releases[manager][name]['to']
+        except KeyError:
+            return None
 
     def check(self, repo: str, deps: List[Dependency]) -> list:
         """return all the dependencies that need updating and the new version"""

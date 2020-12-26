@@ -25,9 +25,9 @@ import os
 import re
 import wikimediaci_utils
 
-from .. import LOGS, MANAGERS, TYPES, config, db, library, plan
+from .. import LOGS, MANAGERS, TYPES, config, db, plan
 from ..data import Data
-from ..model import Dependency, Dependencies, Log, Repository
+from ..model import Dependency, Dependencies, Log, Repository, Upstream
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
@@ -193,18 +193,19 @@ def library_(manager, name):
         return make_response('Unknown library.', 404)
     for dep in deps:
         used[dep.mode][dep.version].add(dep.repo)
-    data = Data()
 
-    lib = library.Library(deps[0].manager, deps[0].name, deps[0].version)
+    upstream = session.query(Upstream)\
+        .filter_by(manager=manager, name=name)\
+        .first()
+    if upstream is None:
+        upstream = Upstream(manager=manager, name=name, description=b'Unknown', latest='0.0.0')
+    safe_version = plan.Plan(branch=branch).safe_version(manager, name)
 
     return render_template(
         'library.html',
-        manager=manager,
-        name=name,
         used=used,
-        library=lib,
-        canaries=config.repositories()['canaries'],
-        errors=data.get_errors(),
+        upstream=upstream,
+        safe_version=safe_version,
     )
 
 
