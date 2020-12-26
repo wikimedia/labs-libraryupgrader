@@ -23,7 +23,6 @@ import semver.exceptions
 import traceback
 
 from . import PACKAGIST_MIRROR, config, session
-from .model import Upstream
 
 
 class Library:
@@ -34,10 +33,6 @@ class Library:
 
     def __lt__(self, other):
         return self.name < other.name
-
-    @property
-    def link(self) -> str:
-        return Upstream(manager=self.manager, name=self.name).link()
 
     def _metadata(self) -> dict:
         return get_metadata(self.manager, self.name)
@@ -50,9 +45,6 @@ class Library:
             self.manager, self.name,
             self.latest_version()
         )
-
-    def description(self) -> str:
-        return self._metadata()['description']
 
     def safe_versions(self) -> list:
         safes = config.releases_v1()

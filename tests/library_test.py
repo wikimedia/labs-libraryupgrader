@@ -28,14 +28,6 @@ def test_sort():
     assert l2 > l1
 
 
-def test_link():
-    lib = Library('composer', 'test', '0.1')
-    assert lib.link == 'https://packagist.org/packages/test'
-    bad = Library('nope', 'test', '0.1')
-    with pytest.raises(RuntimeError):
-        z = bad.link  # noqa
-
-
 def test_is_newer(mocker):
     lib = Library('composer', 'mediawiki/mediawiki-codesniffer', '24.0.0')
     latest_version = mocker.patch.object(lib, 'latest_version')

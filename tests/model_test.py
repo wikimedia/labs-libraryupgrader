@@ -15,7 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from libup.model import Log, BLOB_SIZE
+import pytest
+
+from libup.model import BLOB_SIZE, Log, Upstream
 
 
 def test_log():
@@ -28,3 +30,13 @@ def test_log():
     # internal encoding detail
     assert log.text.startswith(b'g:')
     assert log.get_text() == large_text
+
+
+def test_upstream_link():
+    upst = Upstream(manager='composer', name='test')
+    assert upst.link() == 'https://packagist.org/packages/test'
+    upst.manager = 'npm'
+    assert upst.link() == 'https://www.npmjs.com/package/test'
+    bad = Upstream(manager='nope', name='test')
+    with pytest.raises(RuntimeError):
+        bad.link()
