@@ -22,6 +22,7 @@ import os
 import random
 import string
 import subprocess
+import sys
 import tempfile
 import traceback
 
@@ -122,7 +123,7 @@ def run_check(repo_name: str, branch: str):
 
 def main():
     db.connect()
-    app.start(['worker'])
+    app.start(sys.argv[1:])
 
 
 if __name__ == "__main__":
