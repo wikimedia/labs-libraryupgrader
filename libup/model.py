@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from __future__ import annotations
 from collections import defaultdict
 import gzip
+import json
 from sqlalchemy import BLOB, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -94,6 +95,8 @@ class Repository(Base):
 
     logs = relationship("Log", back_populates="repository",
                         cascade="all, delete, delete-orphan")
+    advisories = relationship("Advisories", back_populates="repository",
+                              cascade="all, delete, delete-orphan")
 
     def __lt__(self, other):
         return self.name < other.name
@@ -103,6 +106,11 @@ class Repository(Base):
 
     def is_canary(self):
         return self.name in config.repositories()['canaries']
+
+    def get_advisories(self, manager: str) -> Optional[Advisories]:
+        for advisory in self.advisories:
+            if advisory.manager == manager:
+                return advisory
 
 
 class Log(Base):
@@ -118,6 +126,8 @@ class Log(Base):
     patch = Column(BLOB, nullable=True)
     # Whether the run ended in an error or not
     is_error = Column(Boolean, nullable=False, default=False)
+
+    repository = relationship("Repository", back_populates="logs")
 
     def __lt__(self, other):
         return self.id < other.id
@@ -138,8 +148,6 @@ class Log(Base):
     def get_patch(self) -> Optional[str]:
         if self.patch is not None:
             return self.patch.decode()
-
-    repository = relationship("Repository", back_populates="logs")
 
 
 class Upstream(Base):
@@ -168,3 +176,22 @@ class Upstream(Base):
             return f"https://www.npmjs.com/package/{self.name}"
         else:
             raise RuntimeError(f"Unsupported manager: {self.manager}")
+
+
+class Advisories(Base):
+    """Security advisories"""
+    __tablename__ = "advisories"
+    id = Column(Integer, primary_key=True)
+    repo_id = Column(Integer, ForeignKey('repositories.id'))
+    # "npm" or "composer", etc.
+    manager = Column(String(10), nullable=False)
+    # The advisories, in a JSON blob
+    data = Column(BLOB, nullable=False)
+
+    repository = relationship("Repository", back_populates="advisories")
+
+    def set_data(self, data):
+        self.data = json.dumps(data).encode()
+
+    def get_data(self):
+        return json.loads(self.data.decode())

@@ -25,7 +25,7 @@ import subprocess
 import tempfile
 import traceback
 
-from . import DATA_ROOT, GIT_ROOT, db, docker, gerrit, model, push, utils, ssh
+from . import DATA_ROOT, GIT_ROOT, MANAGERS, db, docker, gerrit, model, push, utils, ssh
 from .extract import extract_dependencies
 
 app = Celery('tasks', broker='amqp://localhost')
@@ -93,7 +93,23 @@ def run_check(repo_name: str, branch: str):
     log.set_text('\n'.join(data.get('log', [])))
     repo.logs.append(log)
     repo.is_error = log.is_error
-    # COMMIT the log
+    for manager in MANAGERS:
+        advisories = repo.get_advisories(manager)
+        new = data.get(f"{manager}-audit")
+        if advisories and new:
+            # Update existing row
+            advisories.set_data(new)
+        elif advisories and not new:
+            # No more vulns, delete row
+            session.delete(advisories)
+        elif new and not advisories:
+            advisories = model.Advisories(manager=manager)
+            advisories.set_data(new)
+            repo.advisories.append(advisories)
+        # else: not new and not advisories:
+            # pass - nothing to do
+
+    # COMMIT everything
     session.commit()
     data['message'] = f'View logs for this commit at ' \
                       f'https://libraryupgrader2.wmcloud.org/logs2/{log.id}'
