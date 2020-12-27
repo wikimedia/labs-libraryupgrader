@@ -32,6 +32,7 @@ from ..model import Dependency, Dependencies, Log, Repository, Upstream
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 Bootstrap(app)
+db.connect()
 SEVERITIES = ['critical', 'high', 'moderate', 'low', 'info']
 # TODO: find some more colors?
 COLORS = ['danger', 'danger', 'warning', 'warning', 'info']
@@ -78,7 +79,6 @@ def repo_icons(repo):
 
 @app.route('/')
 def index():
-    db.connect()
     session = db.Session()
     count = session.query(Repository).count()
     upstreams = session.query(Upstream).count()
@@ -88,7 +88,6 @@ def index():
 @app.route('/r/<path:repo>')
 def r(repo):
     branch = request.args.get('branch', 'master')
-    db.connect()
     session = db.Session()
     repository = session.query(Repository)\
         .filter_by(name=repo, branch=branch).first()
@@ -110,7 +109,6 @@ def r(repo):
 @app.route('/r')
 def r_index():
     branch = request.args.get('branch', 'master')
-    db.connect()
     session = db.Session()
     repos = session.query(Repository)\
         .filter_by(branch=branch)\
@@ -124,7 +122,6 @@ def r_index():
 @app.route('/library')
 def library_index():
     branch = request.args.get('branch', 'master')
-    db.connect()
     session = db.Session()
     deps = session.query(Dependency).filter_by(branch=branch).all()
     used = defaultdict(lambda: defaultdict(set))
@@ -187,7 +184,6 @@ def library_(manager, name):
     branch = request.args.get('branch', 'master')
     used = {'prod': defaultdict(set), 'dev': defaultdict(set)}
 
-    db.connect()
     session = db.Session()
     deps = session.query(Dependency).filter_by(
         manager=manager, name=name, branch=branch).all()
@@ -213,7 +209,6 @@ def library_(manager, name):
 
 @app.route('/logs2/<log_id>')
 def logs2(log_id):
-    db.connect()
     session = db.Session()
 
     log = session.query(Log).filter_by(id=log_id).first()
@@ -257,7 +252,6 @@ def logs(date, logname):
 @app.route('/errors')
 def errors():
     branch = request.args.get('branch', 'master')
-    db.connect()
     session = db.Session()
     repos = session.query(Repository)\
         .filter_by(is_error=True, branch=branch)\
@@ -352,7 +346,6 @@ def plan_json():
     posted = request.method == 'POST'
     # If it was a POST request, git pull
     planner = plan.Plan(branch, pull=posted)
-    db.connect()
     session = db.Session()
     deps = session.query(Dependency).filter_by(repo=repo, branch=branch).all()
     ret = planner.check(repo, deps)

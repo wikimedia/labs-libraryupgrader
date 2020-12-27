@@ -12,8 +12,9 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'libup-run = libup.run:main',
+            'libup-celery = libup.tasks:main',
             'libup-ng = libup.ng:main',
+            'libup-run = libup.run:main',
         ]
     }
 

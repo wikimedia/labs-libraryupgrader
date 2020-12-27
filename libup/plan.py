@@ -42,7 +42,6 @@ class Plan:
 
     def status_canaries(self, dep: Dependency, expected) -> Dict[str, List[Dependency]]:
         """canaries that don't and do have this update"""
-        db.connect()
         session = db.Session()
         canaries = session.query(Dependency)\
             .filter_by(name=dep.name, manager=dep.manager, branch=self.branch)\
@@ -54,11 +53,11 @@ class Plan:
                 ret['missing'].append(canary.repo)
             else:
                 ret['updated'].append(canary.repo)
+        session.close()
         return ret
 
     def status_repositories(self, dep: Dependency, expected) -> Dict[str, List[Dependency]]:
         """repositories that don't have this update"""
-        db.connect()
         session = db.Session()
         repos = session.query(Dependency)\
             .filter_by(name=dep.name, manager=dep.manager, branch=self.branch)\
@@ -69,6 +68,7 @@ class Plan:
                 ret['missing'].append(repo.repo)
             else:
                 ret['updated'].append(repo.repo)
+        session.close()
         return ret
 
     def _check_regular(self, repo: str, deps: List[Dependency]) -> list:

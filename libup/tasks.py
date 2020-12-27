@@ -37,7 +37,6 @@ def _random_string():
 
 @app.task
 def run_check(repo_name: str, branch: str):
-    db.connect()
     session = db.Session()
     repo = session.query(model.Repository).filter_by(name=repo_name, branch=branch).first()
     log_dir = utils.date_log_dir()
@@ -118,3 +117,13 @@ def run_check(repo_name: str, branch: str):
             with utils.cd(tmpdir):
                 pusher = push.Pusher()
                 pusher.run(data)
+    session.close()
+
+
+def main():
+    db.connect()
+    app.start(['worker'])
+
+
+if __name__ == "__main__":
+    main()
