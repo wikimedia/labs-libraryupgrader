@@ -29,7 +29,7 @@ import wikimediaci_utils
 from .. import LOGS, MANAGERS, TYPES, config, plan
 from ..data import Data
 from ..db import sql_uri
-from ..model import Dependency, Dependencies, Log, Repository, Upstream
+from ..model import Advisories, Dependency, Dependencies, Log, Repository, Upstream
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
@@ -280,18 +280,19 @@ def _new_log_search(repo, files):
 
 @app.route('/vulns/npm')
 def vulns_npm():
-    data = Data()
+    # branch = request.args.get('branch', 'master')
+    # FIXME: add branch to query
+    everything = db.session.query(Advisories).filter_by(manager="npm").all()
     advisories = {}
     affected = defaultdict(dict)
-    for repo, info in data.get_data().items():
-        if not info.get('npm-audit'):
-            continue
-        if 'error' in info['npm-audit']:
+    for obj in everything:
+        report = obj.get_data()
+        if 'error' in report:
             # TODO: Use proper logging
-            print(repo, info['npm-audit'])
+            print(obj.repo.name, report)
             continue
-        for a_id, a_info in info['npm-audit']['advisories'].items():
-            affected[int(a_id)][repo] = a_info
+        for a_id, a_info in report['advisories'].items():
+            affected[int(a_id)][obj.repo.name] = a_info
             if a_id not in advisories:
                 advisories[a_id] = a_info
 
