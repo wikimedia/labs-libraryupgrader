@@ -191,7 +191,15 @@ class Advisories(Base):
     repository = relationship("Repository", back_populates="advisories")
 
     def set_data(self, data):
-        self.data = json.dumps(data).encode()
+        contents = json.dumps(data).encode()
+        if len(contents) > BLOB_SIZE:
+            self.data = b'g:' + gzip.compress(contents)
+        else:
+            self.data = contents
 
     def get_data(self):
-        return json.loads(self.data.decode())
+        if self.data.startswith(b'g:'):
+            contents = gzip.decompress(self.data[2:])
+        else:
+            contents = self.data
+        return json.loads(contents.decode())

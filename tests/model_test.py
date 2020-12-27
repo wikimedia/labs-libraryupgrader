@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
 
-from libup.model import BLOB_SIZE, Log, Upstream
+from libup.model import BLOB_SIZE, Advisories, Log, Upstream
 
 
 def test_log():
@@ -30,6 +30,19 @@ def test_log():
     # internal encoding detail
     assert log.text.startswith(b'g:')
     assert log.get_text() == large_text
+
+
+def test_advisories():
+    advisories = Advisories()
+    data = {'foo': 'bar'}
+    advisories.set_data(data)
+    assert advisories.get_data()['foo'] == 'bar'
+    large = {'foo': 'AAAA' * 999999}
+    assert len(large['foo']) > BLOB_SIZE
+    advisories.set_data(large)
+    # internal encoding detail
+    assert advisories.data.startswith(b'g:')
+    assert advisories.get_data() == large
 
 
 def test_upstream_link():
