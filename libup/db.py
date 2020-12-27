@@ -26,16 +26,18 @@ from .model import Dependency, Dependencies, Repository, Upstream
 Session = sessionmaker()
 
 
-def connect():
+def sql_uri() -> str:
     if os.path.exists('/etc/mariadb_password'):
         with open('/etc/mariadb_password') as f:
             pw = f.read().strip()
     else:
         pw = "password"
     # Keep in sync with alembic.ini (TODO: is there a better way to do this?)
-    engine = create_engine(
-        f"mysql+pymysql://libup:{pw}@localhost/libup?charset=utf8mb4"
-    )
+    return f"mysql+pymysql://libup:{pw}@localhost/libup?charset=utf8mb4"
+
+
+def connect():
+    engine = create_engine(sql_uri())
     Session.configure(bind=engine)
     return engine
 

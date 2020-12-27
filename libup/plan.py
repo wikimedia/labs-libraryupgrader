@@ -16,7 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from typing import List, Dict, Optional
 
-from . import config, db, session
+from . import config
+from . import session as requests_session
 from .model import Dependency
 
 
@@ -33,16 +34,15 @@ class Plan:
         except KeyError:
             return None
 
-    def check(self, repo: str, deps: List[Dependency]) -> list:
+    def check(self, session, repo: str, deps: List[Dependency]) -> list:
         """return all the dependencies that need updating and the new version"""
         if repo in self.canaries:
-            return self._check_canary(repo, deps)
+            return self._check_canary(deps)
         else:
-            return self._check_regular(repo, deps)
+            return self._check_regular(session, deps)
 
-    def status_canaries(self, dep: Dependency, expected) -> Dict[str, List[Dependency]]:
+    def status_canaries(self, session, dep: Dependency, expected) -> Dict[str, List[Dependency]]:
         """canaries that don't and do have this update"""
-        session = db.Session()
         canaries = session.query(Dependency)\
             .filter_by(name=dep.name, manager=dep.manager, branch=self.branch)\
             .filter(Dependency.repo.in_(self.canaries))\
@@ -56,9 +56,8 @@ class Plan:
         session.close()
         return ret
 
-    def status_repositories(self, dep: Dependency, expected) -> Dict[str, List[Dependency]]:
+    def status_repositories(self, session, dep: Dependency, expected) -> Dict[str, List[Dependency]]:
         """repositories that don't have this update"""
-        session = db.Session()
         repos = session.query(Dependency)\
             .filter_by(name=dep.name, manager=dep.manager, branch=self.branch)\
             .all()
@@ -71,7 +70,7 @@ class Plan:
         session.close()
         return ret
 
-    def _check_regular(self, repo: str, deps: List[Dependency]) -> list:
+    def _check_regular(self, session, deps: List[Dependency]) -> list:
         updates = []
         for dep in deps:
             try:
@@ -82,7 +81,7 @@ class Plan:
             if 'skip' in info and dep.version.startswith(tuple(info['skip'])):
                 # To be skipped
                 continue
-            status = self.status_canaries(dep, info['to'])
+            status = self.status_canaries(session, dep, info['to'])
             if status['missing']:
                 # Canaries aren't ready yet
                 continue
@@ -91,7 +90,7 @@ class Plan:
 
         return updates
 
-    def _check_canary(self, repo: str, deps: List[Dependency]) -> list:
+    def _check_canary(self, deps: List[Dependency]) -> list:
         updates = []
         for dep in deps:
             try:
@@ -107,19 +106,19 @@ class Plan:
 
         return updates
 
-    def status(self):
+    def status(self, session):
         status = {}
         for manager, packages in self.releases.items():
             status[manager] = {}
             for name, info in packages.items():
                 dep = Dependency(name=name, manager=manager)
-                canaries = self.status_canaries(dep, info['to'])
+                canaries = self.status_canaries(session, dep, info['to'])
                 canaries_total = len(canaries['missing']) + len(canaries['updated'])
                 if canaries_total > 0:
                     canaries_percent = int(100 * len(canaries['updated']) / canaries_total)
                 else:
                     canaries_percent = 100
-                repositories = self.status_repositories(dep, info['to'])
+                repositories = self.status_repositories(session, dep, info['to'])
                 repositories_total = len(repositories['missing']) + len(repositories['updated'])
                 if repositories_total > 0:
                     repositories_percent = int(100 * len(repositories['updated']) / repositories_total)
@@ -151,10 +150,13 @@ class HTTPPlan:
 
     def check(self, repo: str) -> list:
         # TODO: should we hit localhost instead?
-        resp = session.post('https://libraryupgrader2.wmcloud.org/plan.json', params={
-            'repository': repo,
-            'branch': self.branch
-        })
+        resp = requests_session.post(
+            'https://libraryupgrader2.wmcloud.org/plan.json',
+            params={
+                'repository': repo,
+                'branch': self.branch
+            }
+        )
         resp.raise_for_status()
         data = resp.json()
         if data['status'] != 'ok':

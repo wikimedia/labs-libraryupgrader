@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from collections import defaultdict, OrderedDict
 from flask import Flask, jsonify, render_template, make_response, request
 from flask_bootstrap import Bootstrap
+from flask_sqlalchemy import SQLAlchemy
 import functools
 import json
 from markdown import markdown
@@ -25,14 +26,17 @@ import os
 import re
 import wikimediaci_utils
 
-from .. import LOGS, MANAGERS, TYPES, config, db, plan
+from .. import LOGS, MANAGERS, TYPES, config, plan
 from ..data import Data
+from ..db import sql_uri
 from ..model import Dependency, Dependencies, Log, Repository, Upstream
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
+app.config['SQLALCHEMY_DATABASE_URI'] = sql_uri()
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 Bootstrap(app)
-db.connect()
+db = SQLAlchemy(app)
 SEVERITIES = ['critical', 'high', 'moderate', 'low', 'info']
 # TODO: find some more colors?
 COLORS = ['danger', 'danger', 'warning', 'warning', 'info']
@@ -79,21 +83,19 @@ def repo_icons(repo):
 
 @app.route('/')
 def index():
-    session = db.Session()
-    count = session.query(Repository).count()
-    upstreams = session.query(Upstream).count()
+    count = db.session.query(Repository).count()
+    upstreams = db.session.query(Upstream).count()
     return render_template('index.html', count=count, upstreams=upstreams)
 
 
 @app.route('/r/<path:repo>')
 def r(repo):
     branch = request.args.get('branch', 'master')
-    session = db.Session()
-    repository = session.query(Repository)\
+    repository = db.session.query(Repository)\
         .filter_by(name=repo, branch=branch).first()
     if repository is None:
         return make_response('Sorry, I don\'t know this repository.', 404)
-    dependencies = Dependencies(session.query(Dependency)
+    dependencies = Dependencies(db.session.query(Dependency)
                                 .filter_by(repo=repository.name, branch=branch)
                                 .all())
     logs = repository.logs[0:10]
@@ -109,8 +111,7 @@ def r(repo):
 @app.route('/r')
 def r_index():
     branch = request.args.get('branch', 'master')
-    session = db.Session()
-    repos = session.query(Repository)\
+    repos = db.session.query(Repository)\
         .filter_by(branch=branch)\
         .order_by(Repository.name).all()
     return render_template(
@@ -122,8 +123,7 @@ def r_index():
 @app.route('/library')
 def library_index():
     branch = request.args.get('branch', 'master')
-    session = db.Session()
-    deps = session.query(Dependency).filter_by(branch=branch).all()
+    deps = db.session.query(Dependency).filter_by(branch=branch).all()
     used = defaultdict(lambda: defaultdict(set))
     for dep in deps:
         used[dep.manager][dep.name].add(dep.version)
@@ -184,15 +184,14 @@ def library_(manager, name):
     branch = request.args.get('branch', 'master')
     used = {'prod': defaultdict(set), 'dev': defaultdict(set)}
 
-    session = db.Session()
-    deps = session.query(Dependency).filter_by(
+    deps = db.session.query(Dependency).filter_by(
         manager=manager, name=name, branch=branch).all()
     if not deps:
         return make_response('Unknown library.', 404)
     for dep in deps:
         used[dep.mode][dep.version].add(dep.repo)
 
-    upstream = session.query(Upstream)\
+    upstream = db.session.query(Upstream)\
         .filter_by(manager=manager, name=name)\
         .first()
     if upstream is None:
@@ -209,9 +208,7 @@ def library_(manager, name):
 
 @app.route('/logs2/<log_id>')
 def logs2(log_id):
-    session = db.Session()
-
-    log = session.query(Log).filter_by(id=log_id).first()
+    log = db.session.query(Log).filter_by(id=log_id).first()
     if log is None:
         return make_response('log_id not found', 404)
 
@@ -252,8 +249,7 @@ def logs(date, logname):
 @app.route('/errors')
 def errors():
     branch = request.args.get('branch', 'master')
-    session = db.Session()
-    repos = session.query(Repository)\
+    repos = db.session.query(Repository)\
         .filter_by(is_error=True, branch=branch)\
         .order_by(Repository.name, Repository.branch).all()
     return render_template('errors.html', repos=repos)
@@ -330,7 +326,7 @@ def status():
     planner = plan.Plan(branch)
     return render_template(
         'status.html',
-        status=planner.status()
+        status=planner.status(db.session)
     )
 
 
@@ -346,9 +342,8 @@ def plan_json():
     posted = request.method == 'POST'
     # If it was a POST request, git pull
     planner = plan.Plan(branch, pull=posted)
-    session = db.Session()
-    deps = session.query(Dependency).filter_by(repo=repo, branch=branch).all()
-    ret = planner.check(repo, deps)
+    deps = db.session.query(Dependency).filter_by(repo=repo, branch=branch).all()
+    ret = planner.check(db.session, repo, deps)
     return jsonify(
         status="ok",
         plan=ret
