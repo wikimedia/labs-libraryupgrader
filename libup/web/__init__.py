@@ -289,10 +289,10 @@ def vulns_npm():
         report = obj.get_data()
         if 'error' in report:
             # TODO: Use proper logging
-            print(obj.repo.name, report)
+            print(obj.repository.name, report)
             continue
         for a_id, a_info in report['advisories'].items():
-            affected[int(a_id)][obj.repo.name] = a_info
+            affected[int(a_id)][obj.repository.name] = a_info
             if a_id not in advisories:
                 advisories[a_id] = a_info
 
