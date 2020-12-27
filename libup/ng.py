@@ -30,10 +30,11 @@ import traceback
 from typing import List
 from xml.etree import ElementTree
 
-from . import PHP_SECURITY_CHECK, config, gerrit, grunt, library, session, shell, utils
+from . import PHP_SECURITY_CHECK, WEIGHT_NEEDED, \
+    gerrit, grunt, library, session, shell, utils
 from .collections import SaveDict
-from .data import Data
 from .files import ComposerJson, PackageJson, PackageLockJson
+from .plan import HTTPPlan
 from .update import Update
 
 RULE = '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">'
@@ -64,8 +65,8 @@ class LibraryUpgrader(shell.ShellMixin):
         self.msg_fixes = []
         self.updates = []  # type: List[Update]
         self.cves = set()
-        self.is_canary = False
         self.output = None  # type: SaveDict
+        self.weight = 0
 
     def log(self, text: str):
         print(text)
@@ -598,33 +599,31 @@ class LibraryUpgrader(shell.ShellMixin):
     def sha1(self):
         return self.check_call(['git', 'show-ref', 'HEAD']).split(' ')[0]
 
-    def composer_upgrade(self, info: dict):
+    def composer_upgrade(self, plan: list):
         if not self.has_composer:
             return
-        # TODO: support non-dev deps
-        data = Data()
-        deps = data.get_deps(info)['composer']['dev']
         prior = ComposerJson('composer.json')
         new = ComposerJson('composer.json')
         updates = []
-        for lib in deps:
+        for manager, name, to, weight in plan:
+            if manager != "composer":
+                continue
             # Get the current version from composer.json
-            lib.version = prior.get_version(lib.name)
-            if lib.version is None:
+            current = prior.get_version(name)
+            if current is None:
                 # Might've been removed like eslint/stylelint (T242845)
                 continue
-            if lib.is_newer() and lib.is_latest_safe() and \
-                    (self.is_canary or data.check_canaries(lib.get_latest())):
-                # Upgrade!
-                new.set_version(lib.name, lib.latest_version())
-                update = Update(
-                    'composer', lib.name,
-                    prior.get_version(lib.name),
-                    lib.latest_version()
-                )
-                self.log_update(update)
-                updates.append(update)
-                self.updates.append(update)
+            new.set_version(name, to)
+            update = Update(
+                'composer', name,
+                current,
+                to
+            )
+            self.log_update(update)
+            updates.append(update)
+            self.updates.append(update)
+            self.weight += weight
+
         new.save()
         if not updates:
             return
@@ -772,33 +771,31 @@ class LibraryUpgrader(shell.ShellMixin):
             msg += '\n'
         update.reason = msg
 
-    def npm_upgrade(self, info: dict):
+    def npm_upgrade(self, plan: list):
         if not self.has_npm:
             return
-        # TODO: support non-dev deps
-        data = Data()
-        deps = data.get_deps(info)['npm']['dev']
         prior = PackageJson('package.json')
         new = PackageJson('package.json')
         updates = []
-        for lib in deps:
+        for manager, name, to, weight in plan:
+            if manager != "npm":
+                continue
             # Get the current version from package.json
-            lib.version = prior.get_version(lib.name)
-            if lib.version is None:
+            current = prior.get_version(name)
+            if current is None:
                 # Might've been removed like eslint/stylelint (T242845)
                 continue
-            if lib.is_newer() and lib.is_latest_safe() and \
-                    (self.is_canary or data.check_canaries(lib.get_latest())):
-                # Upgrade!
-                new.set_version(lib.name, lib.latest_version())
-                update = Update(
-                    'npm', lib.name,
-                    prior.get_version(lib.name),
-                    lib.latest_version()
-                )
-                self.log_update(update)
-                updates.append(update)
-                self.updates.append(update)
+            new.set_version(name, to)
+            update = Update(
+                'npm', name,
+                current,
+                to
+            )
+            self.log_update(update)
+            updates.append(update)
+            self.updates.append(update)
+            self.weight += weight
+
         new.save()
         if not updates:
             return
@@ -1054,7 +1051,6 @@ class LibraryUpgrader(shell.ShellMixin):
         self.check_call(['date'])
         self.clone(repo, internal=True)
         self.check_call(['grr', 'init'])  # Install commit-msg hook
-        self.is_canary = repo in config.repositories()['canaries']
         self.output['sha1'] = self.sha1()
 
         # Swap in the new php-parallel-lint package names
@@ -1072,9 +1068,6 @@ class LibraryUpgrader(shell.ShellMixin):
             repo=repo, status='open', topic='bump-dev-deps'
         )
 
-        # Do a pull to get the latest safe versions
-        config.releases(pull=True)
-
         # Now let's fix and upgrade stuff!
 
         # We need to do this first because it can cause problems
@@ -1082,8 +1075,10 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_remove_eslint_stylelint_if_grunt()
 
         # Try upgrades
-        self.npm_upgrade(self.output)
-        self.composer_upgrade(self.output)
+        planner = HTTPPlan(branch='master')
+        plan = planner.check(repo)
+        self.npm_upgrade(plan)
+        self.composer_upgrade(plan)
 
         # Re-run npm audit since upgrades might change stuff
         new_npm_audit = self.npm_audit()
@@ -1091,7 +1086,9 @@ class LibraryUpgrader(shell.ShellMixin):
             self.npm_audit_fix(new_npm_audit)
         # TODO: composer audit
 
-        self.output['push'] = bool(self.updates) and not self.output['open-changes']
+        self.output['push'] = self.weight > WEIGHT_NEEDED \
+            and bool(self.updates) \
+            and not self.output['open-changes']
 
         # General fixes:
         self.fix_coc()

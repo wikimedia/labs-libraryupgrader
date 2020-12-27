@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from typing import List, Dict, Optional
 
-from . import WEIGHT_NEEDED, config, db
+from . import config, db, session
 from .model import Dependency
 
 
@@ -73,7 +73,6 @@ class Plan:
 
     def _check_regular(self, repo: str, deps: List[Dependency]) -> list:
         updates = []
-        weight = 0
         for dep in deps:
             try:
                 info = self.releases[dep.manager][dep.name]
@@ -88,18 +87,12 @@ class Plan:
                 # Canaries aren't ready yet
                 continue
             if dep.version != info['to']:
-                updates.append((dep.manager, dep.name, info['to']))
-                weight += info['weight']
+                updates.append((dep.manager, dep.name, info['to'], info['weight']))
 
-        if weight >= WEIGHT_NEEDED:
-            return updates
-        else:
-            # No updates
-            return []
+        return updates
 
     def _check_canary(self, repo: str, deps: List[Dependency]) -> list:
         updates = []
-        weight = 0
         for dep in deps:
             try:
                 info = self.releases[dep.manager][dep.name]
@@ -110,14 +103,9 @@ class Plan:
                 # To be skipped
                 continue
             if dep.version != info['to']:
-                updates.append((dep.manager, dep.name, info['to']))
-                weight += info['weight']
+                updates.append((dep.manager, dep.name, info['to'], info['weight']))
 
-        if weight >= WEIGHT_NEEDED:
-            return updates
-        else:
-            # No updates
-            return []
+        return updates
 
     def status(self):
         status = {}
@@ -154,3 +142,22 @@ class Plan:
                 }
 
         return status
+
+
+class HTTPPlan:
+    """Class to get the update plan without directly hitting the db"""
+    def __init__(self, branch):
+        self.branch = branch
+
+    def check(self, repo: str) -> list:
+        # TODO: should we hit localhost instead?
+        resp = session.post('https://libraryupgrader2.wmcloud.org/plan.json', params={
+            'repository': repo,
+            'branch': self.branch
+        })
+        resp.raise_for_status()
+        data = resp.json()
+        if data['status'] != 'ok':
+            msg = data.get('error', 'An unknown error')
+            raise RuntimeError(f"Error fetching plan: {msg}")
+        return data['plan']

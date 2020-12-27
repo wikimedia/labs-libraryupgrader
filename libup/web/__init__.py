@@ -340,7 +340,7 @@ def status():
     )
 
 
-@app.route('/plan.json')
+@app.route('/plan.json', methods=('GET', 'POST'))
 def plan_json():
     """Keep in sync with HTTPPlan"""
     repo = request.args.get('repository')
@@ -349,7 +349,9 @@ def plan_json():
         return jsonify(
             status="error",
             error="Missing repo or branch parameter")
-    planner = plan.Plan(branch)
+    posted = request.method == 'POST'
+    # If it was a POST request, git pull
+    planner = plan.Plan(branch, pull=posted)
     db.connect()
     session = db.Session()
     deps = session.query(Dependency).filter_by(repo=repo, branch=branch).all()
