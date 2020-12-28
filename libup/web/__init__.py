@@ -322,7 +322,7 @@ def vulns_npm():
         .filter(Advisories.manager == "npm", Repository.branch == branch)\
         .all()
     advisories = {}
-    affected = defaultdict(dict)
+    affected = defaultdict(list)
     for obj in everything:
         report = obj.get_data()
         if 'error' in report:
@@ -330,7 +330,7 @@ def vulns_npm():
             print(obj.repository.name, report)
             continue
         for a_id, a_info in report['advisories'].items():
-            affected[int(a_id)][obj.repository.name] = a_info
+            affected[int(a_id)].append(obj.repository, a_info)
             if a_id not in advisories:
                 advisories[a_id] = a_info
 
@@ -354,7 +354,6 @@ def vulns_npm():
         markdown=markdown,
         SEVERITIES=SEVERITIES,
         COLORS=COLORS,
-        dev_all=lambda x: all(y.get('dev') for y in x),
         via=via,
     )
 
