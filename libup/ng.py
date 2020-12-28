@@ -1078,7 +1078,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_remove_eslint_stylelint_if_grunt()
 
         # Try upgrades
-        planner = HTTPPlan(branch='master')
+        planner = HTTPPlan(branch=self.branch)
         plan = planner.check(repo)
         self.npm_upgrade(plan)
         self.composer_upgrade(plan)

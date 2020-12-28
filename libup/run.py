@@ -95,9 +95,6 @@ def main():
     else:
         gen = session.query(Repository).all()
     for repo in gen:
-        if repo.branch != "master":
-            # TODO: remove this once branch support is ready
-            continue
         print(f'Queuing {repo.name} ({repo.branch})')
         run_check.delay(repo.name, repo.branch)
         count += 1
