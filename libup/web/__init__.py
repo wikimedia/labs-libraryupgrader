@@ -330,7 +330,7 @@ def vulns_npm():
             print(obj.repository.name, report)
             continue
         for a_id, a_info in report['advisories'].items():
-            affected[int(a_id)].append(obj.repository, a_info)
+            affected[int(a_id)].append((obj.repository, a_info))
             if a_id not in advisories:
                 advisories[a_id] = a_info
 
