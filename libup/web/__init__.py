@@ -303,7 +303,7 @@ def vulns_composer():
                 if key in advisories:
                     advisories[key]['repos'].append(obj.repository)
                 else:
-                    advisory[key] = {
+                    advisories[key] = {
                         'info': advisory,
                         'package': package,
                         'repos': [obj.repository]
