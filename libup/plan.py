@@ -44,8 +44,8 @@ class Plan:
     def status_canaries(self, session, dep: Dependency, expected) -> Dict[str, List[Repository]]:
         """canaries that don't and do have this update"""
         canaries = session.query(Dependency).join(Repository)\
-            .filter_by(name=dep.name, manager=dep.manager)\
-            .filter(Repository.name.in_(self.canaries), Repository.branch == self.branch)\
+            .filter(Dependency.name == dep.name, Dependency.manager == dep.manager,
+                    Repository.name.in_(self.canaries), Repository.branch == self.branch)\
             .all()
         ret = {'missing': [], 'updated': []}
         for canary in canaries:
