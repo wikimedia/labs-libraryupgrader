@@ -15,7 +15,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import functools
 import json
 import re
 import semver
@@ -23,56 +22,6 @@ import semver.exceptions
 import traceback
 
 from . import PACKAGIST_MIRROR, session
-from .plan import Plan
-
-
-class Library:
-    def __init__(self, manager: str, name: str, version: str):
-        self.manager = manager
-        self.name = name
-        self.version = version
-
-    def __lt__(self, other):
-        return self.name < other.name
-
-    def _metadata(self) -> dict:
-        return get_metadata(self.manager, self.name)
-
-    def latest_version(self) -> str:
-        return self._metadata()['latest']
-
-    def get_latest(self):
-        return Library(
-            self.manager, self.name,
-            self.latest_version()
-        )
-
-    def is_safe_upgrade(self, version) -> bool:
-        """whether the specified version is a good release"""
-        plan = Plan('master')
-        safe = plan.safe_version(self.manager, self.name)
-        if safe is None:
-            return False
-        return version == safe
-
-    def is_latest_safe(self) -> bool:
-        """is the latest version a good release"""
-        # HACK HACK HACK
-        if self.name == 'mediawiki/mediawiki-codesniffer' \
-                and (self.version.startswith('19.') or self.version.startswith('26.')):
-            # Don't upgrade codesniffer 19.x as it is the last version with php5 support (T228186)
-            # Don't upgrade codesniffer 26.x as it is the last version with php7 support
-            return False
-        return self.is_safe_upgrade(self.latest_version())
-
-    def is_newer(self) -> bool:
-        if self.version.strip() in ['*', 'latest']:
-            # special case, T243262
-            return False
-        elif self.version.startswith('git'):
-            # see T268254#6670861
-            return False
-        return is_greater_than(self.version, self.latest_version())
 
 
 def is_greater_than(first, second) -> bool:
@@ -104,8 +53,6 @@ def is_greater_than_or_equal_to(first, second) -> bool:
     return semver.Version.parse(second) >= semver.Version.parse(first)
 
 
-# FIXME Don't use functools/lru_cache
-@functools.lru_cache()
 def get_composer_metadata(package: str) -> dict:
     if package == 'php' or package.startswith('ext-'):
         # These aren't real composer packages
@@ -147,7 +94,6 @@ def get_composer_metadata(package: str) -> dict:
     }
 
 
-@functools.lru_cache()
 def get_npm_metadata(package: str) -> dict:
     r = session.get('https://registry.npmjs.org/%s' % package)
     resp = r.json()

@@ -19,29 +19,21 @@ from celery import Celery
 from datetime import datetime
 import json
 import os
-import random
-import string
 import subprocess
 import sys
 import tempfile
 import traceback
 
-from . import DATA_ROOT, GIT_ROOT, MANAGERS, db, docker, gerrit, model, push, utils, ssh
+from . import GIT_ROOT, MANAGERS, db, docker, gerrit, model, push, utils, ssh
 from .extract import extract_dependencies
 
 app = Celery('tasks', broker='amqp://localhost')
-
-
-def _random_string():
-    return ''.join(random.choice(string.ascii_letters) for _ in range(15))
 
 
 @app.task
 def run_check(repo_name: str, branch: str):
     session = db.Session()
     repo = session.query(model.Repository).filter_by(name=repo_name, branch=branch).first()
-    log_dir = utils.date_log_dir()
-    rand = _random_string()
     # Update our local clone
     gerrit.ensure_clone(repo.name)
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -52,34 +44,31 @@ def run_check(repo_name: str, branch: str):
             deps = extract_dependencies(repo)
             db.update_dependencies(session, repo, deps)
 
-    try:
-        docker.run(
-            name=rand,
-            env={},
-            background=False,
-            mounts={
-                log_dir: '/out',
-                DATA_ROOT: '/srv/data:ro',
-                GIT_ROOT: f'{GIT_ROOT}:ro'
-            },
-            rm=True,
-            # FIXME: pass branch name through
-            extra_args=['libup-ng', repo.name, '/out/%s.json' % rand],
-        )
-    except subprocess.CalledProcessError:
-        # Just print the traceback. The real check is to verify
-        # that the JSON file exists.
-        traceback.print_exc()
-    output = os.path.join(log_dir, '%s.json' % rand)
-    assert os.path.exists(output)
-    # Copy it over to the "current" directory,
-    # potentially overwriting existing results
-    with open(output) as fr:
-        fname = os.path.join(DATA_ROOT, 'current', repo.name.replace('/', '_') + '.json')
-        with open(fname, 'w') as fw:
-            text = fr.read()
-            fw.write(text)
-    data = json.loads(text)
+    container_name = repo.name.split('/')[-1] + '-' + repo.branch
+    with tempfile.TemporaryDirectory() as tmpdir:
+        try:
+            docker.run(
+                name=container_name,
+                env={},
+                background=False,
+                mounts={
+                    tmpdir: '/out',
+                    GIT_ROOT: f'{GIT_ROOT}:ro'
+                },
+                rm=True,
+                # FIXME: pass branch name through
+                extra_args=['libup-ng', repo.name, '/out/output.json'],
+            )
+        except subprocess.CalledProcessError:
+            # Just print the traceback. The real check is to verify
+            # that the JSON file exists.
+            traceback.print_exc()
+        output = os.path.join(tmpdir, 'output.json')
+        if not os.path.exists(output):
+            raise RuntimeError(f"Cannot find output file: {output}")
+        with open(output) as f:
+            data = json.load(f)
+
     if data.get('patch') is not None:
         encoded_patch = data['patch'].encode()
     else:

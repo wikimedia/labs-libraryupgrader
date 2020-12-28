@@ -17,35 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
 
-from libup.library import Library, is_greater_than
-
-
-def test_sort():
-    # Based on package name
-    l1 = Library('foo', 'abcde', '0.1')
-    l2 = Library('foo', 'edcba', '0.1')
-    assert l1 < l2
-    assert l2 > l1
-
-
-def test_is_newer(mocker):
-    lib = Library('composer', 'mediawiki/mediawiki-codesniffer', '24.0.0')
-    latest_version = mocker.patch.object(lib, 'latest_version')
-    latest_version.return_value = '26.0.0'
-    assert lib.is_newer() is True
-    lib.version = '*'
-    assert lib.is_newer() is False
-
-
-def test_is_latest_safe(mocker):
-    lib = Library('composer', 'mediawiki/mediawiki-codesniffer', '24.0.0')
-    is_safe_upgrade = mocker.patch.object(lib, 'is_safe_upgrade')
-    is_safe_upgrade.return_value = True
-    latest_version = mocker.patch.object(lib, 'latest_version')
-    latest_version.return_value = '26.0.0'
-    assert lib.is_latest_safe() is True
-    lib.version = '19.2.0'
-    assert lib.is_latest_safe() is False
+from libup.library import is_greater_than
 
 
 @pytest.mark.parametrize(
@@ -65,9 +37,3 @@ def test_is_latest_safe(mocker):
 )
 def test_is_greater_than(first, second, expected):
     assert is_greater_than(first, second) is expected
-
-
-def test_version_parts_normalized():
-    """integration test to verify 0.4 -> 0.4.0"""
-    lib = Library('composer', 'jakub-onderka/php-console-highlighter', '0.4.0')
-    assert len(lib.latest_version().split('.')) == 3

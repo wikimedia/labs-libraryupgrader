@@ -24,8 +24,7 @@ from markdown import markdown
 import os
 import re
 
-from .. import LOGS, MANAGERS, plan
-from ..data import Data
+from .. import MANAGERS, plan
 from ..db import sql_uri
 from ..model import Advisories, Dependency, Dependencies, Log, Repository, Upstream
 
@@ -208,28 +207,24 @@ def logs2(log_id):
 
 @app.route('/logs/<date>/<logname>')
 def logs(date, logname):
+    """deprecated logs, should be removed after Jan. 2021"""
     # Input validation to prevent against directory traversal attacks
     if not re.match(r'^\d{4}-\d{2}-\d{2}$', date):
         return make_response('Invalid date', 404)
     if not re.match(r'^[A-z]{15}$', logname):
         return make_response('Invalid filename', 404)
-    path = os.path.join(LOGS, date, f'{logname}.json')
+    path = os.path.join('/srv/data/logs', date, f'{logname}.json')
     if not os.path.exists(path):
         return make_response('Can\'t find log file', 404)
 
     with open(path) as f:
         info = json.load(f)
-    deps = Data().get_deps(info)
     return render_template(
         'logs.html',
         success=info.get('done'),
         log='\n'.join(info.get('log', [])),
         patch=info.get('patch'),
         repo=info.get('repo'),
-        deps=deps,
-        # FIXME: find_logs() is way too slow
-        # logs=sorted(find_logs(repo))
-        logs=[]
     )
 
 
@@ -240,29 +235,6 @@ def errors():
         .filter_by(is_error=True, branch=branch)\
         .order_by(Repository.name, Repository.branch).all()
     return render_template('errors.html', repos=repos)
-
-
-def find_logs(repo):
-    for date in os.listdir(LOGS):
-        if date.startswith('.'):
-            continue
-        path = os.path.join(LOGS, date)
-        files = os.listdir(path)
-        old_repo = repo.replace('/', '_')
-        yield from [os.path.join(path, x)
-                    for x in files if x.startswith(old_repo)]
-        yield from _new_log_search(
-            repo,
-            [os.path.join(path, x)
-             for x in files if x.endswith('.json')]
-        )
-
-
-def _new_log_search(repo, files):
-    for fname in files:
-        with open(fname) as f:
-            if json.load(f)['repo'] == repo:
-                yield fname
 
 
 @app.route('/vulns/composer')

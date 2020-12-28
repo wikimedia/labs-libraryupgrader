@@ -30,8 +30,7 @@ import traceback
 from typing import List
 from xml.etree import ElementTree
 
-from . import PHP_SECURITY_CHECK, WEIGHT_NEEDED, \
-    gerrit, grunt, library, session, shell, utils
+from . import WEIGHT_NEEDED, gerrit, grunt, library, session, shell, utils
 from .collections import SaveDict
 from .files import ComposerJson, PackageJson, PackageLockJson
 from .plan import HTTPPlan
@@ -153,7 +152,7 @@ class LibraryUpgrader(shell.ShellMixin):
         # will be created
         if not os.path.exists('composer.lock'):
             return {}
-        req = session.post(PHP_SECURITY_CHECK,
+        req = session.post('https://php-security-checker.wmcloud.org/check_lock',
                            files={'lock': open('composer.lock', 'rb')},
                            headers={'Accept': 'application/json'})
         req.raise_for_status()

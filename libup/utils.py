@@ -21,9 +21,8 @@ from datetime import datetime
 import gzip
 import json
 import os
-import stat
 
-from . import GIT_ROOT, LOGS
+from . import GIT_ROOT
 
 # 2^16 per https://dev.mysql.com/doc/refman/8.0/en/storage-requirements.html
 BLOB_SIZE = 65536
@@ -63,19 +62,6 @@ def save_pretty_json(data: dict, fname: str):
     with open(fname, 'w') as f:
         out = json.dumps(data, indent='\t', ensure_ascii=False)
         f.write(out + '\n')
-
-
-def date_log_dir():
-    log_dir = os.path.join(LOGS, datetime.utcnow().strftime('%Y-%m-%d'))
-    if not os.path.isdir(log_dir):
-        os.mkdir(log_dir)
-        os.chmod(
-            log_dir,
-            stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
-            stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
-            stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
-        )
-    return log_dir
 
 
 def to_mw_time(dt: datetime) -> str:
