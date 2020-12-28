@@ -67,6 +67,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.cves = set()
         self.output = None  # type: SaveDict
         self.weight = 0
+        self.branch = 'master'  # Overridden later
 
     def log(self, text: str):
         print(text)
@@ -599,7 +600,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.msg_fixes.append('.gitignore: Added .phpunit.result.cache (T242727).')
 
     def sha1(self):
-        return self.check_call(['git', 'show-ref', 'HEAD']).split(' ')[0]
+        return self.check_call(['git', 'show-ref', f'refs/heads/{self.branch}']).split(' ')[0]
 
     def composer_upgrade(self, plan: list):
         if not self.has_composer:
@@ -1044,11 +1045,12 @@ class LibraryUpgrader(shell.ShellMixin):
     def get_latest_patch(self):
         return self.check_call(['git', 'format-patch', 'HEAD~1', '--stdout'])
 
-    def run(self, repo, output):
+    def run(self, repo, output, branch):
         self.output = SaveDict({
             'repo': repo,
             'log': [],
         }, fname=output)
+        self.branch = branch
         # Output the date we run as first thing
         self.check_call(['date'])
         self.clone(repo, internal=True)
@@ -1130,10 +1132,11 @@ def main():
     parser = argparse.ArgumentParser(description='next generation of libraryupgrader')
     parser.add_argument('repo', help='Git repository')
     parser.add_argument('output', help='Path to output results to')
+    parser.add_argument('--branch', help='Git branch', default='master')
     args = parser.parse_args()
     libup = LibraryUpgrader()
     try:
-        libup.run(args.repo, args.output)
+        libup.run(args.repo, args.output, args.branch)
     except:  # noqa
         # Make sure we log all exceptions that bubble up
         libup.log(traceback.format_exc())
