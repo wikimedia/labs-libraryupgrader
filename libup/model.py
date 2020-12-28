@@ -23,7 +23,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from typing import List, Optional
 
-from . import config, utils
+from . import utils
 
 Base = declarative_base()
 
@@ -89,6 +89,12 @@ class Repository(Base):
     branch = Column(String(80), nullable=False)
     # Same as the most recent `log.is_error`, but in this table for speed
     is_error = Column(Boolean, nullable=False, default=False)
+    # Whether bundled in the tarball
+    is_bundled = Column(Boolean, nullable=False, default=False)
+    # Whether Wikimedia deployed
+    is_wm_deployed = Column(Boolean, nullable=False, default=False)
+    # Whether it's a libup canary
+    is_canary = Column(Boolean, nullable=False, default=False)
 
     logs = relationship("Log", back_populates="repository",
                         cascade="all, delete, delete-orphan")
@@ -102,10 +108,6 @@ class Repository(Base):
 
     def key(self):
         return f"{self.name}:{self.branch}"
-
-    def is_canary(self):
-        # TODO: caching?
-        return self.name in config.repositories()['canaries']
 
     def get_advisories(self, manager: str) -> Optional[Advisories]:
         for advisory in self.advisories:
