@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block subtitle %}{{upstream.manager}}: {{upstream.name}}{% endblock %}
 {% block main %}
-<h1>{{upstream.manager}}: {{upstream.name}}</h1>
+<h1>{{upstream.manager}}: {{upstream.name}} ({{gbranch}})</h1>
 <p><a href="{{upstream.link()}}">{{upstream.get_description()}}</a></p>
 <p>Latest version: <code>{{upstream.latest}}</code></p>
 <p>
