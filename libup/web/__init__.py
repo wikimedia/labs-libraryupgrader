@@ -165,7 +165,6 @@ def library_table():
             if not found:
                 ret.append((None, None))
         display.append((repo, ret))
-    print(display)
     return render_template(
         'library_table.html',
         want=want,
