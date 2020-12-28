@@ -19,6 +19,7 @@ from celery import Celery
 from datetime import datetime
 import json
 import os
+import stat
 import subprocess
 import sys
 import tempfile
@@ -36,7 +37,7 @@ def run_check(repo_name: str, branch: str):
     repo = session.query(model.Repository).filter_by(name=repo_name, branch=branch).first()
     # Update our local clone
     gerrit.ensure_clone(repo.name)
-    with tempfile.TemporaryDirectory() as tmpdir:
+    with tempfile.TemporaryDirectory(prefix="libup-extract") as tmpdir:
         with utils.cd(tmpdir):
             # TODO: Move this logic out of pusher?
             pusher = push.Pusher(branch=repo.branch)
@@ -45,7 +46,15 @@ def run_check(repo_name: str, branch: str):
             db.update_dependencies(session, repo, deps)
 
     container_name = repo.name.split('/')[-1] + '-' + repo.branch
-    with tempfile.TemporaryDirectory() as tmpdir:
+    with tempfile.TemporaryDirectory(prefix="libup-container") as tmpdir:
+        # We need to make the tmpdir insecure so the container
+        # can write to it
+        os.chmod(
+            tmpdir,
+            stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
+            stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
+            stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
+        )
         try:
             docker.run(
                 name=container_name,
@@ -56,17 +65,12 @@ def run_check(repo_name: str, branch: str):
                     GIT_ROOT: f'{GIT_ROOT}:ro'
                 },
                 rm=True,
-                # FIXME: pass branch name through
-                extra_args=['libup-ng', repo.name, '/out/output.json'],
+                extra_args=['libup-ng', repo.name, '/out/output.json', f"--branch={repo.branch}"],
             )
         except subprocess.CalledProcessError:
-            # Just print the traceback. The real check is to verify
-            # that the JSON file exists.
+            # Just print the traceback, we still need to save the log
             traceback.print_exc()
-        output = os.path.join(tmpdir, 'output.json')
-        if not os.path.exists(output):
-            raise RuntimeError(f"Cannot find output file: {output}")
-        with open(output) as f:
+        with open(os.path.join(tmpdir, 'output.json')) as f:
             data = json.load(f)
 
     if data.get('patch') is not None:
