@@ -24,7 +24,7 @@ from markdown import markdown
 import os
 import re
 
-from .. import MANAGERS, plan
+from .. import BRANCHES, MANAGERS, plan
 from ..db import sql_uri
 from ..model import Advisories, Dependency, Dependencies, Log, Repository, Upstream
 
@@ -56,7 +56,9 @@ def inject_to_templates():
         'sorted': sorted,
         'len': len,
         'repo_icons': repo_icons,
-        'markdown': markdown
+        'markdown': markdown,
+        'BRANCHES': BRANCHES,
+        'gbranch': request.args.get('branch', 'master'),
     }
 
 
