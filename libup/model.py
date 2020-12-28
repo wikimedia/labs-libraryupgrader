@@ -17,17 +17,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
 from collections import defaultdict
-import gzip
 import json
 from sqlalchemy import BLOB, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from typing import List, Optional
 
-from . import config
-
-# 2^16 per https://dev.mysql.com/doc/refman/8.0/en/storage-requirements.html
-BLOB_SIZE = 65536
+from . import config, utils
 
 Base = declarative_base()
 
@@ -137,17 +133,10 @@ class Log(Base):
         return self.id < other.id
 
     def get_text(self) -> str:
-        if self.text.startswith(b'g:'):
-            return gzip.decompress(self.text[2:]).decode()
-        else:
-            return self.text.decode()
+        return utils.maybe_decompress(self.text)
 
     def set_text(self, text: str):
-        encoded = text.encode()
-        if len(encoded) >= BLOB_SIZE:
-            self.text = b'g:' + gzip.compress(encoded)
-        else:
-            self.text = encoded
+        self.text = utils.maybe_compress(text)
 
     def get_patch(self) -> Optional[str]:
         if self.patch is not None:
@@ -195,15 +184,7 @@ class Advisories(Base):
     repository = relationship("Repository", back_populates="advisories")
 
     def set_data(self, data):
-        contents = json.dumps(data).encode()
-        if len(contents) > BLOB_SIZE:
-            self.data = b'g:' + gzip.compress(contents)
-        else:
-            self.data = contents
+        self.data = utils.maybe_compress(json.dumps(data))
 
     def get_data(self):
-        if self.data.startswith(b'g:'):
-            contents = gzip.decompress(self.data[2:])
-        else:
-            contents = self.data
-        return json.loads(contents.decode())
+        return json.loads(utils.maybe_decompress(self.data))

@@ -17,7 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
 
-from libup.model import BLOB_SIZE, Advisories, Log, Upstream
+from libup.model import Advisories, Log, Upstream
+from libup.utils import BLOB_SIZE
 
 
 def test_log():

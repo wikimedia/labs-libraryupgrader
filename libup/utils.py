@@ -18,11 +18,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from collections import OrderedDict
 from contextlib import contextmanager
 from datetime import datetime
+import gzip
 import json
 import os
 import stat
 
 from . import GIT_ROOT, LOGS
+
+# 2^16 per https://dev.mysql.com/doc/refman/8.0/en/storage-requirements.html
+BLOB_SIZE = 65536
 
 
 @contextmanager
@@ -80,3 +84,18 @@ def to_mw_time(dt: datetime) -> str:
 
 def from_mw_time(mw: str) -> datetime:
     return datetime.strptime(mw, '%Y%m%d%H%M%S')
+
+
+def maybe_compress(text: str) -> bytes:
+    encoded = text.encode()
+    if len(encoded) >= BLOB_SIZE:
+        return b'g:' + gzip.compress(encoded)
+    else:
+        return encoded
+
+
+def maybe_decompress(data: bytes) -> str:
+    if data.startswith(b'g:'):
+        return gzip.decompress(data[2:]).decode()
+    else:
+        return data.decode()

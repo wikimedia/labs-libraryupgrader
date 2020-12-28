@@ -52,3 +52,14 @@ def test_mw_time():
     assert dt.minute == 5
     assert dt.second == 26
     assert utils.to_mw_time(dt) == mw
+
+
+def test_compress_helpers():
+    assert utils.maybe_compress('foobarbaz') == b'foobarbaz'
+    assert utils.maybe_decompress(b'foobarbaz') == 'foobarbaz'
+    large_text = 'AAAA' * 999999
+    assert len(large_text) > utils.BLOB_SIZE
+    encoded = utils.maybe_compress(large_text)
+    # internal encoding detail
+    assert encoded.startswith(b'g:')
+    assert utils.maybe_decompress(encoded) == large_text
