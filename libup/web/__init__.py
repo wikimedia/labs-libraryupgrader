@@ -147,7 +147,7 @@ def library_table():
         if ':' not in sp_lib:
             return 'no colon in lib'
         manager, libname = sp_lib.split(':', 2)
-        upstream = db.session.query(Upstream).filter_by(manager=manager, name=libname)
+        upstream = db.session.query(Upstream).filter_by(manager=manager, name=libname).first()
         if upstream:
             want.append(upstream)
     display = []
