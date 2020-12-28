@@ -19,7 +19,7 @@
 <p><code>{{version}}</code>: {{len(repos)}} repositories</p>
 <ul>
     {% for repo in repos|sort %}
-    <li>{{repo_icons(repo)}}<a href="{{url_for('r', repo=repo)}}"><code>{{repo}}</code></a></li>
+    <li>{{repo_icons(repo.name)}}<a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}"><code>{{repo.name}}</code></a></li>
     {% endfor %}
 </ul>
 {% endfor %}
@@ -31,7 +31,7 @@
 <p><code>{{version}}</code>: {{len(repos)}} repositories</p>
 <ul>
     {% for repo in repos|sort %}
-    <li>{{repo_icons(repo)}}<a href="{{url_for('r', repo=repo)}}"><code>{{repo}}</code></a></li>
+    <li>{{repo_icons(repo.name)}}<a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}"><code>{{repo.name}}</code></a></li>
     {% endfor %}
 </ul>
 {% endfor %}

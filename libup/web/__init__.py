@@ -193,7 +193,7 @@ def library_(manager, name):
     if not deps:
         return make_response('Unknown library.', 404)
     for dep in deps:
-        used[dep.mode][dep.version].add(dep.repo)
+        used[dep.mode][dep.version].add(dep.repository)
 
     upstream = db.session.query(Upstream)\
         .filter_by(manager=manager, name=name)\
