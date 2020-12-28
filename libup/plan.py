@@ -59,8 +59,8 @@ class Plan:
     def status_repositories(self, session, dep: Dependency, expected) -> Dict[str, List[Repository]]:
         """repositories that don't have this update"""
         repos = session.query(Dependency).join(Repository)\
-            .filter_by(name=dep.name, manager=dep.manager)\
-            .filter(Repository.branch == self.branch)\
+            .filter(Dependency.name == dep.name, Dependency.manager == dep.manager,
+                    Repository.branch == self.branch)\
             .all()
         ret = {'missing': [], 'updated': []}
         for repo in repos:

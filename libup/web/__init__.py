@@ -187,8 +187,8 @@ def library_(manager, name):
 
     deps = db.session.query(Dependency)\
         .join(Repository)\
-        .filter_by(manager=manager, name=name)\
-        .filter(Repository.branch == branch)\
+        .filter(Dependency.name == name, Dependency.manager == manager,
+                Repository.branch == branch)\
         .all()
     if not deps:
         return make_response('Unknown library.', 404)
@@ -287,8 +287,7 @@ def vulns_npm():
     branch = request.args.get('branch', 'master')
     everything = db.session.query(Advisories)\
         .join(Repository)\
-        .filter_by(manager="npm")\
-        .filter(Repository.branch == branch)\
+        .filter(Advisories.manager == "npm", Repository.branch == branch)\
         .all()
     advisories = {}
     affected = defaultdict(dict)
