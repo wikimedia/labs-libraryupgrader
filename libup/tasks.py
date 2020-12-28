@@ -49,7 +49,7 @@ def run_check(repo_name: str, branch: str):
             # TODO: Move this logic out of pusher?
             pusher = push.Pusher()
             pusher.clone(repo.name, internal=True, branch=repo.branch)
-            deps = extract_dependencies(repo.name, repo.branch)
+            deps = extract_dependencies(repo)
             db.update_dependencies(session, repo, deps)
 
     try:

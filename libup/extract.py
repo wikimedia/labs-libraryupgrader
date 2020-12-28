@@ -18,12 +18,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import os
 
-from .model import Dependency
+from .model import Dependency, Repository
 
 
-def extract_dependencies(repo, branch):
+def extract_dependencies(repo: Repository):
     deps = []
-    kwargs = {"repo": repo, "branch": branch}
+    kwargs = {"repo_id": repo.id}
     if os.path.exists('package.json'):
         with open('package.json') as f:
             pkg = json.load(f)

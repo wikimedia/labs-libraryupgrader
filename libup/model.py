@@ -39,8 +39,9 @@ class Dependency(Base):
     version = Column(String(150), nullable=False)
     manager = Column(String(20), nullable=False)  # "composer", "npm", etc.
     mode = Column(String(4), nullable=False)  # "prod" or "dev"
-    repo = Column(String(150), nullable=False)  # TODO: normalize?
-    branch = Column(String(30), nullable=False)  # TODO: normalize or combine with repo?
+    repo_id = Column(Integer, ForeignKey('repositories.id'))
+
+    repository = relationship("Repository", back_populates="dependencies")
 
     def __lt__(self, other):
         return self.name < other.name
@@ -97,6 +98,8 @@ class Repository(Base):
                         cascade="all, delete, delete-orphan")
     advisories = relationship("Advisories", back_populates="repository",
                               cascade="all, delete, delete-orphan")
+    dependencies = relationship("Dependency", back_populates="repository",
+                                cascade="all, delete, delete-orphan")
 
     def __lt__(self, other):
         return self.name < other.name
@@ -105,6 +108,7 @@ class Repository(Base):
         return f"{self.name}:{self.branch}"
 
     def is_canary(self):
+        # TODO: caching?
         return self.name in config.repositories()['canaries']
 
     def get_advisories(self, manager: str) -> Optional[Advisories]:

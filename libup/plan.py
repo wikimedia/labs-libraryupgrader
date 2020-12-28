@@ -18,7 +18,7 @@ from typing import List, Dict, Optional
 
 from . import config
 from . import session as requests_session
-from .model import Dependency
+from .model import Dependency, Repository
 
 
 class Plan:
@@ -41,11 +41,11 @@ class Plan:
         else:
             return self._check_regular(session, deps)
 
-    def status_canaries(self, session, dep: Dependency, expected) -> Dict[str, List[Dependency]]:
+    def status_canaries(self, session, dep: Dependency, expected) -> Dict[str, List[Repository]]:
         """canaries that don't and do have this update"""
-        canaries = session.query(Dependency)\
-            .filter_by(name=dep.name, manager=dep.manager, branch=self.branch)\
-            .filter(Dependency.repo.in_(self.canaries))\
+        canaries = session.query(Dependency).join(Repository)\
+            .filter_by(name=dep.name, manager=dep.manager)\
+            .filter(Repository.name.in_(self.canaries), Repository.branch == self.branch)\
             .all()
         ret = {'missing': [], 'updated': []}
         for canary in canaries:
@@ -56,10 +56,11 @@ class Plan:
         session.close()
         return ret
 
-    def status_repositories(self, session, dep: Dependency, expected) -> Dict[str, List[Dependency]]:
+    def status_repositories(self, session, dep: Dependency, expected) -> Dict[str, List[Repository]]:
         """repositories that don't have this update"""
-        repos = session.query(Dependency)\
-            .filter_by(name=dep.name, manager=dep.manager, branch=self.branch)\
+        repos = session.query(Dependency).join(Repository)\
+            .filter_by(name=dep.name, manager=dep.manager)\
+            .filter(Repository.branch == self.branch)\
             .all()
         ret = {'missing': [], 'updated': []}
         for repo in repos:

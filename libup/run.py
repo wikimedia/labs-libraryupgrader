@@ -46,7 +46,8 @@ def update_repositories(session):
 
     session.add_all(to_add)
     for old in repositories.values():
-        # TODO: delete out of `dependencies` here too
+        # should trigger cascading deletes in
+        # advisories, dependencies, logs, etc.
         session.delete(old)
     session.commit()
     print('Done!')

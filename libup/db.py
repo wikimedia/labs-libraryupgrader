@@ -47,13 +47,12 @@ def update_dependencies(session, repo: Repository, deps):
         return
 
     to_delete = []
-    to_add = []
 
-    existing = Dependencies(session.query(Dependency).filter_by(repo=repo.name, branch=repo.branch).all())
+    existing = Dependencies(repo.dependencies)
     for dep in deps:
         found = existing.pop(dep)
         if not found:
-            to_add.append(dep)
+            repo.dependencies.append(dep)
             continue
         if found.same_version(dep):
             # Nothing to do
@@ -67,8 +66,6 @@ def update_dependencies(session, repo: Repository, deps):
     to_delete.extend(existing.all())
 
     # TODO: bulk operations?
-    for add in to_add:
-        session.add(add)
     for delete in to_delete:
         session.delete(delete)
 

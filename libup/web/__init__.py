@@ -95,9 +95,7 @@ def r(repo):
         .filter_by(name=repo, branch=branch).first()
     if repository is None:
         return make_response('Sorry, I don\'t know this repository.', 404)
-    dependencies = Dependencies(db.session.query(Dependency)
-                                .filter_by(repo=repository.name, branch=branch)
-                                .all())
+    dependencies = Dependencies(repository.dependencies)
     logs = repository.logs[0:10]
     logs.sort(reverse=True)
     return render_template(
@@ -123,7 +121,10 @@ def r_index():
 @app.route('/library')
 def library_index():
     branch = request.args.get('branch', 'master')
-    deps = db.session.query(Dependency).filter_by(branch=branch).all()
+    deps = db.session.query(Dependency)\
+        .join(Repository)\
+        .filter(Repository.branch == branch)\
+        .all()
     used = defaultdict(lambda: defaultdict(set))
     for dep in deps:
         used[dep.manager][dep.name].add(dep.version)
@@ -184,8 +185,11 @@ def library_(manager, name):
     branch = request.args.get('branch', 'master')
     used = {'prod': defaultdict(set), 'dev': defaultdict(set)}
 
-    deps = db.session.query(Dependency).filter_by(
-        manager=manager, name=name, branch=branch).all()
+    deps = db.session.query(Dependency)\
+        .join(Repository)\
+        .filter_by(manager=manager, name=name)\
+        .filter(Repository.branch == branch)\
+        .all()
     if not deps:
         return make_response('Unknown library.', 404)
     for dep in deps:
@@ -280,9 +284,12 @@ def _new_log_search(repo, files):
 
 @app.route('/vulns/npm')
 def vulns_npm():
-    # branch = request.args.get('branch', 'master')
-    # FIXME: add branch to query
-    everything = db.session.query(Advisories).filter_by(manager="npm").all()
+    branch = request.args.get('branch', 'master')
+    everything = db.session.query(Advisories)\
+        .join(Repository)\
+        .filter_by(manager="npm")\
+        .filter(Repository.branch == branch)\
+        .all()
     advisories = {}
     affected = defaultdict(dict)
     for obj in everything:
@@ -340,11 +347,16 @@ def plan_json():
         return jsonify(
             status="error",
             error="Missing repo or branch parameter")
+    repository = db.session.query(Repository).filter_by(name=repo, branch=branch).first()
+    if repository is None:
+        return jsonify(
+            status="error",
+            error="Repository not found"
+        )
     posted = request.method == 'POST'
     # If it was a POST request, git pull
     planner = plan.Plan(branch, pull=posted)
-    deps = db.session.query(Dependency).filter_by(repo=repo, branch=branch).all()
-    ret = planner.check(db.session, repo, deps)
+    ret = planner.check(db.session, repo, repository.dependencies)
     return jsonify(
         status="ok",
         plan=ret
