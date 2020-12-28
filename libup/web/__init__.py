@@ -293,7 +293,12 @@ def vulns_composer():
 
     def make_key(pkg, dtls):
         """A unique ID for each advisory"""
-        return f"{pkg}-{dtls['title']}-{dtls['link']}-{dtls['cve']}"
+        if dtls.get('cve'):
+            # CVE should be unique
+            return dtls['cve']
+        else:
+            # Hopefully this combo is unique enough
+            return f"{pkg}-{dtls['title']}-{dtls['link']}"
 
     for obj in everything:
         report = obj.get_data()

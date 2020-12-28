@@ -11,7 +11,9 @@
 <p>There are {{len(advisories)}} composer security advisories affecting our repositories.</p>
 
 {% for advisory in advisories.values() %}
-<h3>{{advisory.package}}</h3>
+<h3>{{advisory.package}}
+    {% if advisory.info.cve %}(<a href="https://nvd.nist.gov/vuln/detail/{{advisory.info.cve}}">{{advisory.info.cve}}</a>){% endif %}
+</h3>
 <blockquote class="bg-warning">
     {{advisory.info.title}}
     <footer>
