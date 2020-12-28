@@ -282,6 +282,39 @@ def _new_log_search(repo, files):
                 yield fname
 
 
+@app.route('/vulns/composer')
+def vulns_composer():
+    branch = request.args.get('branch', 'master')
+    everything = db.session.query(Advisories)\
+        .join(Repository)\
+        .filter(Advisories.manager == "composer", Repository.branch == branch)\
+        .all()
+    advisories = {}
+
+    def make_key(pkg, dtls):
+        """A unique ID for each advisory"""
+        return f"{pkg}-{dtls['title']}-{dtls['link']}-{dtls['cve']}"
+
+    for obj in everything:
+        report = obj.get_data()
+        for package, details in report.items():
+            for advisory in details['advisories']:
+                key = make_key(package, advisory)
+                if key in advisories:
+                    advisories[key]['repos'].append(obj.repository)
+                else:
+                    advisory[key] = {
+                        'info': advisory,
+                        'package': package,
+                        'repos': [obj.repository]
+                    }
+
+    return render_template(
+        'vulns_composer.html',
+        advisories=advisories,
+    )
+
+
 @app.route('/vulns/npm')
 def vulns_npm():
     branch = request.args.get('branch', 'master')

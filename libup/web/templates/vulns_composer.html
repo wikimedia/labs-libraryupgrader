@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block subtitle %}vulnerabilities in composer dependencies{% endblock %}
+{% block main %}
+<h1>vulnerabilities in composer dependencies</h1>
+<blockquote>
+    <p>
+        {% if advisories %}ugh{% else %}yay{% endif %}, composer.
+    </p>
+</blockquote>
+
+<p>There are {{len(advisories)}} composer security advisories affecting our repositories.</p>
+
+{% for advisory in advisories.values() %}
+<h3>{{advisory.package}}</h3>
+<blockquote class="bg-warning">
+    {{advisory.info.title}}
+    <footer>
+        <a href="{{advisory.info.link}}">details</a>
+    </footer>
+</blockquote>
+<h5>Affected repositories ({{len(advisory.repos)}})</h5>
+<ul>
+{% for repo in sorted(advisory.repos) %}
+    <li>
+        {{repo_icons(repo.name)}}
+        <a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a>
+    </li>
+{% endfor %}
+</ul>
+{% endfor %}
+
+{% endblock %}
