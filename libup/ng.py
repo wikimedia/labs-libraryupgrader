@@ -223,6 +223,8 @@ class LibraryUpgrader(shell.ShellMixin):
             )
             self.log_update(upd)
             self.updates.append(upd)
+            # Force a patch to be pushed
+            self.weight += 10
 
     def npm_test(self):
         if not self.has_npm:
@@ -1086,7 +1088,7 @@ class LibraryUpgrader(shell.ShellMixin):
             self.npm_audit_fix(new_npm_audit)
         # TODO: composer audit
 
-        self.output['push'] = self.weight > WEIGHT_NEEDED \
+        self.output['push'] = self.weight >= WEIGHT_NEEDED \
             and bool(self.updates) \
             and not self.output['open-changes']
 
