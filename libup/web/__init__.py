@@ -24,9 +24,8 @@ import json
 from markdown import markdown
 import os
 import re
-import wikimediaci_utils
 
-from .. import LOGS, MANAGERS, TYPES, config, plan
+from .. import LOGS, MANAGERS, config, plan
 from ..data import Data
 from ..db import sql_uri
 from ..model import Advisories, Dependency, Dependencies, Log, Repository, Upstream
@@ -138,6 +137,7 @@ def library_index():
 
 @app.route('/library_table')
 def library_table():
+    branch = request.args.get('branch', 'master')
     r_libs = request.args.get('r')
     if not r_libs:
         return 'no libs specified'
@@ -147,34 +147,29 @@ def library_table():
         if ':' not in sp_lib:
             return 'no colon in lib'
         manager, libname = sp_lib.split(':', 2)
-        if manager not in MANAGERS:
-            return 'invalid manager'
-        want.append((manager, libname))
-    display = OrderedDict()
-    data = Data()
-    for repo, info in data.get_data().items():
-        deps = data.get_deps(info)
+        upstream = db.session.query(Upstream).filter_by(manager=manager, name=libname)
+        if upstream:
+            want.append(upstream)
+    display = []
+    for repo in db.session.query(Repository).filter_by(branch=branch).all():
+        deps = Dependencies(repo.dependencies)
         ret = []
-        for manager, w_lib in want:
-            print(w_lib)
+        for upstream in want:
             found = False
-            for type_ in TYPES:
-                for lib in deps[manager][type_]:
-                    if lib.name == w_lib:
-                        ret.append(lib)
-                        found = True
-                        break
-                if found:
+            for mode in ['prod', 'dev']:
+                dep = deps.find(Dependency(manager=upstream.manager, name=upstream.name, mode=mode))
+                if dep:
+                    ret.append((dep, upstream))
+                    found = True
                     break
             if not found:
-                ret.append(None)
-        display[repo] = ret
+                ret.append((None, None))
+        display.append((repo, ret))
     print(display)
     return render_template(
         'library_table.html',
         want=want,
         display=display,
-        ci_utils=wikimediaci_utils,
     )
 
 

@@ -14,13 +14,13 @@
         </tr>
     </thead>
     <tbody>
-        {% for repo, libs in sorted(display.items()) %}
+        {% for repo, libs in sorted(display) %}
         <tr>
-            <td>{{repo_icons(repo)}}<a href="{{url_for('r', repo=repo)}}">{{repo}}</a></td>
-            <td>{% if ci_utils.is_wikimedia_deployed(repo) %}✓{% else %}—{% endif %}</td>
-            {% for lib in libs %}
+            <td>{{repo_icons(repo.name)}}<a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a></td>
+            <td>{% if repo.is_wm_deployed %}✓{% else %}—{% endif %}</td>
+            {% for lib, upstream in libs %}
             {% if lib %}
-            <td>{{lib.version}} {% if lib.is_latest_safe() %}⬆{% elif lib.is_newer() %}↑{% endif %}</td>
+            <td>{{lib.version}} {% if upstream.latest == lib.version %}✔️{% else %}↑{% endif %}</td>
             {% else %}
             <td>—</td>
             {% endif %}
