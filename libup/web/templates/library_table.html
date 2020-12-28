@@ -16,7 +16,7 @@
     <tbody>
         {% for repo, libs in sorted(display) %}
         <tr>
-            <td>{{repo_icons(repo.name)}}<a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a></td>
+            <td>{{repo_icons(repo)}}<a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a></td>
             <td>{% if repo.is_wm_deployed %}✓{% else %}—{% endif %}</td>
             {% for lib, upstream in libs %}
             {% if lib %}

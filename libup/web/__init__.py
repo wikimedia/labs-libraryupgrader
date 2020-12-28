@@ -19,13 +19,12 @@ from collections import defaultdict, OrderedDict
 from flask import Flask, jsonify, render_template, make_response, request
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
-import functools
 import json
 from markdown import markdown
 import os
 import re
 
-from .. import LOGS, MANAGERS, config, plan
+from .. import LOGS, MANAGERS, plan
 from ..data import Data
 from ..db import sql_uri
 from ..model import Advisories, Dependency, Dependencies, Log, Repository, Upstream
@@ -61,21 +60,11 @@ def inject_to_templates():
     }
 
 
-@functools.lru_cache()
-def _errors_for_icons():
-    return list(Data().get_errors())
-
-
-@functools.lru_cache()
-def _canaries_for_icons():
-    return config.repositories()['canaries']
-
-
-def repo_icons(repo):
+def repo_icons(repo: Repository):
     ret = ''
-    if repo in _errors_for_icons():
+    if repo.is_error:
         ret += '❌'
-    if repo in _canaries_for_icons():
+    if repo.is_canary:
         ret += '🦆'
     return ret
 

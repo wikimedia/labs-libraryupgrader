@@ -24,7 +24,7 @@
 <ul>
 {% for repo in sorted(advisory.repos) %}
     <li>
-        {{repo_icons(repo.name)}}
+        {{repo_icons(repo)}}
         <a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a>
     </li>
 {% endfor %}
