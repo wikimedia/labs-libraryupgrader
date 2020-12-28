@@ -56,6 +56,7 @@ def inject_to_templates():
         'sorted': sorted,
         'len': len,
         'repo_icons': repo_icons,
+        'markdown': markdown
     }
 
 
@@ -312,7 +313,6 @@ def vulns_npm():
         'vulns_npm.html',
         advisories=advisories,
         affected=affected,
-        markdown=markdown,
         SEVERITIES=SEVERITIES,
         COLORS=COLORS,
         via=via,
