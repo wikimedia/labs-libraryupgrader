@@ -47,7 +47,7 @@ def run_check(repo_name: str, branch: str):
     with tempfile.TemporaryDirectory() as tmpdir:
         with utils.cd(tmpdir):
             # TODO: Move this logic out of pusher?
-            pusher = push.Pusher()
+            pusher = push.Pusher(branch=repo.branch)
             pusher.clone(repo.name, internal=True, branch=repo.branch)
             deps = extract_dependencies(repo)
             db.update_dependencies(session, repo, deps)
@@ -116,7 +116,7 @@ def run_check(repo_name: str, branch: str):
     if data.get('push') and ssh.is_key_loaded():
         with tempfile.TemporaryDirectory() as tmpdir:
             with utils.cd(tmpdir):
-                pusher = push.Pusher()
+                pusher = push.Pusher(branch=repo.branch)
                 pusher.run(data)
     session.close()
 

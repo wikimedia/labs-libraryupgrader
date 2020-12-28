@@ -37,6 +37,9 @@ AUTO_APPROVE_FILES = {
 
 
 class Pusher(shell.ShellMixin):
+    def __init__(self, branch):
+        self.branch = branch
+
     def changed_files(self):
         out = self.check_call(['git', 'log', '--stat', '--oneline', '-n1'])
         lines = out.splitlines()
@@ -63,7 +66,7 @@ class Pusher(shell.ShellMixin):
             per += ',m=' + urllib.parse.quote_plus(options['message'])
         return ['git', 'push',
                 utils.gerrit_url(options['repo'], GERRIT_USER, ssh=True),
-                'HEAD:refs/for/master' + per]
+                f'HEAD:refs/for/{self.branch}' + per]
 
     def git_push(self, repo: str, hashtags: list, message='', plus2=False, push=False):
         options = {

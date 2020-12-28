@@ -1053,7 +1053,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.branch = branch
         # Output the date we run as first thing
         self.check_call(['date'])
-        self.clone(repo, internal=True)
+        self.clone(repo, internal=True, branch=self.branch)
         self.check_call(['grr', 'init'])  # Install commit-msg hook
         self.output['sha1'] = self.sha1()
 

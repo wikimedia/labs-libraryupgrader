@@ -27,7 +27,7 @@ GIT_OUTPUT = """37a71cdcc1 This is a test
 
 
 def test_changed_files(mocker):
-    pusher = Pusher()
+    pusher = Pusher('master')
     check_call = mocker.patch('libup.push.Pusher.check_call')
     check_call.return_value = GIT_OUTPUT
     assert {
@@ -38,7 +38,7 @@ def test_changed_files(mocker):
 
 
 def test_build_push_command():
-    pusher = Pusher()
+    pusher = Pusher('REL1_35')
     options = {
         "repo": "test/example",
         "hashtags": ["CVE-2000-1234"],
@@ -48,11 +48,11 @@ def test_build_push_command():
     assert [
         'git', 'push',
         'ssh://libraryupgrader@gerrit.wikimedia.org:29418/test/example',
-        'HEAD:refs/for/master%topic=bump-dev-deps,t=CVE-2000-1234,l=Code-Review+2,m=View+logs'
+        'HEAD:refs/for/REL1_35%topic=bump-dev-deps,t=CVE-2000-1234,l=Code-Review+2,m=View+logs'
     ] == pusher.build_push_command(options)
     options['vote'] = ''
     assert [
         'git', 'push',
         'ssh://libraryupgrader@gerrit.wikimedia.org:29418/test/example',
-        'HEAD:refs/for/master%topic=bump-dev-deps,t=CVE-2000-1234,m=View+logs'
+        'HEAD:refs/for/REL1_35%topic=bump-dev-deps,t=CVE-2000-1234,m=View+logs'
     ] == pusher.build_push_command(options)
