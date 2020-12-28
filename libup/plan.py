@@ -50,9 +50,9 @@ class Plan:
         ret = {'missing': [], 'updated': []}
         for canary in canaries:
             if canary.version != expected:
-                ret['missing'].append(canary.repo)
+                ret['missing'].append(canary.repository)
             else:
-                ret['updated'].append(canary.repo)
+                ret['updated'].append(canary.repository)
         session.close()
         return ret
 
@@ -65,9 +65,9 @@ class Plan:
         ret = {'missing': [], 'updated': []}
         for repo in repos:
             if repo.version != expected:
-                ret['missing'].append(repo.repo)
+                ret['missing'].append(repo.repository)
             else:
-                ret['updated'].append(repo.repo)
+                ret['updated'].append(repo.repository)
         session.close()
         return ret
 
