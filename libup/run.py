@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import argparse
+import wikimediaci_utils as ci_utils
 
 from . import BRANCHES, config, db, gerrit, mw
 from .model import Repository
@@ -31,6 +32,10 @@ def update_repositories(session):
     for repo in session.query(Repository).all():
         repositories[repo.key()] = repo
 
+    bundled = ci_utils.get_bundled_list()
+    wm_deployed = ci_utils.get_wikimedia_deployed_list()
+    canaries = config.repositories()['canaries']
+
     for repo in mw.get_everything():
         for branch in gerrit.repo_branches(repo):
             if branch not in BRANCHES:
@@ -39,10 +44,15 @@ def update_repositories(session):
             new = Repository(name=repo, branch=branch)
             try:
                 # Exists, remove from list slated for deletion
-                repositories.pop(new.key())
+                obj = repositories.pop(new.key())
             except KeyError:
                 # Doesn't exist yet
                 to_add.append(new)
+                obj = new
+            # Update bundled, etc. status
+            obj.is_bundled = obj.name in bundled
+            obj.is_wm_deployed = obj.name in wm_deployed
+            obj.is_canary = obj.name in canaries
 
     session.add_all(to_add)
     for old in repositories.values():
