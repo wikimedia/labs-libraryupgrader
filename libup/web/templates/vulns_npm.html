@@ -4,9 +4,11 @@
 <h1>vulnerabilities in npm dependencies</h1>
 <blockquote>
     <p>
-        ugh, npm.
+        {% if advisories %}ugh{% else %}yay{% endif %}, npm.
     </p>
 </blockquote>
+
+<p>There are {{len(advisories)}} npm security advisories affecting our repositories.</p>
 
 {% for advisory in advisories.values() %}
 <h3>#{{advisory.id}}: {{advisory.module_name}}</h3>
