@@ -142,7 +142,11 @@ class Log(Base):
 
     def get_patch(self) -> Optional[str]:
         if self.patch is not None:
-            return self.patch.decode()
+            return utils.maybe_decompress(self.patch)
+
+    def set_patch(self, patch: Optional[str]):
+        if patch is not None:
+            self.patch = utils.maybe_compress(patch)
 
 
 class Upstream(Base):

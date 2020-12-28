@@ -73,17 +73,13 @@ def run_check(repo_name: str, branch: str):
         with open(os.path.join(tmpdir, 'output.json')) as f:
             data = json.load(f)
 
-    if data.get('patch') is not None:
-        encoded_patch = data['patch'].encode()
-    else:
-        encoded_patch = None
     log = model.Log(
         time=utils.to_mw_time(datetime.utcnow()),
-        patch=encoded_patch,
         is_error='done' not in data,
     )
     # TODO: Get this from `docker logs` instead
     log.set_text('\n'.join(data.get('log', [])))
+    log.set_patch(data.get('patch'))
     repo.logs.append(log)
     repo.is_error = log.is_error
     for manager in MANAGERS:
