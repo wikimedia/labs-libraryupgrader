@@ -8,8 +8,8 @@
         <tr>
             <th>Repository</th>
             <th>Wikimedia-deployed</th>
-            {% for manager, libname in want %}
-            <th><a href="{{url_for('library_', manager=manager, name=libname)}}">{{manager[0]}}:{{libname}}</a></th>
+            {% for upstream in want %}
+            <th><a href="{{url_for('library_', manager=upstream.manager, name=upstream.name)}}">{{upstream.manager[0]}}:{{upstream.name}}</a></th>
             {% endfor %}
         </tr>
     </thead>
