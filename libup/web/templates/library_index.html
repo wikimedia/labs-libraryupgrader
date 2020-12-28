@@ -6,7 +6,7 @@
 <p>
     You can also view this as a table. Presets:
     {% for name, query in table_presets.items() %}
-    <a href="{{url_for('library_table', r=query)}}">{{name}}</a>
+    <a href="{{url_for('library_table', r=query, branch=gbranch)}}">{{name}}</a>
     {% endfor %}.
 </p>
 
@@ -14,7 +14,7 @@
 <h3>{{manager}}</h3>
 <ul>
     {% for lib, versions in sorted(deps.items()) %}
-    <li><a href="{{url_for('library_', manager=manager, name=lib)}}">{{lib}}</a>: {{', '.join(sorted(versions))}}</li>
+    <li><a href="{{url_for('library_', manager=manager, name=lib, branch=gbranch)}}">{{lib}}</a>: {{', '.join(sorted(versions))}}</li>
     {% endfor %}
 </ul>
 {% endfor %}
