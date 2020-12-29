@@ -1,6 +1,4 @@
 -i https://pypi.org/simple
--e .
--e .
 alembic==1.4.3
 amqp==5.0.2; python_version >= '3.6'
 billiard==3.6.3.0
