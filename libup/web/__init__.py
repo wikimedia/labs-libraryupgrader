@@ -23,6 +23,7 @@ import json
 from markdown import markdown
 import os
 import re
+from sqlalchemy.orm import joinedload
 
 from .. import BRANCHES, MANAGERS, plan
 from ..db import sql_uri
@@ -75,7 +76,11 @@ def repo_icons(repo: Repository):
 def index():
     count = db.session.query(Repository).count()
     upstreams = db.session.query(Upstream).count()
-    return render_template('index.html', count=count, upstreams=upstreams)
+    recent_logs = db.session.query(Log)\
+        .options(joinedload(Log.repository))\
+        .order_by(Log.id.desc())\
+        .limit(15).all()
+    return render_template('index.html', count=count, upstreams=upstreams, recent_logs=recent_logs)
 
 
 @app.route('/r/<path:repo>')
