@@ -195,7 +195,7 @@ class LibraryUpgrader(shell.ShellMixin):
             if action.get('isMajor'):
                 # We don't auto-update major versions
                 continue
-            if action['action'] != 'update':
+            if action['action'] not in ['install', 'update']:
                 continue
             reason = ''
             # Skip 118, which is broken (T242703)
