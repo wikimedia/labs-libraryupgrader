@@ -491,6 +491,11 @@ class LibraryUpgrader(shell.ShellMixin):
             del data['options']['reportUnusedDisableDirectives']
             self.msg_fixes.append('Removing manual reportUnusedDisableDirectives for eslint.')
             changes = True
+        if eslint_cfg and data['options'].get('extensions') == ['.js', '.json'] \
+                and library.is_greater_than_or_equal_to('0.16.0', eslint_cfg):
+            del data['options']['extensions']
+            self.msg_fixes.append('Removing manual extensions for eslint.')
+            changes = True
 
         if changes:
             gf.set_section('eslint', data)

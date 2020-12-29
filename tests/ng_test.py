@@ -350,7 +350,7 @@ def test_fix_eslint_config(tempfs):
                        contents="""
 {
     "devDependencies": {
-        "eslint-config-wikimedia": "0.15.0"
+        "eslint-config-wikimedia": "0.16.0"
     }
 }
 """)
