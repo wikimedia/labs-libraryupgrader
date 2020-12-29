@@ -27,7 +27,7 @@
 <ul>
     {% for dep in info.prod|sort %}
     <li>
-        <a href="{{url_for('library_', manager=manager, name=dep.name)}}"><code>{{dep.name}}</code></a>: <code>{{dep.version}}</code>
+        <a href="{{url_for('library_', manager=manager, name=dep.name, branch=repo.branch)}}"><code>{{dep.name}}</code></a>: <code>{{dep.version}}</code>
     </li>
     {% endfor %}
 </ul>
@@ -37,7 +37,7 @@
 <ul>
     {% for dep in info.dev|sort %}
     <li>
-        <a href="{{url_for('library_', manager=manager, name=dep.name)}}"><code>{{dep.name}}</code></a>: <code>{{dep.version}}</code>
+        <a href="{{url_for('library_', manager=manager, name=dep.name, branch=repo.branch)}}"><code>{{dep.name}}</code></a>: <code>{{dep.version}}</code>
     </li>
     {% endfor %}
 </ul>
