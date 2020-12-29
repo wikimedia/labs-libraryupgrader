@@ -19,6 +19,7 @@ import json
 import pytest
 
 from libup.ng import LibraryUpgrader
+from libup.update import Update
 
 
 def test_has_npm(tempfs):
@@ -610,3 +611,44 @@ def test_fix_eslintrc_use_mediawiki_profile_but_keep_other_stuff(tempfs):
     assert 'OO' not in eslintrc['globals']
     assert 'mw' not in eslintrc['globals']
     assert 'testValue' in eslintrc['globals']
+
+
+def test_build_message():
+    libup = LibraryUpgrader()
+    assert libup.build_message() == '[DNM] there are no updates'
+    upd = Update('manager1', 'pkg1', '0.1', '0.2')
+    libup.updates.append(upd)
+    assert libup.build_message() == 'build: Updating pkg1 to 0.2\n'
+    libup.updates.append(Update('manager1', 'pkg2', '0.3', '0.4'))
+    assert libup.build_message() == """build: Updating manager1 dependencies
+
+* pkg1: 0.1 → 0.2
+* pkg2: 0.3 → 0.4
+"""
+    libup.updates.append(Update('manager2', 'pkg3', '0.5', '0.6', reason='This is reason1.'))
+    assert libup.build_message() == """build: Updating dependencies
+
+manager1:
+* pkg1: 0.1 → 0.2
+* pkg2: 0.3 → 0.4
+
+manager2:
+* pkg3: 0.5 → 0.6
+  This is reason1.
+
+"""
+    libup.msg_fixes.append('Fixed one more thing')
+    assert libup.build_message() == """build: Updating dependencies
+
+manager1:
+* pkg1: 0.1 → 0.2
+* pkg2: 0.3 → 0.4
+
+manager2:
+* pkg3: 0.5 → 0.6
+  This is reason1.
+
+
+Additional changes:
+* Fixed one more thing
+"""

@@ -15,13 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from . import MANAGERS
-
 
 class Update:
     """dataclass representing an update"""
     def __init__(self, manager, name, old, new, reason=''):
-        assert manager in MANAGERS
         self.manager = manager
         self.name = name
         self.old = old
