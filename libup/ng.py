@@ -1020,21 +1020,21 @@ class LibraryUpgrader(shell.ShellMixin):
             by_manager = defaultdict(list)
             for update in self.updates:
                 by_manager[update.manager].append(update)
-                if len(list(by_manager)) == 1:
-                    msg = 'build: Updating %s dependencies\n\n' % self.updates[0].manager
-                    for update in self.updates:
+            if len(list(by_manager)) == 1:
+                msg = 'build: Updating %s dependencies\n\n' % self.updates[0].manager
+                for update in self.updates:
+                    msg += f'* {update.name}: {update.old} → {update.new}\n'
+                    if update.reason:
+                        msg += self._indent(update.reason, by='  ') + '\n'
+            else:
+                msg = 'build: Updating dependencies\n\n'
+                for manager, updates in sorted(by_manager.items()):
+                    msg += '%s:\n' % manager
+                    for update in updates:
                         msg += f'* {update.name}: {update.old} → {update.new}\n'
                         if update.reason:
                             msg += self._indent(update.reason, by='  ') + '\n'
-                else:
-                    msg = 'build: Updating dependencies\n\n'
-                    for manager, updates in sorted(by_manager.items()):
-                        msg += '%s:\n' % manager
-                        for update in updates:
-                            msg += f'* {update.name}: {update.old} → {update.new}\n'
-                            if update.reason:
-                                msg += self._indent(update.reason, by='  ') + '\n'
-                        msg += '\n'
+                    msg += '\n'
 
         if self.msg_fixes:
             msg += '\nAdditional changes:\n'
