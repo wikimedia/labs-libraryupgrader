@@ -69,6 +69,10 @@ def repo_icons(repo: Repository):
         ret += '❌'
     if repo.is_canary:
         ret += '🦆'
+    if repo.is_wm_deployed:
+        ret += '🗄️'  # honestly the closest thing to a server rack I could find
+    if repo.is_bundled:
+        ret += '🔮'  # tar *ball* ha ha ha
     return ret
 
 
