@@ -43,9 +43,10 @@ ENV PYTHONUNBUFFERED 1
 RUN python3 -m venv /venv/ && /venv/bin/pip install -U wheel
 COPY setup.py /src/
 COPY requirements.txt /src/
+RUN cd src/ \
+    && /venv/bin/pip install -r requirements.txt
 COPY ./libup /src/libup
 RUN cd src/ \
-    && /venv/bin/pip install -r requirements.txt \
     && /venv/bin/python setup.py install
 ENV COMPOSER_PROCESS_TIMEOUT 1800
 # Shared cache
