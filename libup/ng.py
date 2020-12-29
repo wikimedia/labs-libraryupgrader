@@ -198,12 +198,10 @@ class LibraryUpgrader(shell.ShellMixin):
             if action['action'] != 'update':
                 continue
             reason = ''
-            resolves = {r['id'] for r in action['resolves']}
-            try:
-                # This one is broken (T242703)
-                resolves.pop(118)
-            except KeyError:
-                pass
+            # Skip 118, which is broken (T242703)
+            resolves = {r['id'] for r in action['resolves'] if r['id'] != 118}
+            if not resolves:
+                continue
             for npm_id in sorted(resolves):
                 reason += '* https://npmjs.com/advisories/%s\n' % npm_id
                 advisory_info = audit['advisories'][str(npm_id)]
