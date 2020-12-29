@@ -27,7 +27,7 @@
         <a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a>
         (via:
         {% for pkg in via(info.findings) %}
-        <a href="{{url_for('library_', manager='npm', name=pkg)}}">{{pkg}}</a>,
+        <a href="{{url_for('library_', manager='npm', name=pkg, branch=repo.branch)}}">{{pkg}}</a>,
         {% endfor %}
         )
     </li>
