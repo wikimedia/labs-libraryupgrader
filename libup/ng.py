@@ -207,12 +207,14 @@ class LibraryUpgrader(shell.ShellMixin):
             if not resolves:
                 continue
             for npm_id in sorted(resolves):
-                reason += '* https://npmjs.com/advisories/%s\n' % npm_id
                 advisory_info = audit['advisories'][str(npm_id)]
-                # TODO: line wrapping?
                 if advisory_info.get('cves'):
-                    reason += '* ' + ', '.join(advisory_info['cves']) + '\n'
+                    cves = ' (' + ', '.join(advisory_info['cves']) + ')'
                     self.cves.update(advisory_info['cves'])
+                else:
+                    cves = ''
+                reason += f'* https://npmjs.com/advisories/{npm_id}{cves}\n'
+                # TODO: line wrapping?
 
             prior_version = prior.get_version(action['module'])
             if prior_version is None:
