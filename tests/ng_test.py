@@ -368,6 +368,7 @@ def test_fix_remove_eslint_stylelint_if_grunt(tempfs, mocker):
         "grunt-eslint": "0.0.0",
         "eslint": "0.0.0",
         "grunt-stylelint": "0.0.0",
+        "stylelint-config-wikimedia": "0.5.1",
         "stylelint": "0.0.0"
     }
 }
