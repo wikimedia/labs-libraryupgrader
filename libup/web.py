@@ -25,9 +25,9 @@ import os
 import re
 from sqlalchemy.orm import joinedload
 
-from .. import BRANCHES, MANAGERS, plan
-from ..db import sql_uri
-from ..model import Advisories, Dependency, Dependencies, Log, Repository, Upstream
+from . import BRANCHES, MANAGERS, plan
+from .db import sql_uri
+from .model import Advisories, Dependency, Dependencies, Log, Repository, Upstream
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True

@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 
-TEMPLATES = (Path(__file__).absolute().parent.parent / 'libup/web/templates').glob('*.html')
+TEMPLATES = (Path(__file__).absolute().parent.parent / 'libup/templates').glob('*.html')
 
 
 @pytest.mark.parametrize('path', TEMPLATES)
