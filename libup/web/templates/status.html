@@ -8,7 +8,7 @@
     <p>{{info.stats.canaries.percent}}% of {{info.stats.canaries.total}} canaries and
        {{info.stats.repositories.percent}}% of all {{info.stats.repositories.total}} repositories have been updated.
     </p>
-    <!-- if canaries are 100, display all, else display canaries -->
+    {# if canaries are 100, display all, else display canaries #}
     {% if info.stats.canaries.percent == 100 %}
         <div class="progress">
           <div class="progress-bar" role="progressbar" aria-valuenow="{{info.stats.repositories.percent}}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{info.stats.repositories.percent}}%;">
