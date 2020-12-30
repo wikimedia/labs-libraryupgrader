@@ -191,6 +191,10 @@ class LibraryUpgrader(shell.ShellMixin):
         self.check_call(['npm', 'ci'])
         self.check_call(['npm', 'test'])
 
+        if 'actions' not in audit:
+            # Debug what's going on (see T228173)
+            self.log(json.dumps(audit))
+
         for action in audit['actions']:
             if action.get('isMajor'):
                 # We don't auto-update major versions
