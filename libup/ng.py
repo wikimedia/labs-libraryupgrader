@@ -910,6 +910,8 @@ class LibraryUpgrader(shell.ShellMixin):
         for error in errors:
             fname = error['filePath']
             for message in error['messages']:
+                if 'ruleId' not in message:
+                    continue
                 # eslint severity: 1 = warning, 2 = error.
                 # We only care about errors.
                 if message['ruleId'] and message['severity'] > 1:
