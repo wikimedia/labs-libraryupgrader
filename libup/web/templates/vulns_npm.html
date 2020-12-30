@@ -15,7 +15,7 @@
     {% if advisory.cves %}(
     {%- for cve in advisory.cves -%}
     <a href="https://nvd.nist.gov/vuln/detail/{{cve}}">{{cve}}</a>{% if not loop.last %}, {% endif %}
-    {% endfor -%}
+    {%- endfor -%}
     ){% endif %}
 </h3>
 <p>Severity: {{advisory.severity}}</p>
@@ -34,7 +34,7 @@
         (via:
         {%- for pkg in via(info.findings) -%}
         <a href="{{url_for('library_', manager='npm', name=pkg, branch=repo.branch)}}">{{pkg}}</a>{% if not loop.last %}, {% endif %}
-        {% endfor -%}
+        {%- endfor -%}
         )
     </li>
 {% endfor %}
