@@ -397,6 +397,14 @@ class LibraryUpgrader(shell.ShellMixin):
             return
         if not os.path.exists('.eslintrc.json'):
             return
+        pkg = PackageJson('package.json')
+        cfg_version = pkg.get_version('eslint-config-wikimedia')
+        if cfg_version is None:
+            # Not using our config??
+            return
+        elif not library.is_greater_than_or_equal_to("0.15.0", cfg_version):
+            # wikimedia/mediawiki profile introduced in 0.15.0
+            return
         data = utils.load_ordered_json('.eslintrc.json')
         if 'extends' not in data:
             # Something's wrong. Let's do nothing rather than make things worse.

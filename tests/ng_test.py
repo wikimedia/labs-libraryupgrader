@@ -537,6 +537,14 @@ def test_fix_phan_taint_check_plugin_merge_to_phan_current(tempfs):
 
 
 def test_fix_eslintrc_use_mediawiki_profile(tempfs):
+    tempfs.create_file('package.json',
+                       contents="""
+    {
+        "devDependencies": {
+            "eslint-config-wikimedia": "0.15.1"
+        }
+    }
+    """)
     tempfs.create_file('.eslintrc.json',
                        contents="""
     {
@@ -561,6 +569,14 @@ def test_fix_eslintrc_use_mediawiki_profile(tempfs):
 
 
 def test_fix_eslintrc_use_mediawiki_profile_and_jquery_one_too(tempfs):
+    tempfs.create_file('package.json',
+                       contents="""
+    {
+        "devDependencies": {
+            "eslint-config-wikimedia": "0.15.1"
+        }
+    }
+    """)
     tempfs.create_file('.eslintrc.json',
                        contents="""
     {
@@ -587,6 +603,14 @@ def test_fix_eslintrc_use_mediawiki_profile_and_jquery_one_too(tempfs):
 
 
 def test_fix_eslintrc_use_mediawiki_profile_but_keep_other_stuff(tempfs):
+    tempfs.create_file('package.json',
+                       contents="""
+    {
+        "devDependencies": {
+            "eslint-config-wikimedia": "0.15.1"
+        }
+    }
+    """)
     tempfs.create_file('.eslintrc.json',
                        contents="""
     {
