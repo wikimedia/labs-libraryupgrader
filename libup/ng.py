@@ -703,7 +703,8 @@ class LibraryUpgrader(shell.ShellMixin):
             run_fix = False
             for fname, value in phpcs_j['files'].items():
                 for message in value['messages']:
-                    if message['fixable']:
+                    # Only run auto-fix on master (TODO: find a better way to do this)
+                    if message['fixable'] and self.branch == 'master':
                         run_fix = True
                     else:
                         failing.add(message['source'])
@@ -907,8 +908,10 @@ class LibraryUpgrader(shell.ShellMixin):
                 eslint[gf_key] = [eslint[gf_key]]
             files = grunt.expand_glob(eslint[gf_key])
 
-        self.check_call(['./node_modules/.bin/eslint'] + files + ['--fix'],
-                        ignore_returncode=True)
+        if self.branch == 'master':
+            # Only run auto-fix on master (TODO: find a better way to do this)
+            self.check_call(['./node_modules/.bin/eslint'] + files + ['--fix'],
+                            ignore_returncode=True)
         errors = json.loads(self.check_call([
             './node_modules/.bin/eslint'] + files + ['-f', 'json'], ignore_returncode=True))
         disable = set()
