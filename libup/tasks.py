@@ -102,8 +102,7 @@ def run_check(repo_name: str, branch: str):
     session.commit()
     data['message'] = f'View logs for this commit at ' \
                       f'https://libraryupgrader2.wmcloud.org/logs2/{log.id}'
-    # TODO: Remove once we're ready to push non-master patches
-    if data.get('push') and ssh.is_key_loaded() and repo.branch == 'master':
+    if data.get('push') and ssh.is_key_loaded():
         with tempfile.TemporaryDirectory() as tmpdir:
             with utils.cd(tmpdir):
                 pusher = push.Pusher(branch=repo.branch)
