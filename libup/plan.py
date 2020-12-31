@@ -14,6 +14,10 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
+import re
+import semver
+import semver.exceptions
 from typing import List, Dict, Optional
 
 from . import config
@@ -49,7 +53,7 @@ class Plan:
             .all()
         ret = {'missing': [], 'updated': []}
         for canary in canaries:
-            if canary.version != expected:
+            if not equals(canary.version, expected):
                 ret['missing'].append(canary.repository)
             else:
                 ret['updated'].append(canary.repository)
@@ -64,7 +68,7 @@ class Plan:
             .all()
         ret = {'missing': [], 'updated': []}
         for repo in repos:
-            if repo.version != expected:
+            if not equals(repo.version, expected):
                 ret['missing'].append(repo.repository)
             else:
                 ret['updated'].append(repo.repository)
@@ -86,7 +90,7 @@ class Plan:
             if status['missing']:
                 # Canaries aren't ready yet
                 continue
-            if dep.version != info['to']:
+            if not equals(dep.version, info['to']):
                 updates.append((dep.manager, dep.name, info['to'], info['weight']))
 
         return updates
@@ -102,7 +106,7 @@ class Plan:
             if 'skip' in info and dep.version.startswith(tuple(info['skip'])):
                 # To be skipped
                 continue
-            if dep.version != info['to']:
+            if not equals(dep.version, info['to']):
                 updates.append((dep.manager, dep.name, info['to'], info['weight']))
 
         return updates
@@ -142,6 +146,24 @@ class Plan:
                 }
 
         return status
+
+
+def equals(current, wanted):
+    """
+    for the purpose of deciding whether want to upgrade, is the
+    current version OK enough or do we need to intervene?
+    """
+    if current == wanted:
+        return True
+    try:
+        # Remove some constraint stuff because we just want versions
+        first = re.sub(r'[\^~><=]', '', current)
+        if semver.Version.parse(first) >= semver.Version.parse(wanted):
+            return True
+    except semver.exceptions.ParseVersionError:
+        pass
+
+    return False
 
 
 class HTTPPlan:
