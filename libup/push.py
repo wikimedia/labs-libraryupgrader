@@ -104,7 +104,7 @@ class Pusher(shell.ShellMixin):
         if not info.get('patch'):
             print('No patch...?')
             return
-        self.clone(info['repo'], internal=True)
+        self.clone(info['repo'], branch=self.branch, internal=True)
         # TODO: investigate doing some diff/sanity check to make sure
         # the deps match updates
         self.check_call(['git', 'am'], stdin=info['patch'])
