@@ -2,9 +2,9 @@
 {% block subtitle %}status{% endblock %}
 {% block main %}
 {% for manager, packages in status.items() %}
-<h1>{{manager}}</h1>
+<h1>{{manager}} ({{gbranch}})</h1>
 {% for name, info in packages.items() %}
-    <h3><a href="{{url_for('library_', manager=manager, name=name)}}">{{name}}</a>: {{info.info.to}}</h3>
+    <h3><a href="{{url_for('library_', manager=manager, name=name, branch=gbranch)}}">{{name}}</a>: {{info.info.to}}</h3>
     <p>{{info.stats.canaries.percent}}% of {{info.stats.canaries.total}} canaries and
        {{info.stats.repositories.percent}}% of all {{info.stats.repositories.total}} repositories have been updated.
     </p>

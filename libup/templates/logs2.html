@@ -2,7 +2,7 @@
 {% block subtitle %}log #{{log.id}}{% endblock %}
 {% block main %}
 <h1><a href="{{url_for('r', repo=repo.name)}}">{{repo.name}}</a>: {{repo.branch}} (log #{{log.id}})</h1>
-<a href="https://gerrit.wikimedia.org/g/{{repo.name}}">source</a> • <a href="https://gerrit.wikimedia.org/r/q/project:{{repo.name}}">patches</a>
+<a href="https://gerrit.wikimedia.org/g/{{repo.name}}/+/refs/heads/{{repo.branch}}">source</a> • <a href="https://gerrit.wikimedia.org/r/q/project:{{repo.name}}+branch:{{repo.branch}}">patches</a>
 {% if log.patch %}
 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#patch" aria-expanded="false" aria-controls="patch">
   View proposed patch
