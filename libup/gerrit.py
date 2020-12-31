@@ -51,12 +51,14 @@ def list_projects(prefix=None):
     yield from sorted(repos)
 
 
-def query_changes(repo: str, status=None, topic=None, limit=5) -> List[Dict]:
+def query_changes(repo: str, status=None, topic=None, branch=None, limit=5) -> List[Dict]:
     query = 'project:%s' % repo
     if status is not None:
         query += ' status:%s' % status
     if topic is not None:
         query += ' topic:%s' % topic
+    if branch is not None:
+        query += f' branch:{branch}'
     return make_request('GET', 'changes/', params={
         'q': query,
         'n': limit,

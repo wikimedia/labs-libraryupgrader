@@ -1094,7 +1094,8 @@ class LibraryUpgrader(shell.ShellMixin):
         self.output['composer-audit'] = self.composer_audit()
 
         self.output['open-changes'] = gerrit.query_changes(
-            repo=repo, status='open', topic='bump-dev-deps'
+            repo=repo, status='open', topic='bump-dev-deps',
+            branch=self.branch,
         )
 
         # Now let's fix and upgrade stuff!
