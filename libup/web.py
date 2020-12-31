@@ -59,7 +59,7 @@ def inject_to_templates():
         'repo_icons': repo_icons,
         'markdown': markdown,
         'BRANCHES': BRANCHES,
-        'gbranch': request.args.get('branch', 'master'),
+        'gbranch': request_branch(),
     }
 
 
@@ -76,6 +76,14 @@ def repo_icons(repo: Repository):
     return ret
 
 
+def request_branch():
+    branch = request.args.get('branch', 'master')
+    if branch not in BRANCHES:
+        # Default to master
+        branch = BRANCHES[0]
+    return branch
+
+
 @app.route('/')
 def index():
     count = db.session.query(Repository).count()
@@ -89,7 +97,7 @@ def index():
 
 @app.route('/r/<path:repo>')
 def r(repo):
-    branch = request.args.get('branch', 'master')
+    branch = request_branch()
     repository = db.session.query(Repository)\
         .filter_by(name=repo, branch=branch).first()
     if repository is None:
@@ -107,7 +115,7 @@ def r(repo):
 
 @app.route('/r')
 def r_index():
-    branch = request.args.get('branch', 'master')
+    branch = request_branch()
     repos = db.session.query(Repository)\
         .filter_by(branch=branch)\
         .order_by(Repository.name).all()
@@ -119,7 +127,7 @@ def r_index():
 
 @app.route('/library')
 def library_index():
-    branch = request.args.get('branch', 'master')
+    branch = request_branch()
     deps = db.session.query(Dependency)\
         .join(Repository)\
         .filter(Repository.branch == branch)\
@@ -137,7 +145,7 @@ def library_index():
 
 @app.route('/library_table')
 def library_table():
-    branch = request.args.get('branch', 'master')
+    branch = request_branch()
     r_libs = request.args.get('r')
     if not r_libs:
         return 'no libs specified'
@@ -176,7 +184,7 @@ def library_table():
 def library_(manager, name):
     if manager not in MANAGERS:
         return make_response('Unknown manager.', 404)
-    branch = request.args.get('branch', 'master')
+    branch = request_branch()
     used = {'prod': defaultdict(set), 'dev': defaultdict(set)}
 
     deps = db.session.query(Dependency)\
@@ -242,7 +250,7 @@ def logs(date, logname):
 
 @app.route('/errors')
 def errors():
-    branch = request.args.get('branch', 'master')
+    branch = request_branch()
     repos = db.session.query(Repository)\
         .filter_by(is_error=True, branch=branch)\
         .order_by(Repository.name, Repository.branch).all()
@@ -251,7 +259,7 @@ def errors():
 
 @app.route('/vulns/composer')
 def vulns_composer():
-    branch = request.args.get('branch', 'master')
+    branch = request_branch()
     everything = db.session.query(Advisories)\
         .join(Repository)\
         .filter(Advisories.manager == "composer", Repository.branch == branch)\
@@ -289,7 +297,7 @@ def vulns_composer():
 
 @app.route('/vulns/npm')
 def vulns_npm():
-    branch = request.args.get('branch', 'master')
+    branch = request_branch()
     everything = db.session.query(Advisories)\
         .join(Repository)\
         .filter(Advisories.manager == "npm", Repository.branch == branch)\
@@ -332,7 +340,7 @@ def vulns_npm():
 
 @app.route('/status')
 def status():
-    branch = request.args.get('branch', 'master')
+    branch = request_branch()
     planner = plan.Plan(branch)
     return render_template(
         'status.html',
@@ -354,6 +362,11 @@ def plan_json():
         return jsonify(
             status="error",
             error="Repository not found"
+        )
+    if branch not in BRANCHES:
+        return jsonify(
+            status="error",
+            error="Invalid branch specified. Choose one of: " + ', '.join(BRANCHES)
         )
     posted = request.method == 'POST'
     # If it was a POST request, git pull
