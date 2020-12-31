@@ -7,3 +7,5 @@ data/logs/*
 libup.egg-info/
 diff-libraries/target/
 diff-libraries/*.db
+.coverage
+coverage/
