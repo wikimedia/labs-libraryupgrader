@@ -20,6 +20,7 @@ from contextlib import contextmanager
 from datetime import datetime
 import gzip
 import json
+import lzma
 import os
 
 from . import GIT_ROOT
@@ -75,13 +76,15 @@ def from_mw_time(mw: str) -> datetime:
 def maybe_compress(text: str) -> bytes:
     encoded = text.encode()
     if len(encoded) >= BLOB_SIZE:
-        return b'g:' + gzip.compress(encoded)
+        return b'l:' + lzma.compress(encoded)
     else:
         return encoded
 
 
 def maybe_decompress(data: bytes) -> str:
-    if data.startswith(b'g:'):
+    if data.startswith(b'l:'):
+        return lzma.decompress(data[2:]).decode()
+    elif data.startswith(b'g:'):
         return gzip.decompress(data[2:]).decode()
     else:
         return data.decode()

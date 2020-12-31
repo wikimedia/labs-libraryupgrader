@@ -61,5 +61,5 @@ def test_compress_helpers():
     assert len(large_text) > utils.BLOB_SIZE
     encoded = utils.maybe_compress(large_text)
     # internal encoding detail
-    assert encoded.startswith(b'g:')
+    assert encoded.startswith(b'l:')
     assert utils.maybe_decompress(encoded) == large_text

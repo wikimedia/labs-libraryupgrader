@@ -29,7 +29,7 @@ def test_log():
     assert len(large_text) > BLOB_SIZE
     log.set_text(large_text)
     # internal encoding detail
-    assert log.text.startswith(b'g:')
+    assert log.text.startswith(b'l:')
     assert log.get_text() == large_text
 
 
@@ -42,7 +42,7 @@ def test_advisories():
     assert len(large['foo']) > BLOB_SIZE
     advisories.set_data(large)
     # internal encoding detail
-    assert advisories.data.startswith(b'g:')
+    assert advisories.data.startswith(b'l:')
     assert advisories.get_data() == large
 
 
