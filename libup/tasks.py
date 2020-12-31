@@ -36,7 +36,7 @@ def run_check(repo_name: str, branch: str):
     session = db.Session()
     repo = session.query(model.Repository).filter_by(name=repo_name, branch=branch).first()
     # Update our local clone
-    gerrit.ensure_clone(repo.name)
+    gerrit.ensure_clone(repo.name, repo.branch)
     with tempfile.TemporaryDirectory(prefix="libup-extract") as tmpdir:
         with utils.cd(tmpdir):
             # TODO: Move this logic out of pusher?

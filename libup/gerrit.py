@@ -106,10 +106,9 @@ def repo_branches(repo: str):
     return branches
 
 
-def ensure_clone(repo):
+def ensure_clone(repo, branch):
     path = f'{GIT_ROOT}/{repo.replace("/", "-")}.git'
     if os.path.exists(path):
-        # TODO: Can we only do this update every so often?
-        subprocess.check_call(['git', 'remote', 'update'], cwd=path)
+        subprocess.check_call(['git', 'fetch', 'origin', f'{branch}:{branch}'], cwd=path)
     else:
         subprocess.check_call(['git', 'clone', utils.gerrit_url(repo), '--bare', path])
