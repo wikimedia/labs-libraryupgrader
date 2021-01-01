@@ -122,9 +122,9 @@ class Log(Base):
     repo_id = Column(Integer, ForeignKey('repositories.id'))
     # Time of entry in mw time format
     time = Column(String(15), nullable=False)
-    # The actual log text, might be gzipped
+    # The actual log text (possibly compressed)
     text = Column(BLOB, nullable=False)
-    # The patch file, if any
+    # The patch file, if any (possibly compressed)
     patch = Column(BLOB, nullable=True)
     # Whether the run ended in an error or not
     is_error = Column(Boolean, nullable=False, default=False)
@@ -184,7 +184,7 @@ class Advisories(Base):
     repo_id = Column(Integer, ForeignKey('repositories.id'))
     # "npm" or "composer", etc.
     manager = Column(String(10), nullable=False)
-    # The advisories, in a JSON blob
+    # The advisories, in a JSON blob (possibly compressed)
     data = Column(BLOB, nullable=False)
 
     repository = relationship("Repository", back_populates="advisories")
