@@ -33,6 +33,8 @@ AUTO_APPROVE_FILES = {
     '.eslintrc => .eslintrc.json',
     '.stylelintrc => .stylelintrc.json',
     'CODE_OF_CONDUCT.md',
+    '.gitignore',
+    'Gruntfile.js',
 }
 
 
