@@ -395,6 +395,9 @@ class LibraryUpgrader(shell.ShellMixin):
         if not repo.startswith(('mediawiki/extensions/', 'mediawiki/skins/')):
             # Only MW extensions and skins
             return
+        if self.branch != 'master':
+            # TODO: once this auto-fixes newly failing rules, re-enable for release branches
+            return
         if not os.path.exists('.eslintrc.json'):
             return
         pkg = PackageJson('package.json')
