@@ -102,13 +102,14 @@ def run_check(repo_name: str, branch: str):
 
     # COMMIT everything
     session.commit()
-    session.close()
 
     if data.get('push'):
         # Queue push task
         text_digest = log.text_digest()
         patch_digest = log.patch_digest()
         run_push.delay(log.id, text_digest, patch_digest)
+
+    session.close()
 
 
 @app.task
