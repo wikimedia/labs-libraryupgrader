@@ -99,11 +99,11 @@ class Repository(Base):
     is_canary = Column(Boolean, nullable=False, default=False)
 
     logs = relationship("Log", back_populates="repository",
-                        cascade="all, delete, delete-orphan")
+                        cascade="all, delete, delete-orphan", uselist=True)
     advisories = relationship("Advisories", back_populates="repository",
-                              cascade="all, delete, delete-orphan")
+                              cascade="all, delete, delete-orphan", uselist=True)
     dependencies = relationship("Dependency", back_populates="repository",
-                                cascade="all, delete, delete-orphan")
+                                cascade="all, delete, delete-orphan", uselist=True)
 
     def __lt__(self, other):
         return self.name < other.name
@@ -115,6 +115,7 @@ class Repository(Base):
         for advisory in self.advisories:
             if advisory.manager == manager:
                 return advisory
+        return None
 
 
 class Log(Base):
@@ -125,7 +126,7 @@ class Log(Base):
     # Time of entry in mw time format
     time = Column(String(15), nullable=False)
     # The actual log text (possibly compressed)
-    text = Column(LargeBinary().with_variant(MEDIUMBLOB, 'mysql'), nullable=False)
+    text = Column(LargeBinary().with_variant(MEDIUMBLOB, 'mysql'), nullable=False)  # type: ignore
     # The patch file, if any (possibly compressed)
     patch = Column(LargeBinary, nullable=True)
     # Whether the run ended in an error or not
@@ -152,6 +153,8 @@ class Log(Base):
     def get_patch(self) -> Optional[str]:
         if self.patch is not None:
             return utils.maybe_decompress(self.patch)
+        else:
+            return None
 
     def set_patch(self, patch: Optional[str]):
         if patch is not None:

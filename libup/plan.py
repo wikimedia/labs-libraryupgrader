@@ -53,7 +53,7 @@ class Plan:
                     Repository.name.in_(self.canaries), Repository.branch == self.branch)\
             .options(joinedload(Dependency.repository))\
             .all()
-        ret = {'missing': [], 'updated': []}
+        ret: Dict[str, List[Repository]] = {'missing': [], 'updated': []}
         for canary in canaries:
             if not equals(canary.version, expected):
                 ret['missing'].append(canary.repository)
@@ -69,7 +69,7 @@ class Plan:
                     Repository.branch == self.branch)\
             .options(joinedload(Dependency.repository))\
             .all()
-        ret = {'missing': [], 'updated': []}
+        ret: Dict[str, List[Repository]] = {'missing': [], 'updated': []}
         for repo in repos:
             if not equals(repo.version, expected):
                 ret['missing'].append(repo.repository)

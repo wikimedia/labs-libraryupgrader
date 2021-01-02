@@ -709,8 +709,7 @@ class LibraryUpgrader(shell.ShellMixin):
         root = tree.getroot()
         previously_failing = set()
         for child in root:
-            if child.tag == 'rule' and child.attrib.get('ref') \
-                    and ref_name in child.attrib.get('ref'):
+            if child.tag == 'rule' and ref_name in child.attrib.get('ref', ''):
                 for grandchild in child:
                     if grandchild.tag == 'exclude':
                         previously_failing.add(grandchild.attrib['name'])
@@ -772,8 +771,8 @@ class LibraryUpgrader(shell.ShellMixin):
                     '',
                     text
                 )
-            failing = list(sorted(failing))
-            for i, sniff in enumerate(failing):
+            failing_list = list(sorted(failing))
+            for i, sniff in enumerate(failing_list):
                 if sniff in now_failing:
                     if i == 0:
                         # Expand self-closing rule tag
@@ -788,8 +787,8 @@ class LibraryUpgrader(shell.ShellMixin):
                         )
                     else:
                         text = re.sub(
-                            r'<exclude name="{}"( )?/>'.format(re.escape(failing[i - 1])),
-                            '<exclude name="{}" />\n\t\t<exclude name="{}" />'.format(failing[i - 1], sniff),
+                            r'<exclude name="{}"( )?/>'.format(re.escape(failing_list[i - 1])),
+                            '<exclude name="{}" />\n\t\t<exclude name="{}" />'.format(failing_list[i - 1], sniff),
                             text
                         )
             with open(phpcs_xml, 'w') as f:

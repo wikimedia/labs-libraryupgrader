@@ -130,7 +130,11 @@ class Gruntfile:
             cleaned_line = re.sub(r"'(.*?)'", '', line)
             if '{' in cleaned_line:
                 # Find the closing line by indentation
-                before = re.search(r'(\t+?)\S', line).group(1)
+                before_match = re.search(r'(\t+?)\S', line)
+                if before_match:
+                    before = before_match.group(1)
+                else:
+                    raise RuntimeError("Cannot find before")
                 for subindex, subline in enumerate(lines[index:]):
                     # print('%s: ' % subindex + repr(subline))
                     if subline.startswith(before + '}'):
@@ -143,7 +147,11 @@ class Gruntfile:
                 continue
             elif '[' in cleaned_line and ']' not in cleaned_line:
                 # Find the closing line by indentation
-                before = re.search(r'(\t+?)\S', line).group(1)
+                before_match = re.search(r'(\t+?)\S', line)
+                if before_match:
+                    before = before_match.group(1)
+                else:
+                    raise RuntimeError("Cannot find before")
                 for subindex, subline in enumerate(lines[index:]):
                     if subline.startswith(before + ']'):
                         break
@@ -188,6 +196,8 @@ def expand_braces(path: str) -> list:
             if '{' not in path:
                 continue
             search = re.search('{(.*?)}', path)
+            if not search:
+                raise RuntimeError("Cannot find {...}")
             for part in search.group(1).split(','):
                 new = path.replace(search.group(0), part, 1)
                 paths.append(new)
