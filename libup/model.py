@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
 from collections import defaultdict
+import hashlib
 import json
 from sqlalchemy import BLOB, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
@@ -128,6 +129,8 @@ class Log(Base):
     patch = Column(BLOB, nullable=True)
     # Whether the run ended in an error or not
     is_error = Column(Boolean, nullable=False, default=False)
+    # Comma-separated hashtags to apply to the commit, if any
+    hashtags = Column(BLOB, nullable=True)
 
     repository = relationship("Repository", back_populates="logs")
 
@@ -140,6 +143,11 @@ class Log(Base):
     def set_text(self, text: str):
         self.text = utils.maybe_compress(text)
 
+    def text_digest(self) -> str:
+        sha256 = hashlib.sha256()
+        sha256.update(self.get_text().encode())
+        return sha256.hexdigest()
+
     def get_patch(self) -> Optional[str]:
         if self.patch is not None:
             return utils.maybe_decompress(self.patch)
@@ -147,6 +155,22 @@ class Log(Base):
     def set_patch(self, patch: Optional[str]):
         if patch is not None:
             self.patch = utils.maybe_compress(patch)
+
+    def patch_digest(self) -> Optional[str]:
+        patch = self.get_patch()
+        if patch is None:
+            return None
+        sha256 = hashlib.sha256()
+        sha256.update(patch.encode())
+        return sha256.hexdigest()
+
+    def get_hashtags(self) -> List[str]:
+        if self.hashtags is None:
+            return []
+        return self.hashtags.decode().split(',')
+
+    def set_hashtags(self, hashtags: List[str]):
+        self.hashtags = ','.join(hashtags).encode()
 
 
 class Upstream(Base):
