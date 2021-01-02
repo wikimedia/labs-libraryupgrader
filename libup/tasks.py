@@ -29,6 +29,7 @@ from . import GIT_ROOT, MANAGERS, db, docker, gerrit, model, push, utils, ssh
 from .extract import extract_dependencies
 
 app = Celery('tasks', broker='amqp://localhost')
+app.conf.task_routes = {'libup.tasks.run_push': {'queue': 'push'}}
 
 
 @app.task
@@ -101,13 +102,41 @@ def run_check(repo_name: str, branch: str):
 
     # COMMIT everything
     session.commit()
-    data['message'] = f'View logs for this commit at ' \
-                      f'https://libraryupgrader2.wmcloud.org/logs2/{log.id}'
-    if data.get('push') and ssh.is_key_loaded():
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with utils.cd(tmpdir):
-                pusher = push.Pusher(branch=repo.branch)
-                pusher.run(data)
+    session.close()
+
+    if data.get('push'):
+        # Queue push task
+        text_digest = log.text_digest()
+        patch_digest = log.patch_digest()
+        run_push.delay(log.id, text_digest, patch_digest)
+
+
+@app.task
+def run_push(log_id, text_digest, patch_digest):
+    if not ssh.is_key_loaded():
+        raise RuntimeError("ssh-agent isn't loaded")
+    session = db.Session()
+    log = session.query(model.Log).filter_by(log_id=log_id).first()
+    if log is None:
+        raise RuntimeError(f"Cannot find log_id: {log_id}")
+    if text_digest != log.text_digest():
+        raise RuntimeError(f"Text integrity issue, expected {text_digest} got {log.text_digest()}")
+    if patch_digest != log.patch_digest():
+        raise RuntimeError(f"Text integrity issue, expected {patch_digest} got {log.patch_digest()}")
+
+    repo = log.repository
+    # Make sure this is the latest log for this repository
+    logs = repo.logs
+    if logs[-1].id != log.id:
+        print(f"Newer run available: we are {log.id} but {logs[-1].id} exists, skipping")
+        session.close()
+        return
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with utils.cd(tmpdir):
+            pusher = push.Pusher(branch=repo.branch)
+            pusher.run(log, repo)
+
     session.close()
 
 

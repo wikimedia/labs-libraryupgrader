@@ -19,6 +19,8 @@ import subprocess
 import urllib.parse
 
 from . import GERRIT_USER, SSH_AUTH_SOCK, config, gerrit, shell, utils
+from .model import Log, Repository
+
 
 AUTO_APPROVE_FILES = {
     'composer.json',
@@ -101,19 +103,20 @@ class Pusher(shell.ShellMixin):
         else:
             print('SIMULATE: '.join(self.build_push_command(options)))
 
-    def run(self, info):
-        if not info.get('patch'):
+    def run(self, log: Log, repo: Repository):
+        patch = log.get_patch()
+        if not patch:
             print('No patch...?')
             return
-        self.clone(info['repo'], branch=self.branch, internal=True)
+        self.clone(repo.name, branch=self.branch, internal=True)
         # TODO: investigate doing some diff/sanity check to make sure
         # the deps match updates
-        self.check_call(['git', 'am'], stdin=info['patch'])
-        hashtags = info.get('hashtags', [])
-        message = info.get('message', '')
+        self.check_call(['git', 'am'], stdin=patch)
+        hashtags = log.get_hashtags()
+        message = f'View logs for this commit at https://libraryupgrader2.wmcloud.org/logs2/{log.id}'
         plus2 = self.can_autoapprove()
         # Flood control, don't overload zuul...
         gerrit.wait_for_zuul_test_gate(count=3)
         push = config.should_push()
-        self.git_push(info['repo'], hashtags=hashtags, message=message,
+        self.git_push(repo.name, hashtags=hashtags, message=message,
                       plus2=plus2, push=push)
