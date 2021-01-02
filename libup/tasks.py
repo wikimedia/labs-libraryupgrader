@@ -117,7 +117,7 @@ def run_push(log_id, text_digest, patch_digest):
     if not ssh.is_key_loaded():
         raise RuntimeError("ssh-agent isn't loaded")
     session = db.Session()
-    log = session.query(model.Log).filter_by(log_id=log_id).first()
+    log = session.query(model.Log).filter_by(id=log_id).first()
     if log is None:
         raise RuntimeError(f"Cannot find log_id: {log_id}")
     if text_digest != log.text_digest():
