@@ -1070,6 +1070,15 @@ class LibraryUpgrader(shell.ShellMixin):
 
         return msg
 
+    def get_hashtags(self) -> List[str]:
+        hashtags = []
+        for upd in self.updates:
+            # We use a ; instead of : because the latter can't be used in git
+            # commands apparently.
+            hashtags.append('{};{}={}'.format(upd.manager[0], upd.name, upd.new))
+        hashtags.extend(list(self.cves))
+        return hashtags
+
     def get_latest_patch(self):
         return self.check_call(['git', 'format-patch', 'HEAD~1', '--stdout'])
 
@@ -1150,7 +1159,10 @@ class LibraryUpgrader(shell.ShellMixin):
             self.output['push'] = False
 
         # Convert into a serializable form:
+        self.output['hashtags'] = self.get_hashtags()
+        # Deprecated
         self.output['updates'] = [upd.to_dict() for upd in self.updates]
+        # Deprecated
         self.output['cves'] = list(self.cves)
 
         # Flag that we finished properly

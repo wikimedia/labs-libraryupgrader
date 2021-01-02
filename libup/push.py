@@ -19,7 +19,6 @@ import subprocess
 import urllib.parse
 
 from . import GERRIT_USER, SSH_AUTH_SOCK, config, gerrit, shell, utils
-from .update import Update
 
 AUTO_APPROVE_FILES = {
     'composer.json',
@@ -110,13 +109,7 @@ class Pusher(shell.ShellMixin):
         # TODO: investigate doing some diff/sanity check to make sure
         # the deps match updates
         self.check_call(['git', 'am'], stdin=info['patch'])
-        hashtags = []
-        updates = [Update.from_dict(upd) for upd in info['updates']]
-        for upd in updates:
-            # We use a ; instead of : because the latter can't be used in git
-            # commands apparently.
-            hashtags.append('{};{}={}'.format(upd.manager[0], upd.name, upd.new))
-        hashtags.extend(info['cves'])
+        hashtags = info.get('hashtags', [])
         message = info.get('message', '')
         plus2 = self.can_autoapprove()
         # Flood control, don't overload zuul...

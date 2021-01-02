@@ -80,6 +80,7 @@ def run_check(repo_name: str, branch: str):
     # TODO: Get this from `docker logs` instead
     log.set_text('\n'.join(data.get('log', [])))
     log.set_patch(data.get('patch'))
+    log.set_hashtags(data.get('hashtags', []))
     repo.logs.append(log)
     repo.is_error = log.is_error
     for manager in MANAGERS:
