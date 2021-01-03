@@ -559,8 +559,12 @@ class LibraryUpgrader(shell.ShellMixin):
                 'Replaced "jakub-onderka" packages with '
                 '"php-parallel-lint".')
 
-    def fix_add_vendor_node_modules_to_gitignore(self):
+    def fix_add_vendor_node_modules_to_gitignore(self, repo: str):
         """see T200620"""
+        if repo in ('mediawiki/core', 'mediawiki/vendor'):
+            # Don't mess with .gitignore, these repos are different
+            return
+
         # TODO: Provde an abstraction for .gitignore
         if os.path.exists('.gitignore'):
             with open('.gitignore') as f:
@@ -1144,7 +1148,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.fix_root_eslintrc()
         self.fix_eslintrc_use_mediawiki_profile(repo)
         self.fix_eslint_config()
-        self.fix_add_vendor_node_modules_to_gitignore()
+        self.fix_add_vendor_node_modules_to_gitignore(repo)
         self.fix_phpunit_result_cache()
         self.fix_phan_taint_check_plugin_merge_to_phan()
 

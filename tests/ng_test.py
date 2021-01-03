@@ -388,11 +388,14 @@ def test_fix_add_vendor_node_modules_to_gitignore(tempfs):
     tempfs.create_file('package.json')
     tempfs.create_file('composer.json')
     libup = LibraryUpgrader()
-    libup.fix_add_vendor_node_modules_to_gitignore()
+    libup.fix_add_vendor_node_modules_to_gitignore('foo')
     assert tempfs.contents('.gitignore') == '/vendor/\n/node_modules/\n'
     tempfs.create_file('.gitignore', '/node_modules\n')
-    libup.fix_add_vendor_node_modules_to_gitignore()
+    libup.fix_add_vendor_node_modules_to_gitignore('foo')
     assert tempfs.contents('.gitignore') == '/node_modules\n/vendor/\n'
+    tempfs.create_file('.gitignore', '/special\n')
+    libup.fix_add_vendor_node_modules_to_gitignore('mediawiki/core')
+    assert tempfs.contents('.gitignore') == '/special\n'
 
 
 def test_indent():
