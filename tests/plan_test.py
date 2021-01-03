@@ -35,6 +35,8 @@ from libup import plan
     ('0.6.0', '0.5.0', True),
     # semver greater, but not string greater
     ('0.10.0', '0.9.0', True),
+    # special npm syntax
+    ('file:tests/foo', '1.0.0', True),
 ))
 def test_equals(current, wanted, expected):
     actual = plan.equals(current, wanted)

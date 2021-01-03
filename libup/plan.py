@@ -155,6 +155,9 @@ def equals(current, wanted):
     """
     if current == wanted:
         return True
+    if current.startswith('file:'):
+        # Special npm syntax (see wdio-mediawiki in mediawiki/core)
+        return True
     try:
         # Remove some constraint stuff because we just want versions
         first = re.sub(r'[\^~><=]', '', current)
