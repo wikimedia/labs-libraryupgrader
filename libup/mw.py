@@ -17,19 +17,27 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import itertools
 import wikimediaci_utils as ci
 
 from . import config, gerrit
 
 
 def get_everything():
-    yield from sorted(ci.mw_things_repos())
-    yield from sorted(get_library_list())
+    ignored = config.repositories(pull=True).get('ignore', [])
+    yield from itertools.filterfalse(
+        # Must fail this test to be returned
+        lambda x: x in ignored,
+        itertools.chain(
+            sorted(ci.mw_things_repos()),
+            sorted(get_library_list())
+        )
+    )
 
 
 def get_library_list():
     """Get the list of repositories from the config repo"""
-    repos = config.repositories(pull=True)['repositories']
+    repos = config.repositories()['repositories']
     for repo in repos:
         if repo.endswith('/*'):
             # Strip the * before searching for the prefix

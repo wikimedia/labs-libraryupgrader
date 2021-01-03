@@ -81,9 +81,7 @@ def main():
     if args.repo == 'none':
         gen = []
     elif args.repo == 'canaries':
-        gen = session.query(Repository).filter(
-            Repository.name.in_(config.repositories()['canaries'])
-        ).all()
+        gen = session.query(Repository).filter_by(is_canary=True).all()
     elif args.repo == 'errors':
         gen = session.query(Repository).filter_by(is_error=True).all()
     elif args.repo == 'libraries':
