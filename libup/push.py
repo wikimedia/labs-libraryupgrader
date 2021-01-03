@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import subprocess
+import time
 import urllib.parse
 
 from . import GERRIT_USER, SSH_AUTH_SOCK, config, gerrit, shell, utils
@@ -120,3 +121,4 @@ class Pusher(shell.ShellMixin):
         push = config.should_push()
         self.git_push(repo.name, hashtags=hashtags, message=message,
                       plus2=plus2, push=push)
+        time.sleep(5)
