@@ -16,6 +16,8 @@ RUN apt-get update && \
     python3 python3-dev python3-venv \
     # explicitly include libssl, for grr
     libssl1.1 \
+    # for mathoid
+    librsvg2-dev \
     firefox-esr chromium \
     --no-install-recommends && rm -rf /var/lib/apt/lists/* && \
     # xdebug slows everything down, it'll be manually enabled as needed
