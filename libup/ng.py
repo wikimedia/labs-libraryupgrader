@@ -1105,9 +1105,14 @@ class LibraryUpgrader(shell.ShellMixin):
         self.output['npm-deps'] = self.npm_deps()
         self.output['composer-deps'] = self.composer_deps()
 
-        # npm audit
-        self.output['npm-audit'] = self.npm_audit()
-        self.output['composer-audit'] = self.composer_audit()
+        # audits
+        self.output['audits'] = {
+            'npm': self.npm_audit(),
+            'composer': self.composer_audit(),
+        }
+        # Deprecated keys
+        self.output['npm-audit'] = self.output['audits']['npm']
+        self.output['composer-audit'] = self.output['audits']['npm']
 
         self.output['open-changes'] = gerrit.query_changes(
             repo=repo, status='open', topic='bump-dev-deps',
