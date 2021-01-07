@@ -279,6 +279,11 @@ class LibraryUpgrader(shell.ShellMixin):
             with open('.phpcs.xml', 'r') as f:
                 phpcs_xml = f.read()
             changes = False
+
+            if not phpcs_xml.endswith('\n'):
+                phpcs_xml += '\n'
+                # Don't set changes true just for this; wait for a real change.
+
             if ENCODING_RE.search(phpcs_xml):
                 phpcs_xml = re.sub(ENCODING_RE, r'\1UTF-8\3', phpcs_xml)
                 changes = True
