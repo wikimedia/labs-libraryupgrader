@@ -1,0 +1,15 @@
+{% macro repo_icons(repo) -%}
+{%- if repo.is_error -%}
+<abbr title="Error">❌</abbr>
+{%- endif -%}
+{%- if repo.is_canary -%}
+<abbr title="Canary repository">🦆</abbr>
+{%- endif -%}
+{%- if repo.is_wm_deployed -%}
+<abbr title="Deployed to Wikimedia production wikis">🗄</abbr>
+{%- endif -%}
+{%- if repo.is_bundled -%}
+<abbr title="Bundled in the MediaWiki tarball">🔮</abbr>
+{%- endif -%}
+{%- endmacro %}
+

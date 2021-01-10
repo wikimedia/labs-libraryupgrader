@@ -56,24 +56,10 @@ def inject_to_templates():
     return {
         'sorted': sorted,
         'len': len,
-        'repo_icons': repo_icons,
         'markdown': markdown,
         'BRANCHES': BRANCHES,
         'gbranch': request_branch(),
     }
-
-
-def repo_icons(repo: Repository):
-    ret = ''
-    if repo.is_error:
-        ret += '❌'
-    if repo.is_canary:
-        ret += '🦆'
-    if repo.is_wm_deployed:
-        ret += '🗄️'  # honestly the closest thing to a server rack I could find
-    if repo.is_bundled:
-        ret += '🔮'  # tar *ball* ha ha ha
-    return ret
 
 
 def request_branch():
