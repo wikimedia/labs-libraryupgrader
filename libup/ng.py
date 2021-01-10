@@ -533,6 +533,13 @@ class LibraryUpgrader(shell.ShellMixin):
             changes = True
             self.msg_fixes.append('Remove direct "stylelint" dependency in favor of "grunt-stylelint".')
 
+        if pkg.get_version('eslint-config-wikimedia'):
+            for plugin in ['json', 'jsdoc', 'compat']:
+                if pkg.get_version(f'eslint-plugin-{plugin}'):
+                    pkg.remove_package(f'eslint-plugin-{plugin}')
+                    changes = True
+                    self.msg_fixes.append(f'Removed "eslint-plugin-{plugin}", already in "eslint-config-wikimedia".')
+
         if changes:
             pkg.save()
             # Regenerate package-lock.json super cleanly
