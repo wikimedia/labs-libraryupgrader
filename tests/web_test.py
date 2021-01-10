@@ -27,6 +27,10 @@ def client():
     web.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
     # Create all the tables
     model.Base.metadata.create_all(web.db.engine)
+    # Seed some data
+    web.db.session.add(model.Repository(name='test/errors', branch='master', is_error=True))
+    web.db.session.add(model.Repository(name='test/ok', branch='master', is_error=False))
+
     with web.app.test_client() as client:
         yield client
 
@@ -37,8 +41,19 @@ def test_index(client):
 
 
 def test_errors(client):
-    web.db.session.add(model.Repository(name='test/errors', branch='master', is_error=True))
-    web.db.session.add(model.Repository(name='test/ok', branch='master', is_error=False))
     rv = client.get('/errors')
     assert 'test/errors' in rv.data.decode()
     assert 'test/ok' not in rv.data.decode()
+
+
+def test_r(client):
+    rv = client.get('/r/test/ok')
+    assert 'test/ok' in rv.data.decode()
+    rv = client.get('/r/test/does-not-exist')
+    assert 'Sorry, I don\'t know this repository' in rv.data.decode()
+
+
+def test_r_index(client):
+    rv = client.get('/r')
+    assert 'test/ok' in rv.data.decode()
+    assert 'test/errors' in rv.data.decode()
