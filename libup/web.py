@@ -85,7 +85,9 @@ def index():
 def r(repo):
     branch = request_branch()
     repository = db.session.query(Repository)\
-        .filter_by(name=repo, branch=branch).first()
+        .filter_by(name=repo, branch=branch)\
+        .options(joinedload(Repository.dependencies))\
+        .first()
     if repository is None:
         return make_response('Sorry, I don\'t know this repository.', 404)
     dependencies = Dependencies(repository.dependencies)
@@ -141,11 +143,16 @@ def library_table():
         if ':' not in sp_lib:
             return 'no colon in lib'
         manager, libname = sp_lib.split(':', 2)
+        # TODO: batch this query
         upstream = db.session.query(Upstream).filter_by(manager=manager, name=libname).first()
         if upstream:
             want.append(upstream)
     display = []
-    for repo in db.session.query(Repository).filter_by(branch=branch).all():
+    repos = db.session.query(Repository)\
+        .filter_by(branch=branch)\
+        .options(joinedload(Repository.dependencies))\
+        .all()
+    for repo in repos:
         deps = Dependencies(repo.dependencies)
         ret = []
         for upstream in want:
@@ -177,6 +184,7 @@ def library_(manager, name):
         .join(Repository)\
         .filter(Dependency.name == name, Dependency.manager == manager,
                 Repository.branch == branch)\
+        .options(joinedload(Dependency.repository))\
         .all()
     if not deps:
         return make_response('Unknown library.', 404)
@@ -200,7 +208,10 @@ def library_(manager, name):
 
 @app.route('/logs2/<log_id>')
 def logs2(log_id):
-    log = db.session.query(Log).filter_by(id=log_id).first()
+    log = db.session.query(Log)\
+        .filter_by(id=log_id)\
+        .options(joinedload(Log.repository))\
+        .first()
     if log is None:
         return make_response('log_id not found', 404)
 
@@ -249,6 +260,7 @@ def vulns_composer():
     everything = db.session.query(Advisories)\
         .join(Repository)\
         .filter(Advisories.manager == "composer", Repository.branch == branch)\
+        .options(joinedload(Advisories.repository))\
         .all()
     advisories = {}
 
@@ -287,6 +299,7 @@ def vulns_npm():
     everything = db.session.query(Advisories)\
         .join(Repository)\
         .filter(Advisories.manager == "npm", Repository.branch == branch)\
+        .options(joinedload(Advisories.repository))\
         .all()
     advisories = {}
     affected = defaultdict(list)
@@ -343,7 +356,10 @@ def plan_json():
         return jsonify(
             status="error",
             error="Missing repo or branch parameter")
-    repository = db.session.query(Repository).filter_by(name=repo, branch=branch).first()
+    repository = db.session.query(Repository)\
+        .filter_by(name=repo, branch=branch)\
+        .options(joinedload(Repository.dependencies))\
+        .first()
     if repository is None:
         return jsonify(
             status="error",
