@@ -10,11 +10,11 @@
     {% endfor %}.
 </p>
 
-{% for manager, deps in sorted(used.items()) %}
+{% for manager, deps in used.items()|sort %}
 <h3>{{manager}}</h3>
 <ul>
-    {% for lib, versions in sorted(deps.items()) %}
-    <li><a href="{{url_for('library_', manager=manager, name=lib, branch=gbranch)}}">{{lib}}</a>: {{', '.join(sorted(versions))}}</li>
+    {% for lib, versions in deps.items()|sort %}
+    <li><a href="{{url_for('library_', manager=manager, name=lib, branch=gbranch)}}">{{lib}}</a>: {{versions|sort|join(', ')}}</li>
     {% endfor %}
 </ul>
 {% endfor %}

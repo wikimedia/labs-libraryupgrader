@@ -54,8 +54,6 @@ TABLE_PRESETS = {
 @app.context_processor
 def inject_to_templates():
     return {
-        'sorted': sorted,
-        'len': len,
         'markdown': markdown,
         'BRANCHES': BRANCHES,
         'gbranch': request_branch(),

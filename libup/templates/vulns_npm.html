@@ -8,7 +8,7 @@
     </p>
 </blockquote>
 
-<p>There are {{len(advisories)}} npm security advisories affecting our repositories.</p>
+<p>There are {{advisories|length}} npm security advisories affecting our repositories.</p>
 
 {% for advisory in advisories.values() %}
 <h3>#{{advisory.id}}: {{advisory.module_name}}
@@ -25,9 +25,9 @@
         <a href="https://npmjs.com/advisories/{{advisory.id}}">npm advisory</a>
     </footer>
 </blockquote>
-<h5>Affected repositories ({{len(affected[advisory.id])}})</h5>
+<h5>Affected repositories ({{affected[advisory.id]|length}})</h5>
 <ul>
-{% for repo, info in sorted(affected[advisory.id]) %}
+{% for repo, info in affected[advisory.id]|sort %}
     <li>
         {{macros.repo_link(repo)}}
         (via:

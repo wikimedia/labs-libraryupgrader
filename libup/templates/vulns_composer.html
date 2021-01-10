@@ -8,7 +8,7 @@
     </p>
 </blockquote>
 
-<p>There are {{len(advisories)}} composer security advisories affecting our repositories.</p>
+<p>There are {{advisories|length}} composer security advisories affecting our repositories.</p>
 
 {% for advisory in advisories.values() %}
 <h3>{{advisory.package}}
@@ -20,9 +20,9 @@
         <a href="{{advisory.info.link}}">details</a>
     </footer>
 </blockquote>
-<h5>Affected repositories ({{len(advisory.repos)}})</h5>
+<h5>Affected repositories ({{advisory.repos|length}})</h5>
 <ul>
-{% for repo in sorted(advisory.repos) %}
+{% for repo in advisory.repos|sort %}
     <li>{{macros.repo_link(repo)}}</li>
 {% endfor %}
 </ul>

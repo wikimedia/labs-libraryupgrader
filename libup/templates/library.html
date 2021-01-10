@@ -16,7 +16,7 @@
 {% if used.prod %}
 <h5>Dependencies</h5>
 {% for version, repos in used.prod.items()|sort|reverse %}
-<p><code>{{version}}</code>: {{len(repos)}} repositories</p>
+<p><code>{{version}}</code>: {{repos|length}} repositories</p>
 <ul>
     {% for repo in repos|sort %}
     <li>{{macros.repo_link(repo)}}</li>
@@ -28,7 +28,7 @@
 <h5>Development dependencies</h5>
 {# TODO use a semver sort #}
 {% for version, repos in used.dev.items()|sort|reverse %}
-<p><code>{{version}}</code>: {{len(repos)}} repositories</p>
+<p><code>{{version}}</code>: {{repos|length}} repositories</p>
 <ul>
     {% for repo in repos|sort %}
     <li>{{macros.repo_link(repo)}}</li>

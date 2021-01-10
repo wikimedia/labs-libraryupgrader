@@ -14,7 +14,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for repo, libs in sorted(display) %}
+        {% for repo, libs in display|sort %}
         <tr>
             <td>{{macros.repo_link(repo)}}</td>
             <td>{% if repo.is_wm_deployed %}✓{% else %}—{% endif %}</td>
