@@ -1,5 +1,5 @@
 """
-${message}
+Switch to mediumblob
 
 Copyright (C) 2021 Kunal Mehta <legoktm@member.fsf.org>
 
@@ -16,25 +16,35 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-Revision ID: ${up_revision}
-Revises: ${down_revision | comma,n}
-Create Date: ${create_date}
+Revision ID: 1684256728e6
+Revises: bcfc7c2a4100
+Create Date: 2021-01-09 18:48:11.447809
 """
 
 from alembic import op
 import sqlalchemy as sa
-${imports if imports else ""}
+from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = ${repr(up_revision)}
-down_revision = ${repr(down_revision)}
-branch_labels = ${repr(branch_labels)}
-depends_on = ${repr(depends_on)}
+revision = '1684256728e6'
+down_revision = 'bcfc7c2a4100'
+branch_labels = None
+depends_on = None
 
 
 def upgrade():
-    ${upgrades if upgrades else "pass"}
+    op.alter_column(
+        'logs', 'text',
+        existing_type=sa.BLOB(),
+        type_=sa.LargeBinary().with_variant(mysql.MEDIUMBLOB(), 'mysql'),
+        existing_nullable=False
+    )
 
 
 def downgrade():
-    ${downgrades if downgrades else "pass"}
+    op.alter_column(
+        'logs', 'text',
+        existing_type=sa.LargeBinary().with_variant(mysql.MEDIUMBLOB(), 'mysql'),
+        type_=sa.BLOB(),
+        existing_nullable=False
+    )

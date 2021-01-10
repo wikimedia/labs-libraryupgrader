@@ -1,5 +1,5 @@
 """
-Copyright (C) 2020 Kunal Mehta <legoktm@member.fsf.org>
+Copyright (C) 2020-2021 Kunal Mehta <legoktm@member.fsf.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -19,7 +19,8 @@ from __future__ import annotations
 from collections import defaultdict
 import hashlib
 import json
-from sqlalchemy import BLOB, Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, LargeBinary, String
+from sqlalchemy.dialects.mysql import MEDIUMBLOB
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from typing import List, Optional
@@ -124,13 +125,13 @@ class Log(Base):
     # Time of entry in mw time format
     time = Column(String(15), nullable=False)
     # The actual log text (possibly compressed)
-    text = Column(BLOB, nullable=False)
+    text = Column(LargeBinary().with_variant(MEDIUMBLOB, 'mysql'), nullable=False)
     # The patch file, if any (possibly compressed)
-    patch = Column(BLOB, nullable=True)
+    patch = Column(LargeBinary, nullable=True)
     # Whether the run ended in an error or not
     is_error = Column(Boolean, nullable=False, default=False)
     # Comma-separated hashtags to apply to the commit, if any
-    hashtags = Column(BLOB, nullable=True)
+    hashtags = Column(LargeBinary, nullable=True)
 
     repository = relationship("Repository", back_populates="logs")
 
@@ -182,7 +183,7 @@ class Upstream(Base):
     # package name
     name = Column(String(80), nullable=False)
     # upstream description
-    description = Column(BLOB, nullable=False)
+    description = Column(LargeBinary, nullable=False)
     # latest available version
     latest = Column(String(80), nullable=False)
 
@@ -209,7 +210,7 @@ class Advisories(Base):
     # "npm" or "composer", etc.
     manager = Column(String(10), nullable=False)
     # The advisories, in a JSON blob (possibly compressed)
-    data = Column(BLOB, nullable=False)
+    data = Column(LargeBinary, nullable=False)
 
     repository = relationship("Repository", back_populates="advisories")
 
