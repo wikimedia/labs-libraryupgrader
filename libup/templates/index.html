@@ -18,7 +18,7 @@
 <h3>Recent runs</h3>
 <ul>
     {% for log in recent_logs %}
-    <li>{{macros.repo_icons(log.repository)}}<a href="{{url_for('logs2', log_id=log.id)}}">log #{{log.id}}</a>: <a href="{{url_for('r', repo=log.repository.name, branch=log.repository.branch)}}">{{log.repository.name}}</a> ({{log.repository.branch}})</li>
+    <li>{{macros.repo_icons(log.repository)}}<a href="{{url_for('logs2', log_id=log.id)}}">log #{{log.id}}</a>: {{macros.repo_link(log.repository, icons=False)}} ({{log.repository.branch}})</li>
     {% endfor %}
 </ul>
 {% endblock %}

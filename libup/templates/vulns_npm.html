@@ -29,10 +29,9 @@
 <ul>
 {% for repo, info in sorted(affected[advisory.id]) %}
     <li>
-        {{macros.repo_icons(repo)}}
-        <a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a>
+        {{macros.repo_link(repo)}}
         (via:
-        {%- for pkg in via(info.findings) -%}
+        {% for pkg in via(info.findings) -%}
         <a href="{{url_for('library_', manager='npm', name=pkg, branch=repo.branch)}}">{{pkg}}</a>{% if not loop.last %}, {% endif %}
         {%- endfor -%}
         )

@@ -19,7 +19,7 @@
             <p>The following repositories have not been updated yet:</p>
             <ul>
             {% for repo in info.repositories.missing %}
-                <li>{{macros.repo_icons(repo)}}<a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a></li>
+                <li>{{macros.repo_link(repo)}}</li>
             {% endfor %}
             </ul>
         {% endif %}
@@ -33,7 +33,7 @@
             <p>The following canaries have not been updated yet:</p>
             <ul>
             {% for repo in info.canaries.missing %}
-                <li>{{macros.repo_icons(repo)}}<a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a></li>
+                <li>{{macros.repo_link(repo)}}</li>
             {% endfor %}
             </ul>
         {% endif %}

@@ -13,3 +13,6 @@
 {%- endif -%}
 {%- endmacro %}
 
+{% macro repo_link(repo, icons=True) -%}
+{% if icons %}{{repo_icons(repo)}}{% endif %}<a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a>
+{%- endmacro %}

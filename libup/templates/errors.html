@@ -5,7 +5,7 @@
 <p>The following repositories have some kind of error.</p>
 <ul>
     {% for repo in repos %}
-    <li>{{macros.repo_icons(repo)}}<a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a> ({{repo.branch}})</li>
+    <li>{{macros.repo_link(repo)}}</li>
     {% endfor %}
 </ul>
 
