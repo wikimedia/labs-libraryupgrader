@@ -91,8 +91,10 @@ def r(repo):
     if repository is None:
         return make_response('Sorry, I don\'t know this repository.', 404)
     dependencies = Dependencies(repository.dependencies)
-    logs = repository.logs[0:10]
-    logs.sort(reverse=True)
+    logs = db.session.query(Log)\
+        .filter_by(repo_id=repository.id)\
+        .order_by(Log.id.desc())\
+        .limit(10).all()
     return render_template(
         'r.html',
         repo=repository,
