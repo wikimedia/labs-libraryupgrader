@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import re
 import semver
 import semver.exceptions
+from sqlalchemy.orm import joinedload
 from typing import List, Dict, Optional
 
 from . import config
@@ -50,6 +51,7 @@ class Plan:
         canaries = session.query(Dependency).join(Repository)\
             .filter(Dependency.name == dep.name, Dependency.manager == dep.manager,
                     Repository.name.in_(self.canaries), Repository.branch == self.branch)\
+            .options(joinedload(Dependency.repository))\
             .all()
         ret = {'missing': [], 'updated': []}
         for canary in canaries:
@@ -65,6 +67,7 @@ class Plan:
         repos = session.query(Dependency).join(Repository)\
             .filter(Dependency.name == dep.name, Dependency.manager == dep.manager,
                     Repository.branch == self.branch)\
+            .options(joinedload(Dependency.repository))\
             .all()
         ret = {'missing': [], 'updated': []}
         for repo in repos:
