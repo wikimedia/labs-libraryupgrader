@@ -108,6 +108,9 @@ def run_check(repo_name: str, branch: str):
         text_digest = log.text_digest()
         patch_digest = log.patch_digest()
         run_push.delay(log.id, text_digest, patch_digest)
+        print(f"Queuing patch for {repo.name} ({repo.branch})")
+    elif data.get('patch'):
+        print(f"Skipping pushing patch for {repo.name} ({repo.branch})")
 
     session.close()
 
