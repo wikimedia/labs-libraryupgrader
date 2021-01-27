@@ -859,7 +859,7 @@ class LibraryUpgrader(shell.ShellMixin):
     def _bump_eslint(self, update: Update):
         # TODO: figure out how to update the commit message here
         # See T261520 for why we need to force update eslint sometimes
-        self.check_call(['npm', 'update', 'eslint', '-depth', '1'])
+        self.check_call(['npm', 'update', 'eslint', '-depth', '10'])
 
     def _handle_stylelint(self, update: Update):
         if os.path.exists('Gruntfile.js'):
