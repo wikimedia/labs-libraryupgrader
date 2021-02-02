@@ -860,9 +860,10 @@ class LibraryUpgrader(shell.ShellMixin):
         # TODO: figure out how to update the commit message here
         # See T261520 for why we need to force update eslint sometimes
         self.check_call(['npm', 'update', 'eslint', '-depth', '10'])
-        if PackageJson('package.json').get_version('grunt-eslint'):
+        grunt_eslint = PackageJson('package.json').get_version('grunt-eslint')
+        if grunt_eslint:
             # Force re-install grunt-eslint to make eslint dedupe properly (T273680)
-            self.check_call(['npm', 'install', 'grunt-eslint'])
+            self.check_call(['npm', 'install', f'grunt-eslint@{grunt_eslint}', '--save-exact'])
 
     def _handle_stylelint(self, update: Update):
         if os.path.exists('Gruntfile.js'):
