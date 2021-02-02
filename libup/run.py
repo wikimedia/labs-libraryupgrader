@@ -67,6 +67,7 @@ def main():
     parser = argparse.ArgumentParser(description='Queue jobs to run')
     parser.add_argument('--limit', default=0, type=int, help='Limit')
     parser.add_argument('--fast', action='store_true', help='Skip some database updates')
+    parser.add_argument('--branch', required=False, help='Limit to only these branches')
     parser.add_argument('repo', nargs='?', help='Only queue this repository (optional)')
     args = parser.parse_args()
 
@@ -93,6 +94,8 @@ def main():
     else:
         gen = session.query(Repository).all()
     for repo in gen:
+        if args.branch and repo.branch != args.branch:
+            continue
         print(f'Queuing {repo.name} ({repo.branch})')
         run_check.delay(repo.name, repo.branch)
         count += 1
