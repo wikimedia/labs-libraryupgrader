@@ -33,13 +33,11 @@ def test_gruntfile(tempfs):
             'fix': '!!GRUNT FIX!!',
         }
     }
-    stylelint = gf.parse_section('stylelint')
-    assert stylelint == {
-        'all': ['**/*.css', '!node_modules/**', '!vendor/**'],
-    }
+    assert gf.get_file_list('stylelint') == ['**/*.css', '!node_modules/**', '!vendor/**']
     tasks = gf.tasks()
     assert tasks == ['jsonlint', 'banana', 'eslint', 'stylelint']
     # Rebuild/roundtrip
+    stylelint = gf.parse_section('stylelint')
     gf.set_section('eslint', eslint)
     gf.set_section('stylelint', stylelint)
     gf.set_tasks(tasks)

@@ -19,7 +19,7 @@ import ast
 from collections import OrderedDict
 import difflib
 import glob
-import json
+import os
 import re
 
 
@@ -65,6 +65,8 @@ class Gruntfile:
         elif isinstance(data, str):
             if data == '!!GRUNT FIX!!':
                 return "grunt.option( 'fix' )"
+            elif data.startswith('COMMENT:'):
+                return "// " + data.split(':', 1)[1].strip()
             return "'%s'" % data
         elif isinstance(data, int):
             return str(data)
@@ -78,8 +80,9 @@ class Gruntfile:
                 # else fallthrough for a normal list
             text = '[\n'
             for index, item in enumerate(data):
-                text += indent + self._export(item, indent + '\t')
-                if index + 1 != len(data):
+                exp = self._export(item, indent + '\t')
+                text += indent + exp
+                if index + 1 != len(data) and not exp.startswith('//'):
                     text += ','
                 text += '\n'
             text += indent[:-1] + ']'
@@ -96,6 +99,15 @@ class Gruntfile:
         if not found:
             raise NoSuchSection
         return found
+
+    def get_file_list(self, section: str):
+        """do not use this with set_section"""
+        data = self.parse_section(section)
+        gf_key = 'all' if 'all' in data else 'src'
+        if not isinstance(data[gf_key], list):
+            # It's a str
+            data[gf_key] = [data[gf_key]]
+        return [x for x in data[gf_key] if not x.startswith('COMMENT:')]
 
     def parse_section(self, section: str) -> OrderedDict:
         base = self._find(section)
@@ -118,6 +130,16 @@ class Gruntfile:
         elif inp == "grunt.option( 'fix' )":
             inp = '"!!GRUNT FIX!!"'
         return inp
+
+    def _fixup_lines(self, lines: list) -> list:
+        new = []
+        for item in lines:
+            item = item.strip()
+            if item.lstrip().startswith('//'):
+                new.append('"' + item.replace('//', 'COMMENT:') + '",')
+            else:
+                new.append(item)
+        return new
 
     def _inner_parse(self, lines: list) -> OrderedDict:
         data = OrderedDict()
@@ -160,15 +182,17 @@ class Gruntfile:
                 # OK, we're going to assume that it's just a plain list. No nested structures.
                 # Please.
                 key = line.split(':', 1)[0].strip()
-                listy = '[' + '\n'.join(lines[index + 1:index + subindex]) + ']'
+                listy = '[' + '\n'.join(self._fixup_lines(lines[index + 1:index + subindex])) + ']'
                 data[key] = ast.literal_eval(listy)
                 skip_to = index + subindex + 1
                 continue
             elif ':' in line:
                 key, val = line.split(':', 1)
                 data[key.strip()] = ast.literal_eval(self._normalize(val.strip()))
+            elif not line.strip():
+                continue
             else:
-                # print(line)
+                print(line)
                 raise RuntimeError
 
         return data
@@ -227,7 +251,7 @@ def expand_glob(paths: list) -> list:
 
 
 def __check_everything():
-    files = glob.glob('/home/user/gerrit/mediawiki/core/extensions/*/Gruntfile.js')
+    files = glob.glob(os.path.expanduser('~/gerrit/mediawiki/core/extensions/*/Gruntfile.js'))
     for fname in sorted(files):
         if '/Popups/' in fname:
             # Whatever.
@@ -238,8 +262,7 @@ def __check_everything():
             print(gf.tasks())
             original = gf.text
             data = gf.parse_section('eslint')
-            assert data.get('all') or data.get('shared') or data.get('target')
-            print(json.dumps(data))
+            assert data.get('all') or data.get('shared') or data.get('target') or data.get('src')
             gf.set_section('eslint', data)
             if gf.text != original:
                 print('\n'.join(difflib.Differ().compare(original.splitlines(), gf.text.splitlines())))

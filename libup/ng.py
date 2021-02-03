@@ -876,7 +876,7 @@ class LibraryUpgrader(shell.ShellMixin):
             # TODO: Support autofix once stylelint improves it
             gf = grunt.Gruntfile()
             try:
-                stylelint = gf.parse_section('stylelint')
+                files = grunt.expand_glob(gf.get_file_list('stylelint'))
             except grunt.NoSuchSection:
                 # ???
                 return
@@ -885,12 +885,6 @@ class LibraryUpgrader(shell.ShellMixin):
                 tb = traceback.format_exc()
                 self.log(tb)
                 return
-            # TODO: whaaaat. Why no consistency??
-            gf_key = 'all' if 'all' in stylelint else 'src'
-            if not isinstance(stylelint[gf_key], list):
-                # It's a str
-                stylelint[gf_key] = [stylelint[gf_key]]
-            files = grunt.expand_glob(stylelint[gf_key])
         else:
             # If grunt isn't being used, lint all CSS/LESS files
             # https://phabricator.wikimedia.org/T248801#6031367
@@ -929,7 +923,7 @@ class LibraryUpgrader(shell.ShellMixin):
         if os.path.exists('Gruntfile.js'):
             gf = grunt.Gruntfile()
             try:
-                eslint = gf.parse_section('eslint')
+                files = grunt.expand_glob(gf.get_file_list('eslint'))
             except grunt.NoSuchSection:
                 # ???
                 return
@@ -938,12 +932,6 @@ class LibraryUpgrader(shell.ShellMixin):
                 tb = traceback.format_exc()
                 self.log(tb)
                 return
-            # TODO: whaaaat. Why no consistency??
-            gf_key = 'all' if 'all' in eslint else 'src'
-            if not isinstance(eslint[gf_key], list):
-                # It's a str
-                eslint[gf_key] = [eslint[gf_key]]
-            files = grunt.expand_glob(eslint[gf_key])
 
         if self.branch == 'master':
             # Only run auto-fix on master (TODO: find a better way to do this)

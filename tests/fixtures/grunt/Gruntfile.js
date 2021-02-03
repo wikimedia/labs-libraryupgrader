@@ -29,6 +29,7 @@ module.exports = function ( grunt ) {
 		stylelint: {
 			all: [
 				'**/*.css',
+				// Some comment
 				'!node_modules/**',
 				'!vendor/**'
 			]
