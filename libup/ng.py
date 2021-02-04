@@ -271,10 +271,10 @@ class LibraryUpgrader(shell.ShellMixin):
 
     def fix_phpcs_xml_configuration(self):
         if os.path.exists('.phpcs.xml'):
-            ENCODING_RE = re.compile(r"^(\s*<arg name=\"encoding\" value=\")((?!UTF-8)\S*)(\" />)$", re.MULTILINE)
+            ENCODING_RE = re.compile(r"^(\s*<arg\s+name=\"encoding\"\s+value=\")((?!UTF-8)\S*)(\"\s*/>)$", re.MULTILINE)
 
-            PHP5_RE = re.compile(r"^(\s*<arg name=\"extensions\" value=\".*)(,php5)(.*\" />)$", re.MULTILINE)
-            INC_RE = re.compile(r"^(\s*<arg name=\"extensions\" value=\".*)(,inc)(.*\" />)$", re.MULTILINE)
+            PHP5_RE = re.compile(r"^(\s*<arg\s+name=\"extensions\"\s+value=\".*)(,php5)(.*\"\s*/>)$", re.MULTILINE)
+            INC_RE = re.compile(r"^(\s*<arg\s+name=\"extensions\"\s+value=\".*)(,inc)(.*\"\s*/>)$", re.MULTILINE)
 
             with open('.phpcs.xml', 'r') as f:
                 phpcs_xml = f.read()

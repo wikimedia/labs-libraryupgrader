@@ -192,6 +192,25 @@ def test_fix_fix_phpcs_xml_configuration_encodingchange_and_filetypes_php5remova
     assert 'Dropped .php5 and .inc files from .phpcs.xml (T200956).' in libup.msg_fixes
 
 
+def test_fix_fix_phpcs_xml_configuration_encodingchange_and_filetypes_php5removal_whitespaces(tempfs):
+    tempfs.create_file(
+        '.phpcs.xml',
+        contents="<?xml version=\"1.0\" encoding=\"UTF-8\"?><ruleset>\n" +
+                 "\t<rule ref=\"./vendor/mediawiki/mediawiki-codesniffer/MediaWiki\"/>\n" +
+                 "\t<file>.</file>\n" +
+                 "\t<arg\tname=\"extensions\" value=\"php,php5,inc\"  />\n" +
+                 "\t<arg name=\"encoding\"  value=\"utf-8\"/>\n" +
+                 "</ruleset>\n"
+    )
+    libup = LibraryUpgrader()
+    libup.fix_phpcs_xml_configuration()
+    assert 'utf' not in tempfs.contents('.phpcs.xml')
+    assert 'php5' not in tempfs.contents('.phpcs.xml')
+    assert 'inc' not in tempfs.contents('.phpcs.xml')
+    assert 'Consolidated .phpcs.xml encoding to "UTF-8" (T200956).' in libup.msg_fixes
+    assert 'Dropped .php5 and .inc files from .phpcs.xml (T200956).' in libup.msg_fixes
+
+
 def test_fix_phpcs_xml_location_exists(tempfs, mocker):
     # Now if a .phpcs.xml exists
     tempfs.create_file('.phpcs.xml')
