@@ -866,7 +866,8 @@ class LibraryUpgrader(shell.ShellMixin):
             self.check_call(['npm', 'install', f'grunt-eslint@{grunt_eslint}', '--save-exact'])
 
     def _handle_stylelint(self, update: Update):
-        if os.path.exists('Gruntfile.js'):
+        pkg = PackageJson('package.json')
+        if pkg.get_version('grunt-stylelint') and os.path.exists('Gruntfile.js'):
             try:
                 self.check_call(['./node_modules/.bin/grunt', 'stylelint'])
                 # Didn't fail, all good
@@ -877,9 +878,6 @@ class LibraryUpgrader(shell.ShellMixin):
             gf = grunt.Gruntfile()
             try:
                 files = grunt.expand_glob(gf.get_file_list('stylelint'))
-            except grunt.NoSuchSection:
-                # ???
-                return
             except:  # noqa
                 # Some bug with the parser
                 tb = traceback.format_exc()
@@ -920,13 +918,11 @@ class LibraryUpgrader(shell.ShellMixin):
         # errors left, so ignore that. Just try and fix as much
         # as possible
         files = ['.']
-        if os.path.exists('Gruntfile.js'):
+        pkg = PackageJson('package.json')
+        if pkg.get_version('grunt-eslint') and os.path.exists('Gruntfile.js'):
             gf = grunt.Gruntfile()
             try:
                 files = grunt.expand_glob(gf.get_file_list('eslint'))
-            except grunt.NoSuchSection:
-                # ???
-                return
             except:  # noqa
                 # Some bug with the parser
                 tb = traceback.format_exc()
