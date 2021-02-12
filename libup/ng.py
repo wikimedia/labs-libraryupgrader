@@ -164,6 +164,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.log('Attempting to npm audit fix')
         prior = PackageJson('package.json')
         prior_lock = PackageLockJson()
+        # When removing --only=dev also remove dev check to get all reasons
         self.check_call(['npm', 'audit', 'fix', '--only=dev'])
         current = PackageJson('package.json')
         for pkg in current.get_packages():
@@ -203,7 +204,8 @@ class LibraryUpgrader(shell.ShellMixin):
                 continue
             reason = ''
             # Skip 118, which is broken (T242703)
-            resolves = {r['id'] for r in action['resolves'] if r['id'] != 118}
+            # only dev dependencies are updated due to --only=dev
+            resolves = {r['id'] for r in action['resolves'] if r['id'] != 118 and r.get('dev')}
             if not resolves:
                 continue
             for npm_id in sorted(resolves):
