@@ -79,6 +79,11 @@ def index():
     return render_template('index.html', count=count, upstreams=upstreams, recent_logs=recent_logs)
 
 
+@app.route('/credits')
+def credits_():
+    return render_template('credits.html')
+
+
 @app.route('/r/<path:repo>')
 def r(repo):
     branch = request_branch()

@@ -57,3 +57,8 @@ def test_r_index(client):
     rv = client.get('/r')
     assert 'test/ok' in rv.data.decode()
     assert 'test/errors' in rv.data.decode()
+
+
+def test_credits_(client):
+    rv = client.get('/credits')
+    assert 'thank you' in rv.data.decode()
