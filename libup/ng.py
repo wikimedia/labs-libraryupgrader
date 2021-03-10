@@ -422,9 +422,18 @@ class LibraryUpgrader(shell.ShellMixin):
         if isinstance(data['extends'], str):
             data['extends'] = [data['extends']]
 
+        # wikimedia/client-es5 profile introduced in 0.19.0
+        if library.is_greater_than_or_equal_to("0.19.0", cfg_version) \
+                and 'wikimedia/client' in data['extends']:
+            # Replace in the same position to reduce diff
+            pos = data['extends'].index('wikimedia/client')
+            data['extends'].remove('wikimedia/client')
+            data['extends'].insert(pos, 'wikimedia/client-es5')
+            self.msg_fixes.append('eslint: Renamed `wikimedia/client` profile to `client-es5` (T277085).')
+
         if 'wikimedia/mediawiki' not in data['extends']:
             data['extends'].append('wikimedia/mediawiki')
-            self.msg_fixes.append('Added the `wikimedia/mediawiki` profile in .eslintrc.json (T262222).')
+            self.msg_fixes.append('eslint: Added `wikimedia/mediawiki` profile (T262222).')
 
         if 'globals' in data:
             fixed_mw_globals = []
@@ -435,20 +444,20 @@ class LibraryUpgrader(shell.ShellMixin):
             if '$' in data['globals']:
                 if 'wikimedia/jquery' not in data['extends']:
                     data['extends'].append('wikimedia/jquery')
-                    self.msg_fixes.append('Added the `wikimedia/jquery` profile in .eslintrc.json (T262222).')
+                    self.msg_fixes.append('eslint: Added `wikimedia/jquery` profile (T262222).')
                 del data['globals']['$']
-                self.msg_fixes.append('Removed global `$`, included in the `wikimedia/jquery` profile (T262222).')
+                self.msg_fixes.append('eslint: Removed global `$`, included in `wikimedia/jquery` profile (T262222).')
             if fixed_mw_globals:
                 if len(fixed_mw_globals) == 1:
-                    msg = 'Removed global `{}`, included via `wikimedia/mediawiki` profile (T262222).'.format(
+                    msg = 'eslint: Removed global `{}`, included via `wikimedia/mediawiki` profile (T262222).'.format(
                         fixed_mw_globals[0])
                 else:
-                    msg = 'Removed globals `{}`, included via `wikimedia/mediawiki` profile (T262222).'.format(
+                    msg = 'eslint: Removed globals `{}`, included via `wikimedia/mediawiki` profile (T262222).'.format(
                         '`, `'.join(fixed_mw_globals))
                 self.msg_fixes.append(msg)
             if not data['globals']:
                 del data['globals']
-                self.msg_fixes.append('Dropped the empty global definition in .eslintrc.json.')
+                self.msg_fixes.append('eslint: Dropped the empty global definition.')
 
         utils.save_pretty_json(data, '.eslintrc.json')
 

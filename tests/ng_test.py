@@ -558,6 +558,66 @@ def test_fix_phan_taint_check_plugin_merge_to_phan_current(tempfs):
     assert 'extra' not in composer
 
 
+def test_fix_eslintrc_use_clientes5_profile(tempfs):
+    tempfs.create_file('package.json',
+                       contents="""
+    {
+        "devDependencies": {
+            "eslint-config-wikimedia": "0.19.0"
+        }
+    }
+    """)
+    tempfs.create_file('.eslintrc.json',
+                       contents="""
+    {
+        "root": true,
+        "extends": [
+            "test/test",
+            "wikimedia/client",
+            "wikimedia/mediawiki"
+        ]
+    }
+    """)
+    libup = LibraryUpgrader()
+    libup.fix_eslintrc_use_mediawiki_profile('mediawiki/extensions/Test')
+    eslintrc = tempfs.json_contents('.eslintrc.json')
+    assert len(eslintrc) == 2
+    # Also verifies the order didn't change
+    assert eslintrc['extends'] == [
+        'test/test',
+        'wikimedia/client-es5',
+        'wikimedia/mediawiki'
+    ]
+
+
+def test_fix_eslintrc_use_clientes5_profile_noop(tempfs):
+    tempfs.create_file('package.json',
+                       contents="""
+    {
+        "devDependencies": {
+            "eslint-config-wikimedia": "0.15.1"
+        }
+    }
+    """)
+    tempfs.create_file('.eslintrc.json',
+                       contents="""
+    {
+        "root": true,
+        "extends": [
+            "wikimedia/mediawiki",
+            "wikimedia/client"
+        ]
+    }
+    """)
+    libup = LibraryUpgrader()
+    libup.fix_eslintrc_use_mediawiki_profile('mediawiki/extensions/Test')
+    eslintrc = tempfs.json_contents('.eslintrc.json')
+    assert len(eslintrc) == 2
+    assert len(eslintrc['extends']) == 2
+    assert 'wikimedia/client' in eslintrc['extends']
+    assert 'wikimedia/client-es5' not in eslintrc['extends']
+
+
 def test_fix_eslintrc_use_mediawiki_profile(tempfs):
     tempfs.create_file('package.json',
                        contents="""
