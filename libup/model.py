@@ -128,7 +128,7 @@ class Log(Base):
     # The actual log text (possibly compressed)
     text = Column(LargeBinary().with_variant(MEDIUMBLOB, 'mysql'), nullable=False)  # type: ignore
     # The patch file, if any (possibly compressed)
-    patch = Column(LargeBinary, nullable=True)
+    patch = Column(LargeBinary().with_variant(MEDIUMBLOB, 'mysql'), nullable=True)  # type: ignore
     # Whether the run ended in an error or not
     is_error = Column(Boolean, nullable=False, default=False)
     # Comma-separated hashtags to apply to the commit, if any
