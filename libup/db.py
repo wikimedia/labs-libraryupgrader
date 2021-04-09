@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import os
+from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -27,6 +28,10 @@ Session = sessionmaker()
 
 
 def sql_uri() -> str:
+    connf = Path('/etc/mariadb_connection')
+    if connf.exists():
+        return connf.read_text().strip()
+
     if os.path.exists('/etc/mariadb_password'):
         with open('/etc/mariadb_password') as f:
             pw = f.read().strip()
