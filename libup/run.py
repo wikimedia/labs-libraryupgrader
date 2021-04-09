@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import argparse
+from datetime import datetime
 import wikimediaci_utils as ci_utils
 
 from . import BRANCHES, config, db, gerrit, mw
@@ -68,6 +69,7 @@ def main():
     parser.add_argument('--limit', default=0, type=int, help='Limit')
     parser.add_argument('--fast', action='store_true', help='Skip some database updates')
     parser.add_argument('--branch', required=False, help='Limit to only these branches')
+    parser.add_argument('--auto', action='store_true', help='If this is an automatic run')
     parser.add_argument('repo', nargs='?', help='Only queue this repository (optional)')
     args = parser.parse_args()
 
@@ -93,8 +95,19 @@ def main():
         gen = session.query(Repository).filter_by(name=args.repo).all()
     else:
         gen = session.query(Repository).all()
+    if args.branch:
+        branches = [args.branch]
+    elif args.auto:
+        # Only queue non-master jobs on Wed (3) and Sat (6)
+        if datetime.utcnow().weekday() in (3, 6):
+            branches = BRANCHES
+        else:
+            branches = ['master']
+    else:
+        branches = BRANCHES
+    print(f"Limiting to branches: {', '.join(branches)}")
     for repo in gen:
-        if args.branch and repo.branch != args.branch:
+        if repo.branch not in branches:
             continue
         print(f'Queuing {repo.name} ({repo.branch})')
         run_check.delay(repo.name, repo.branch)
