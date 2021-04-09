@@ -36,7 +36,7 @@ PACKAGIST_MIRROR = 'https://repo.packagist.org'
 SSH_AUTH_SOCK = '/tmp/ssh-agent.socket'
 WEIGHT_NEEDED = 10  # Need to hit this score to trigger an update
 # TODO: pull this from somewhere else, like ExtensionDistributor
-BRANCHES = ['master', 'REL1_35', 'REL1_31']
+BRANCHES = ['master', 'REL1_36', 'REL1_35', 'REL1_31']
 
 
 session = requests.Session()
