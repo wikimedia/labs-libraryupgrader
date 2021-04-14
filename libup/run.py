@@ -66,7 +66,6 @@ def update_repositories(session):
 
 def update_monitoring(session):
     cfg = config.monitoring()
-    print(cfg)
     if not cfg['enabled']:
         print('Skipping monitoring checks, disabled.')
         return
