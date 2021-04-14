@@ -1,7 +1,7 @@
 """
 Store hashtags in logs table
 
-Copyright (C) 2020 Kunal Mehta <legoktm@member.fsf.org>
+Copyright (C) 2020 Kunal Mehta <legoktm@debian.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by

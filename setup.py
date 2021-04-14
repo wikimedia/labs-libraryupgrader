@@ -7,7 +7,7 @@ setup(
     url='https://www.mediawiki.org/wiki/Libraryupgrader',
     license='AGPL-3.0-or-later',
     author='Kunal Mehta',
-    author_email='legoktm@member.fsf.org',
+    author_email='legoktm@debian.org',
     description='semi-automated tool that manages upgrades of libraries',
     include_package_data=True,
     entry_points={
