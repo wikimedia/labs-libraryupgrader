@@ -26,6 +26,7 @@ else:
 CACHE = os.path.join(DATA_ROOT, 'cache')
 CONFIG_REPO = os.path.join(DATA_ROOT, 'config')
 GIT_ROOT = '/srv/git'
+MONITORING = os.path.join(CONFIG_REPO, 'monitoring.json')
 RELEASES = os.path.join(CONFIG_REPO, 'releases.json')
 REPOSITORIES = os.path.join(CONFIG_REPO, 'repositories.json')
 MANAGERS = ['composer', 'npm']

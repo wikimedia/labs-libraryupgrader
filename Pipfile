@@ -24,6 +24,7 @@ alembic = "*"
 sqlalchemy = "*"
 pymysql = "<1"
 libup = {editable = true, path = "."}
+phabricator = "*"
 
 [requires]
 python_version = "3.7"

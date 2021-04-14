@@ -16,10 +16,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import json
+from pathlib import Path
 import os
 import subprocess
 
-from . import CONFIG_REPO, RELEASES, REPOSITORIES
+from . import CONFIG_REPO, MONITORING, RELEASES, REPOSITORIES
 
 
 def ensure(pull=False):
@@ -48,6 +49,13 @@ def repositories(pull=False) -> dict:
 
     with open(REPOSITORIES) as f:
         return json.load(f)
+
+
+def monitoring(pull=False) -> dict:
+    ensure(pull=pull)
+
+    text = Path(MONITORING).read_text()
+    return json.loads(text)
 
 
 def should_push(pull=True) -> bool:

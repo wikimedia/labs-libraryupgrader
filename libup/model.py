@@ -222,3 +222,15 @@ class Advisories(Base):
 
     def get_data(self):
         return json.loads(utils.maybe_decompress(self.data))
+
+
+class Monitoring(Base):
+    """Phabricator release monitoring"""
+    __tablename__ = "monitoring"
+    id = Column(Integer, primary_key=True)
+    # unique key in config
+    name = Column(String(30), nullable=False)
+    # latest version that we fetched
+    version = Column(String(80), nullable=True)
+    # Current Phabricator task
+    task = Column(String(10), nullable=True)
