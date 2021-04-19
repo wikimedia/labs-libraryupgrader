@@ -153,6 +153,7 @@ def main():
     else:
         branches = BRANCHES
     print(f"Limiting to branches: {', '.join(branches)}")
+    gen = sorted(gen, key=lambda r: (r.name, r.branch))
     for repo in gen:
         if repo.branch not in branches:
             continue
