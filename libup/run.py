@@ -65,7 +65,7 @@ def update_repositories(session):
 
 
 def update_monitoring(session):
-    cfg = config.monitoring()
+    cfg = config.monitoring(pull=True)
     if not cfg['enabled']:
         print('Skipping monitoring checks, disabled.')
         return
@@ -78,6 +78,7 @@ def update_monitoring(session):
         latest_version = monitoring.lookup(info)
         if latest_version == monit.version:
             # Already up to date
+            print(f"{name}: Already up to date")
             continue
         monit.version = latest_version
         if monit.task and phab.is_closed(phab_obj, monit.task):
@@ -86,6 +87,7 @@ def update_monitoring(session):
         if monit.task:
             # Open task, add a new comment
             phab.add_comment(phab_obj, monit.task, monitoring.description(info, latest_version, greeting=False))
+            print(f"{name}: Commented on {monit.task}")
         else:
             # No task, create a new one
             monit.task = phab.create_task(
@@ -94,6 +96,7 @@ def update_monitoring(session):
                 desc=monitoring.description(info, latest_version, greeting=True),
                 projects=info['phab']
             )
+            print(f"{name}: Created {monit.task}")
         session.add(monit)
     session.commit()
     print("Done!")
