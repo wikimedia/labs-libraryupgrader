@@ -759,6 +759,41 @@ class LibraryUpgrader(shell2.ShellMixin):
         for name, subdep in dep.get("dependencies", {}).items():
             self._recurse_dependencies(name, subdep)
 
+    def fix_phpcs_command(self):
+        if not self.has_composer:
+            return
+
+        composer = ComposerJson('composer.json')
+        if composer.get_version('mediawiki/mediawiki-codesniffer') is None:
+            return
+
+        changes = False
+        j = composer.data
+
+        phpcs_command = 'phpcs -sp --cache"'
+
+        for script in j['scripts']['test']:
+            if script.startswith('phpcs'):
+                pos = j['scripts']['test'].index(script)
+                j['scripts']['test'].remove(script)
+                j['scripts']['test'].insert(pos, '@phpcs')
+
+                if script not in ['phpcs -p -s', 'phpcs -s -p', 'phpcs -ps', phpcs_command]:
+                    phpcs_command = script
+
+                self.msg_fixes.append('composer.json: Updated phpcs command in composer test (T280592).')
+                changes = True
+                break
+
+        if 'phpcs' not in j['scripts']:
+            j['scripts']['phpcs'] = phpcs_command
+            self.msg_fixes.append('composer.json: Added phpcs command to scripts (T280592).')
+            changes = True
+
+        if changes:
+            composer.data = j
+            composer.save()
+
     def composer_upgrade(self, plan: list):
         if not self.has_composer:
             return
@@ -1289,6 +1324,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.fix_phpunit_result_cache()
         self.fix_phan_taint_check_plugin_merge_to_phan()
         self.fix_composer_irc()
+        self.fix_phpcs_command()
 
         # Final check in case we missed something
         self.check_package_lock()

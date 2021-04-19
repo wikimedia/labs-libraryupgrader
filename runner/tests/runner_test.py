@@ -565,6 +565,50 @@ def test_fix_composer_irc(tempfs):
     assert composer['support']['irc'] == "irc://irc.libera.chat/mediawiki"
 
 
+def test_fix_phpcs_command(tempfs):
+    tempfs.create_file('composer.json',
+                       contents="""
+    {
+        "require-dev": {
+            "mediawiki/mediawiki-codesniffer": "35.0.0"
+        },
+        "scripts": {
+            "test": [
+                "parallel-lint . --exclude vendor --exclude node_modules",
+                "phpcs -p -s",
+                "minus-x check ."
+            ]
+        }
+    }
+    """)
+
+    libup = LibraryUpgrader()
+    libup.fix_phpcs_command()
+    composer = tempfs.json_contents('composer.json')
+    assert 'phpcs' in composer['scripts']
+    assert 'phpcs -p -s' not in composer['scripts']['test']
+    assert '@phpcs' in composer['scripts']['test']
+
+
+def test_fix_phpcs_command_noop(tempfs):
+    tempfs.create_file('composer.json',
+                       contents="""
+    {
+        "scripts": {
+            "test": [
+                "parallel-lint . --exclude vendor --exclude node_modules"
+            ]
+        }
+    }
+    """)
+
+    libup = LibraryUpgrader()
+    libup.fix_phpcs_command()
+    composer = tempfs.json_contents('composer.json')
+    assert 'phpcs' not in composer['scripts']
+    assert '@phpcs' not in composer['scripts']['test']
+
+
 def test_fix_eslintrc_use_clientes5_profile(tempfs):
     tempfs.create_file('package.json',
                        contents="""
