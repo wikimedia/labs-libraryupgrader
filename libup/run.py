@@ -108,7 +108,7 @@ def main():
     parser.add_argument('--fast', action='store_true', help='Skip some database updates')
     parser.add_argument('--branch', required=False, help='Limit to only these branches')
     parser.add_argument('--auto', action='store_true', help='If this is an automatic run')
-    parser.add_argument('--monitoring', action='store_true', help="Run monitoring checks")
+    parser.add_argument('--only-monitoring', action='store_true', help="Run only monitoring checks")
     parser.add_argument('repo', nargs='?', help='Only queue this repository (optional)')
     args = parser.parse_args()
 
@@ -119,8 +119,12 @@ def main():
         update_repositories(session)
         db.update_upstreams(session)
 
-    if args.monitoring:
+    if args.only_monitoring or args.auto:
+        # If asked to update monitoring or --auto mode
         update_monitoring(session)
+
+    if args.only_monitoring:
+        # We're done
         return
 
     count = 0
