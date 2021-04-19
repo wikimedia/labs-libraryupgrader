@@ -30,6 +30,10 @@ def client():
     # Seed some data
     web.db.session.add(model.Repository(name='test/errors', branch='master', is_error=True))
     web.db.session.add(model.Repository(name='test/ok', branch='master', is_error=False))
+    # repo_id=2 --> test/ok
+    log = model.Log(repo_id=2, time='20210419042355', is_error=True)
+    log.set_text("foobarbaz")
+    web.db.session.add(log)
 
     with web.app.test_client() as client:
         yield client
@@ -49,6 +53,8 @@ def test_errors(client):
 def test_r(client):
     rv = client.get('/r/test/ok')
     assert 'test/ok' in rv.data.decode()
+    # URL link to log #1
+    assert '/logs2/1"' in rv.data.decode()
     rv = client.get('/r/test/does-not-exist')
     assert 'Sorry, I don\'t know this repository' in rv.data.decode()
 

@@ -1,6 +1,6 @@
 {% macro repo_icons(repo) -%}
 {%- if repo.is_error -%}
-<abbr title="Error">❌</abbr>
+{{ error() }}
 {%- endif -%}
 {%- if repo.is_canary -%}
 <abbr title="Canary repository">🦆</abbr>
@@ -15,4 +15,8 @@
 
 {% macro repo_link(repo, icons=True) -%}
 {% if icons %}{{repo_icons(repo)}}{% endif %}<a href="{{url_for('r', repo=repo.name, branch=repo.branch)}}">{{repo.name}}</a>
+{%- endmacro %}
+
+{% macro error() -%}
+<abbr title="Error">❌</abbr>
 {%- endmacro %}
