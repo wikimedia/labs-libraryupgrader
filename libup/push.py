@@ -104,6 +104,14 @@ class Pusher(shell.ShellMixin):
         else:
             print('SIMULATE: '.join(self.build_push_command(options)))
 
+    def is_latest(self, log: Log, repo: Repository) -> bool:
+        """Make sure this is the latest log for this repository"""
+        logs = repo.logs
+        if logs[-1].id != log.id:
+            print(f"Newer run available: we are {log.id} but {logs[-1].id} exists, skipping")
+            return False
+        return True
+
     def run(self, log: Log, repo: Repository):
         patch = log.get_patch()
         if not patch:
@@ -118,6 +126,9 @@ class Pusher(shell.ShellMixin):
         plus2 = self.can_autoapprove()
         # Flood control, don't overload zuul...
         gerrit.wait_for_zuul_test_gate(count=3)
+        # We're definitely going to push now. Do some final sanity checks
+        if not self.is_latest(log, repo):
+            return
         push = config.should_push()
         self.git_push(repo.name, hashtags=hashtags, message=message,
                       plus2=plus2, push=push)

@@ -129,13 +129,6 @@ def run_push(log_id, text_digest, patch_digest):
         raise RuntimeError(f"Text integrity issue, expected {patch_digest} got {log.patch_digest()}")
 
     repo = log.repository
-    # Make sure this is the latest log for this repository
-    logs = repo.logs
-    if logs[-1].id != log.id:
-        print(f"Newer run available: we are {log.id} but {logs[-1].id} exists, skipping")
-        session.close()
-        return
-
     with tempfile.TemporaryDirectory() as tmpdir:
         with utils.cd(tmpdir):
             pusher = push.Pusher(branch=repo.branch)
