@@ -27,7 +27,7 @@ from libup.library import is_greater_than
         ('1.0.0', '1.1.0', True),
         ('0.99.0', '0.0.5', False),
         ('1.0.0', '1.1.0', True),
-        # constraintish stuff
+        # constraint-ish stuff
         ('~0.5', '0.6.0', True),
         ('^0.10.0', '0.15.0', True),
         ('^0.3.2', '0.3.2', False),
