@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
 
-from libup.model import Advisories, Log, Upstream
+from libup.model import Advisories, Log, Repository, Upstream
 from libup.utils import BLOB_SIZE
 
 
@@ -54,3 +54,12 @@ def test_upstream_link():
     bad = Upstream(manager='nope', name='test')
     with pytest.raises(RuntimeError):
         bad.link()
+
+
+def test_repository_sort():
+    repos = [
+        Repository(name="foo"),
+        Repository(name="bar"),
+        Repository(name="baz"),
+    ]
+    assert [r.name for r in sorted(repos)] == ["bar", "baz", "foo"]

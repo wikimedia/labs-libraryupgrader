@@ -18,7 +18,7 @@
         {% if info.repositories.missing %}
             <p>The following repositories have not been updated yet:</p>
             <ul>
-            {% for repo in info.repositories.missing %}
+            {% for repo in info.repositories.missing|sort %}
                 <li>{{macros.repo_link(repo)}}</li>
             {% endfor %}
             </ul>
@@ -32,7 +32,7 @@
         {% if info.canaries.missing %}
             <p>The following canaries have not been updated yet:</p>
             <ul>
-            {% for repo in info.canaries.missing %}
+            {% for repo in info.canaries.missing|sort %}
                 <li>{{macros.repo_link(repo)}}</li>
             {% endfor %}
             </ul>
