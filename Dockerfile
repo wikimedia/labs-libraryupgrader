@@ -54,6 +54,7 @@ ENV COMPOSER_PROCESS_TIMEOUT 1800
 # Shared cache
 ENV NPM_CONFIG_CACHE=/cache
 ENV XDG_CACHE_HOME=/cache
+ENV BROWSERSLIST_IGNORE_OLD_DATA="yes"
 WORKDIR /src
 ENTRYPOINT ["/src/libup/timeout-wrapper.sh"]
 CMD ["libup-ng"]
