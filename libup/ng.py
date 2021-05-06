@@ -30,7 +30,7 @@ import traceback
 from typing import List
 from xml.etree import ElementTree
 
-from . import WEIGHT_NEEDED, gerrit, grunt, library, session, shell, utils
+from . import WEIGHT_NEEDED, grunt, library, session, shell, utils
 from .collections import SaveDict
 from .files import ComposerJson, PackageJson, PackageLockJson
 from .plan import HTTPPlan
@@ -1121,11 +1121,6 @@ class LibraryUpgrader(shell.ShellMixin):
         self.output['npm-audit'] = self.output['audits']['npm']
         self.output['composer-audit'] = self.output['audits']['composer']
 
-        self.output['open-changes'] = gerrit.query_changes(
-            repo=repo, status='open', topic='bump-dev-deps',
-            branch=self.branch,
-        )
-
         # Now let's fix and upgrade stuff!
 
         # We need to do this first because it can cause problems
@@ -1145,8 +1140,7 @@ class LibraryUpgrader(shell.ShellMixin):
         # TODO: composer audit
 
         self.output['push'] = self.weight >= WEIGHT_NEEDED \
-            and bool(self.updates) \
-            and not self.output['open-changes']
+            and bool(self.updates)
 
         # General fixes:
         self.fix_coc()

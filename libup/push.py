@@ -16,7 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import subprocess
-import time
 import urllib.parse
 
 from . import GERRIT_USER, SSH_AUTH_SOCK, config, gerrit, shell, utils
@@ -117,19 +116,32 @@ class Pusher(shell.ShellMixin):
         if not patch:
             print('No patch...?')
             return
+        # Flood control, don't overload zuul...
+        gerrit.wait_for_zuul_test_gate(count=3)
+        # Update our local clone
+        gerrit.ensure_clone(repo.name, self.branch)
         self.clone(repo.name, branch=self.branch, internal=True)
+        current_sha1 = self.git_sha1(branch=self.branch)
+        if current_sha1 != log.sha1:
+            # The repo has been updated in the meantime, don't push
+            print(f"Created patch at {log.sha1}, now at {current_sha1}, skipping")
+            return
+        open_changes = gerrit.query_changes(
+            repo=repo.name, status='open', topic='bump-dev-deps',
+            branch=self.branch,
+        )
+        if open_changes:
+            print(f"{repo.name} ({self.branch}) has other open changes, skipping push")
+            return
         # TODO: investigate doing some diff/sanity check to make sure
         # the deps match updates
         self.check_call(['git', 'am'], stdin=patch)
         hashtags = log.get_hashtags()
         message = f'View logs for this commit at https://libraryupgrader2.wmcloud.org/logs2/{log.id}'
         plus2 = self.can_autoapprove()
-        # Flood control, don't overload zuul...
-        gerrit.wait_for_zuul_test_gate(count=3)
         # We're definitely going to push now. Do some final sanity checks
         if not self.is_latest(log, repo):
             return
         push = config.should_push()
         self.git_push(repo.name, hashtags=hashtags, message=message,
                       plus2=plus2, push=push)
-        time.sleep(5)
