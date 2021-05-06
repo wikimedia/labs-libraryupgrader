@@ -133,6 +133,8 @@ class Log(Base):
     is_error = Column(Boolean, nullable=False, default=False)
     # Comma-separated hashtags to apply to the commit, if any
     hashtags = Column(LargeBinary, nullable=True)
+    # sha1 of the commit this one is based on top of
+    sha1 = Column(String(40), nullable=True)
 
     repository = relationship("Repository", back_populates="logs")
 

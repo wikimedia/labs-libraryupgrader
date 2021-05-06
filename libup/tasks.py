@@ -77,6 +77,7 @@ def run_check(repo_name: str, branch: str):
     log = model.Log(
         time=utils.to_mw_time(datetime.utcnow()),
         is_error='done' not in data,
+        sha1=data['sha1'],
     )
     # TODO: Get this from `docker logs` instead
     log.set_text('\n'.join(data.get('log', [])))
