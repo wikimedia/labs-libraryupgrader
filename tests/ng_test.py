@@ -429,14 +429,6 @@ baz
  baz"""
 
 
-def test_sha1(mocker):
-    libup = LibraryUpgrader()
-    check_call = mocker.patch.object(libup, 'check_call')
-    check_call.return_value = \
-        '44560cc7288485f23988bf2e35cc20518f37b2ee refs/remotes/origin/HEAD'
-    assert '44560cc7288485f23988bf2e35cc20518f37b2ee' == libup.sha1()
-
-
 @pytest.mark.parametrize('line,rule,expected', (
     (
         '\tconsole.log("foo") // eslint-disable-line',

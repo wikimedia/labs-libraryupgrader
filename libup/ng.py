@@ -649,9 +649,6 @@ class LibraryUpgrader(shell.ShellMixin):
             f.write(ignore)
         self.msg_fixes.append('.gitignore: Added .phpunit.result.cache (T242727).')
 
-    def sha1(self):
-        return self.check_call(['git', 'show-ref', f'refs/heads/{self.branch}']).split(' ')[0]
-
     def composer_upgrade(self, plan: list):
         if not self.has_composer:
             return
@@ -1106,7 +1103,7 @@ class LibraryUpgrader(shell.ShellMixin):
         self.check_call(['date'])
         self.clone(repo, internal=True, branch=self.branch)
         self.check_call(['grr', 'init'])  # Install commit-msg hook
-        self.output['sha1'] = self.sha1()
+        self.output['sha1'] = self.git_sha1(branch=self.branch)
 
         # Swap in the new php-parallel-lint package names
         self.fix_php_parallel_lint_migration()

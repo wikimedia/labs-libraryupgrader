@@ -56,3 +56,11 @@ def test_integration_fail():
     with pytest.raises(subprocess.CalledProcessError):
         shell.check_call(['python3', HELPER, '--fail'])
     assert expected in output
+
+
+def test_git_sha1(mocker):
+    shell = ShellMixin()
+    check_call = mocker.patch.object(shell, 'check_call')
+    check_call.return_value = \
+        '44560cc7288485f23988bf2e35cc20518f37b2ee refs/remotes/origin/HEAD'
+    assert '44560cc7288485f23988bf2e35cc20518f37b2ee' == shell.git_sha1(branch="master")
