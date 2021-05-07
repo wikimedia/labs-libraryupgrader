@@ -164,8 +164,10 @@ class LibraryUpgrader(shell.ShellMixin):
         self.log('Attempting to npm audit fix')
         prior = PackageJson('package.json')
         prior_lock = PackageLockJson()
-        # When removing --only=dev also remove dev check to get all reasons
-        self.check_call(['npm', 'audit', 'fix', '--only=dev'])
+        # HACK: Sometimes you need to run it multiple times to get all the fixes (T282278)
+        for _ in range(3):
+            # When removing --only=dev also remove dev check to get all reasons
+            self.check_call(['npm', 'audit', 'fix', '--only=dev'])
         current = PackageJson('package.json')
         for pkg in current.get_packages():
             new_version = current.get_version(pkg)
