@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "libup"
+version = "0.1.0"
+description = "semi-automated tool that manages upgrades of libraries"
+authors = ["Kunal Mehta <legoktm@debian.org>"]
+license = "AGPL-3.0-or-later"
+
+[tool.poetry.dependencies]
+python = "3.7.*"
+requests = "*"
+flask = "^1"
+flask-bootstrap = "^3"
+flask-sqlalchemy = "2.4.4"
+gunicorn = "^20"
+markdown = "^3"
+poetry-semver = "*"
+celery = "^5"
+wikimediaci-utils = "^1"
+alembic = "1.4.3"
+sqlalchemy = "1.3.22"
+pymysql = "<1"
+phabricator = "*"
+
+
+[tool.poetry.dev-dependencies]
+mypy = "*"
+sqlalchemy-stubs = "*"
+pytest = "*"
+pytest-mock = "*"
+pytest-cov = "*"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "setuptools"]
+build-backend = "poetry.core.masonry.api"
