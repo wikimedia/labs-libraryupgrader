@@ -17,7 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from collections import defaultdict, OrderedDict
 from flask import Flask, jsonify, render_template, make_response, request
-from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 import json
 from markdown import markdown
@@ -30,10 +29,8 @@ from .db import sql_uri
 from .model import Advisories, Dependency, Dependencies, Log, Repository, Upstream
 
 app = Flask(__name__)
-app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = sql_uri()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-Bootstrap(app)
 db = SQLAlchemy(app)
 SEVERITIES = ['critical', 'high', 'moderate', 'low', 'info']
 # TODO: find some more colors?
