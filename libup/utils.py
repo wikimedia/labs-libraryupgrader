@@ -15,11 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from collections import OrderedDict
 from contextlib import contextmanager
 from datetime import datetime
 import gzip
-import json
 import lzma
 import os
 
@@ -52,17 +50,6 @@ def gerrit_url(repo: str, user=None, ssh=False, internal=False) -> str:
         return f'file://{GIT_ROOT}/{repo.replace("/", "-")}.git'
     else:
         return f'https://{prefix}gerrit-replica.wikimedia.org/r/{repo}.git'
-
-
-def load_ordered_json(fname) -> OrderedDict:
-    with open(fname) as f:
-        return json.load(f, object_pairs_hook=OrderedDict)
-
-
-def save_pretty_json(data: dict, fname: str):
-    with open(fname, 'w') as f:
-        out = json.dumps(data, indent='\t', ensure_ascii=False)
-        f.write(out + '\n')
 
 
 def to_mw_time(dt: datetime) -> str:

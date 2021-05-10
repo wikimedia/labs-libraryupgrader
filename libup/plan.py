@@ -22,7 +22,6 @@ from sqlalchemy.orm import joinedload
 from typing import List, Dict, Optional
 
 from . import config
-from . import session as requests_session
 from .model import Dependency, Repository
 
 
@@ -170,25 +169,3 @@ def equals(current, wanted):
         pass
 
     return False
-
-
-class HTTPPlan:
-    """Class to get the update plan without directly hitting the db"""
-    def __init__(self, branch):
-        self.branch = branch
-
-    def check(self, repo: str) -> list:
-        # TODO: should we hit localhost instead?
-        resp = requests_session.post(
-            'https://libraryupgrader2.wmcloud.org/plan.json',
-            params={
-                'repository': repo,
-                'branch': self.branch
-            }
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        if data['status'] != 'ok':
-            msg = data.get('error', 'An unknown error')
-            raise RuntimeError(f"Error fetching plan: {msg}")
-        return data['plan']

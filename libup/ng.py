@@ -30,12 +30,15 @@ import traceback
 from typing import List
 from xml.etree import ElementTree
 
-from . import WEIGHT_NEEDED, grunt, library, session, shell, utils
+import requests
+
+from . import grunt, library, shell2
 from .collections import SaveDict
-from .files import ComposerJson, PackageJson, PackageLockJson
-from .plan import HTTPPlan
+from .files import ComposerJson, PackageJson, PackageLockJson, load_ordered_json, save_pretty_json
+from .httpplan import HTTPPlan
 from .update import Update
 
+WEIGHT_NEEDED = 10  # Need to hit this score to trigger an update
 RULE = '<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">'
 RULE_NO_EXCLUDE = r'<rule (ref="(?:\./)?vendor/mediawiki/mediawiki-codesniffer/MediaWiki")(?: )?/>'
 FIND_RULE = re.compile(
@@ -59,7 +62,7 @@ ESLINT_DISABLE_RULE = re.compile(r"\(no problems were reported from '(.*?)'\)")
 ESLINT_DISABLE_LINE = re.compile(r'// eslint-disable-(next-)?line( (.*?))?$')
 
 
-class LibraryUpgrader(shell.ShellMixin):
+class LibraryUpgrader(shell2.ShellMixin):
     def __init__(self):
         self.msg_fixes = []
         self.updates = []  # type: List[Update]
@@ -152,9 +155,11 @@ class LibraryUpgrader(shell.ShellMixin):
         # will be created
         if not os.path.exists('composer.lock'):
             return {}
-        req = session.post('https://php-security-checker.wmcloud.org/check_lock',
-                           files={'lock': open('composer.lock', 'rb')},
-                           headers={'Accept': 'application/json'})
+        req = requests.post(
+            'https://php-security-checker.wmcloud.org/check_lock',
+            files={'lock': open('composer.lock', 'rb')},
+            headers={'Accept': 'application/json'}
+        )
         req.raise_for_status()
         return req.json()
 
@@ -392,12 +397,12 @@ class LibraryUpgrader(shell.ShellMixin):
     def fix_root_eslintrc(self):
         if not os.path.exists('.eslintrc.json'):
             return
-        data = utils.load_ordered_json('.eslintrc.json')
+        data = load_ordered_json('.eslintrc.json')
         if 'root' in data:
             return
         data['root'] = True
         data.move_to_end('root', last=False)
-        utils.save_pretty_json(data, '.eslintrc.json')
+        save_pretty_json(data, '.eslintrc.json')
         self.msg_fixes.append('Set `root: true` in .eslintrc.json (T206485).')
 
     def fix_eslintrc_use_mediawiki_profile(self, repo):
@@ -417,7 +422,7 @@ class LibraryUpgrader(shell.ShellMixin):
         elif not library.is_greater_than_or_equal_to("0.15.0", cfg_version):
             # wikimedia/mediawiki profile introduced in 0.15.0
             return
-        data = utils.load_ordered_json('.eslintrc.json')
+        data = load_ordered_json('.eslintrc.json')
         if 'extends' not in data:
             # Something's wrong. Let's do nothing rather than make things worse.
             return
@@ -463,7 +468,7 @@ class LibraryUpgrader(shell.ShellMixin):
                 del data['globals']
                 self.msg_fixes.append('eslint: Dropped the empty global definition.')
 
-        utils.save_pretty_json(data, '.eslintrc.json')
+        save_pretty_json(data, '.eslintrc.json')
 
     def fix_eslint_config(self):
         if not os.path.exists('Gruntfile.js'):
@@ -907,7 +912,7 @@ class LibraryUpgrader(shell.ShellMixin):
                 disable.add(warning['rule'])
 
         if disable:
-            stylelint_cfg = utils.load_ordered_json('.stylelintrc.json')
+            stylelint_cfg = load_ordered_json('.stylelintrc.json')
             msg = 'The following rules are failing and were disabled:\n'
             if 'rules' not in stylelint_cfg:
                 stylelint_cfg['rules'] = OrderedDict()
@@ -920,7 +925,7 @@ class LibraryUpgrader(shell.ShellMixin):
                 del stylelint_cfg['rules']
                 self.msg_fixes.append('stylelint: Dropping empty `rules` definition.')
 
-            utils.save_pretty_json(stylelint_cfg, '.stylelintrc.json')
+            save_pretty_json(stylelint_cfg, '.stylelintrc.json')
             update.reason = msg
 
     def _handle_eslint(self, update: Update):
@@ -970,7 +975,7 @@ class LibraryUpgrader(shell.ShellMixin):
             self.remove_eslint_disable(fname, disabled_rules)
 
         if disable:
-            eslint_cfg = utils.load_ordered_json('.eslintrc.json')
+            eslint_cfg = load_ordered_json('.eslintrc.json')
             msg = 'The following rules are failing and were disabled:\n'
 
             if 'rules' not in eslint_cfg:
@@ -984,7 +989,7 @@ class LibraryUpgrader(shell.ShellMixin):
                 del eslint_cfg['rules']
                 self.msg_fixes.append('eslint: Dropping empty `rules` definition.')
 
-            utils.save_pretty_json(eslint_cfg, '.eslintrc.json')
+            save_pretty_json(eslint_cfg, '.eslintrc.json')
             update.reason = msg
 
     def remove_eslint_disable(self, fname: str, disabled_rules):

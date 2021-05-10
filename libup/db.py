@@ -20,7 +20,7 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from . import library
+from . import metadata
 from .model import Dependency, Dependencies, Repository, Upstream
 
 
@@ -90,9 +90,9 @@ def update_upstreams(session):
         if upstream is None:
             upstream = Upstream(manager=manager, name=name)
             to_add.append(upstream)
-        metadata = library.get_metadata(manager, name)
-        upstream.set_description(metadata['description'])
-        upstream.latest = metadata['latest']
+        data = metadata.get_metadata(manager, name)
+        upstream.set_description(data['description'])
+        upstream.latest = data['latest']
 
     for add in to_add:
         session.add(add)

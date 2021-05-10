@@ -16,15 +16,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from collections import OrderedDict
+import json
 
-from . import utils
+
+def load_ordered_json(fname) -> OrderedDict:
+    with open(fname) as f:
+        return json.load(f, object_pairs_hook=OrderedDict)
+
+
+def save_pretty_json(data: dict, fname: str):
+    with open(fname, 'w') as f:
+        out = json.dumps(data, indent='\t', ensure_ascii=False)
+        f.write(out + '\n')
 
 
 class PackageJson:
     # TODO: Support non-dev deps
     def __init__(self, fname):
         self.fname = fname
-        self.data = utils.load_ordered_json(self.fname)
+        self.data = load_ordered_json(self.fname)
 
     def get_packages(self):
         return list(self.data.get('devDependencies', {}))
@@ -50,13 +60,13 @@ class PackageJson:
         raise RuntimeError(f'Unable to remove {package}')
 
     def save(self):
-        utils.save_pretty_json(self.data, self.fname)
+        save_pretty_json(self.data, self.fname)
 
 
 class PackageLockJson:
     def __init__(self, fname='package-lock.json'):
         self.fname = fname
-        self.data = utils.load_ordered_json(self.fname)
+        self.data = load_ordered_json(self.fname)
 
     def get_version(self, package):
         try:
@@ -69,14 +79,14 @@ class PackageLockJson:
 
     def save(self):
         # For rollbacks and stuff. We don't allow modification though.
-        utils.save_pretty_json(self.data, self.fname)
+        save_pretty_json(self.data, self.fname)
 
 
 class ComposerJson:
     # TODO: Support non-dev deps
     def __init__(self, fname):
         self.fname = fname
-        self.data = utils.load_ordered_json(self.fname)
+        self.data = load_ordered_json(self.fname)
 
     def get_version(self, package):
         if package in self.data.get('require-dev', {}):
@@ -134,4 +144,4 @@ class ComposerJson:
         if 'require-dev' in self.data:
             # Re-sort dependencies by package name
             self.data['require-dev'] = OrderedDict(sorted(self.data['require-dev'].items(), key=lambda x: x[0]))
-        utils.save_pretty_json(self.data, self.fname)
+        save_pretty_json(self.data, self.fname)
