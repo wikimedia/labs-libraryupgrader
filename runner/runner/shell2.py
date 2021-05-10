@@ -18,7 +18,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 import subprocess
 
-from . import GIT_EMAIL, GIT_NAME, utils
+
+GIT_NAME = 'libraryupgrader'
+GIT_EMAIL = 'tools.libraryupgrader@tools.wmflabs.org'
 
 
 class ShellMixin:
@@ -42,9 +44,16 @@ class ShellMixin:
         return self.check_call(['git', 'show-ref', f'refs/heads/{branch}']).split(' ')[0]
 
     def clone(self, repo, branch='master', internal=False):
-        url = utils.gerrit_url(repo, internal=internal)
+        url = gerrit_url(repo, internal=internal)
         self.check_call(['git', 'clone', url, 'repo', '--depth=1', '-b', branch])
         os.chdir('repo')
         self.check_call(['git', 'config', 'user.name', GIT_NAME])
         self.check_call(['git', 'config', 'user.email', GIT_EMAIL])
         self.check_call(['git', 'submodule', 'update', '--init'])
+
+
+def gerrit_url(repo: str, internal=False) -> str:
+    if internal:
+        return f'file:///srv/git/{repo.replace("/", "-")}.git'
+    else:
+        return f'https://gerrit-replica.wikimedia.org/r/{repo}.git'

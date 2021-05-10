@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import tempfile
 
-from libup.collections import SaveDict
+from runner.collections import SaveDict
 
 
 def test_savedict():

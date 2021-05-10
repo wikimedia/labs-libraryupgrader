@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
 
-from libup.library import is_greater_than
+from runner.library import is_greater_than
 
 
 @pytest.mark.parametrize(

@@ -18,8 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import pytest
 
-from libup.ng import LibraryUpgrader
-from libup.update import Update
+from runner import LibraryUpgrader
+from runner.update import Update
 
 
 def test_has_npm(tempfs):

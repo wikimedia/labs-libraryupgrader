@@ -19,9 +19,9 @@ import os
 import pytest
 import subprocess
 
-from libup.shell2 import ShellMixin
+from runner.shell2 import ShellMixin
 
-HELPER = os.path.join(os.path.dirname(__file__), 'shell_helper.py')
+HELPER = os.path.join(os.path.dirname(__file__), 'shell2_helper.py')
 
 
 def test_check_call():

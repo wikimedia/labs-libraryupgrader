@@ -66,7 +66,7 @@ def run_check(repo_name: str, branch: str):
                     GIT_ROOT: f'{GIT_ROOT}:ro'
                 },
                 rm=True,
-                extra_args=['libup-ng', repo.name, '/out/output.json', f"--branch={repo.branch}"],
+                extra_args=['runner', repo.name, '/out/output.json', f"--branch={repo.branch}"],
             )
         except subprocess.CalledProcessError:
             # Just print the traceback, we still need to save the log

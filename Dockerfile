@@ -31,6 +31,7 @@ RUN git clone --depth 1 https://gerrit.wikimedia.org/r/integration/npm.git /srv/
     && ln -s /srv/composer/vendor/bin/composer /usr/bin/composer
 COPY --from=rust-builder /usr/local/cargo/bin/grr /usr/bin/grr
 COPY files/gitconfig /etc/gitconfig
+COPY files/timeout-wrapper.sh /usr/local/bin/timeout-wrapper
 RUN gem install --no-rdoc --no-ri jsduck
 
 RUN install --owner=nobody --group=nogroup --directory /cache
@@ -40,14 +41,13 @@ RUN install --owner=nobody --group=nogroup --directory /venv
 RUN install --owner=nobody --group=nogroup --directory /nonexistent
 
 USER nobody
-COPY files/known_hosts /nonexistent/.ssh/known_hosts
 ENV PYTHONUNBUFFERED 1
 RUN python3 -m venv /venv/ && /venv/bin/pip install -U wheel
-COPY setup.py /src/
-COPY requirements.txt /src/
+COPY runner/setup.py /src/
+COPY runner/requirements.txt /src/
 RUN cd src/ \
     && /venv/bin/pip install -r requirements.txt
-COPY ./libup /src/libup
+COPY ./runner/runner /src/runner
 RUN cd src/ \
     && /venv/bin/python setup.py install
 ENV COMPOSER_PROCESS_TIMEOUT 1800
@@ -56,5 +56,5 @@ ENV NPM_CONFIG_CACHE=/cache
 ENV XDG_CACHE_HOME=/cache
 ENV BROWSERSLIST_IGNORE_OLD_DATA="yes"
 WORKDIR /src
-ENTRYPOINT ["/src/libup/timeout-wrapper.sh"]
-CMD ["libup-ng"]
+ENTRYPOINT ["/usr/local/bin/timeout-wrapper"]
+CMD ["runner"]

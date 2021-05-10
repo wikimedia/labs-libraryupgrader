@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-next generation of libraryupgrader
+the libup runner
 
-Copyright (C) 2019 Kunal Mehta <legoktm@debian.org>
+Copyright (C) 2019-2021 Kunal Mehta <legoktm@debian.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by

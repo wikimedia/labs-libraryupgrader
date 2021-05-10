@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import pytest
 
-from libup import grunt
+from runner import grunt
 
 
 def test_gruntfile(tempfs):
