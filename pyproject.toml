@@ -9,15 +9,14 @@ license = "AGPL-3.0-or-later"
 python = "3.7.*"
 requests = "*"
 flask = "^2"
-flask-sqlalchemy = "2.4.4"
+flask-sqlalchemy = "^2"
 gunicorn = "^20"
 markdown = "^3"
 poetry-semver = "*"
 celery = "^5"
 wikimediaci-utils = "^1"
-alembic = "1.4.3"
-sqlalchemy = "1.3.22"
-pymysql = "<1"
+alembic = "^1"
+sqlalchemy = {extras=["pymysql"], version="^1"}
 phabricator = "*"
 
 
