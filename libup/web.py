@@ -65,7 +65,7 @@ def request_branch():
     return branch
 
 
-@app.route('/')
+@app.get('/')
 def index():
     count = db.session.query(Repository).count()
     upstreams = db.session.query(Upstream).count()
@@ -76,12 +76,12 @@ def index():
     return render_template('index.html', count=count, upstreams=upstreams, recent_logs=recent_logs)
 
 
-@app.route('/credits')
+@app.get('/credits')
 def credits_():
     return render_template('credits.html')
 
 
-@app.route('/r/<path:repo>')
+@app.get('/r/<path:repo>')
 def r(repo):
     branch = request_branch()
     repository = db.session.query(Repository)\
@@ -103,7 +103,7 @@ def r(repo):
     )
 
 
-@app.route('/r')
+@app.get('/r')
 def r_index():
     branch = request_branch()
     repos = db.session.query(Repository)\
@@ -115,7 +115,7 @@ def r_index():
     )
 
 
-@app.route('/library')
+@app.get('/library')
 def library_index():
     branch = request_branch()
     deps = db.session.query(Dependency)\
@@ -133,7 +133,7 @@ def library_index():
     )
 
 
-@app.route('/library_table')
+@app.get('/library_table')
 def library_table():
     branch = request_branch()
     r_libs = request.args.get('r')
@@ -175,7 +175,7 @@ def library_table():
     )
 
 
-@app.route('/library/<manager>/<path:name>')
+@app.get('/library/<manager>/<path:name>')
 def library_(manager, name):
     if manager not in MANAGERS:
         return make_response('Unknown manager.', 404)
@@ -208,7 +208,7 @@ def library_(manager, name):
     )
 
 
-@app.route('/logs2/<log_id>')
+@app.get('/logs2/<log_id>')
 def logs2(log_id):
     log = db.session.query(Log)\
         .filter_by(id=log_id)\
@@ -224,7 +224,7 @@ def logs2(log_id):
     )
 
 
-@app.route('/logs/<date>/<logname>')
+@app.get('/logs/<date>/<logname>')
 def logs(date, logname):
     """deprecated logs, should be removed after Jan. 2021"""
     # Input validation to prevent against directory traversal attacks
@@ -247,7 +247,7 @@ def logs(date, logname):
     )
 
 
-@app.route('/errors')
+@app.get('/errors')
 def errors():
     branch = request_branch()
     repos = db.session.query(Repository)\
@@ -256,7 +256,7 @@ def errors():
     return render_template('errors.html', repos=repos)
 
 
-@app.route('/vulns/composer')
+@app.get('/vulns/composer')
 def vulns_composer():
     branch = request_branch()
     everything = db.session.query(Advisories)\
@@ -295,7 +295,7 @@ def vulns_composer():
     )
 
 
-@app.route('/vulns/npm')
+@app.get('/vulns/npm')
 def vulns_npm():
     branch = request_branch()
     everything = db.session.query(Advisories)\
@@ -339,7 +339,7 @@ def vulns_npm():
     )
 
 
-@app.route('/status')
+@app.get('/status')
 def status():
     branch = request_branch()
     planner = plan.Plan(branch)
