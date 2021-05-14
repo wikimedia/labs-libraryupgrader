@@ -40,9 +40,6 @@ AUTO_APPROVE_FILES = {
 
 
 class Pusher(shell.ShellMixin):
-    def __init__(self, branch):
-        self.branch = branch
-
     def changed_files(self):
         out = self.check_call(['git', 'log', '--stat', '--oneline', '-n1'])
         lines = out.splitlines()
@@ -69,13 +66,14 @@ class Pusher(shell.ShellMixin):
             per += ',m=' + urllib.parse.quote_plus(options['message'])
         return ['git', 'push',
                 utils.gerrit_url(options['repo'], GERRIT_USER, ssh=True),
-                f'HEAD:refs/for/{self.branch}' + per]
+                f'HEAD:refs/for/{options["branch"]}' + per]
 
-    def git_push(self, repo: str, hashtags: list, message='', plus2=False, push=False):
+    def git_push(self, repo: Repository, hashtags: list, message='', plus2=False, push=False):
         options = {
-            'repo': repo,
+            'repo': repo.name,
             'hashtags': hashtags,
             'message': message,
+            'branch': repo.get_git_branch(),
         }
         if plus2:
             options['vote'] = 'Code-Review+2'
@@ -119,19 +117,19 @@ class Pusher(shell.ShellMixin):
         # Flood control, don't overload zuul...
         gerrit.wait_for_zuul_test_gate(count=3)
         # Update our local clone
-        gerrit.ensure_clone(repo.name, self.branch)
-        self.clone(repo.name, branch=self.branch, internal=True)
-        current_sha1 = self.git_sha1(branch=self.branch)
+        gerrit.ensure_clone(repo.name, repo.get_git_branch())
+        self.clone(repo.name, branch=repo.get_git_branch(), internal=True)
+        current_sha1 = self.git_sha1(branch=repo.get_git_branch())
         if current_sha1 != log.sha1:
             # The repo has been updated in the meantime, don't push
             print(f"Created patch at {log.sha1}, now at {current_sha1}, skipping")
             return
         open_changes = gerrit.query_changes(
             repo=repo.name, status='open', topic='bump-dev-deps',
-            branch=self.branch,
+            branch=repo.get_git_branch(),
         )
         if open_changes:
-            print(f"{repo.name} ({self.branch}) has other open changes, skipping push")
+            print(f"{repo.name} ({repo.branch}, git: {repo.get_git_branch()}) has other open changes, skipping push")
             return
         # TODO: investigate doing some diff/sanity check to make sure
         # the deps match updates
@@ -143,5 +141,5 @@ class Pusher(shell.ShellMixin):
         if not self.is_latest(log, repo):
             return
         push = config.should_push()
-        self.git_push(repo.name, hashtags=hashtags, message=message,
+        self.git_push(repo, hashtags=hashtags, message=message,
                       plus2=plus2, push=push)

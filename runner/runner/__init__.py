@@ -69,7 +69,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.cves = set()
         self.output = None  # type: SaveDict
         self.weight = 0
-        self.branch = 'master'  # Overridden later
+        self.git_branch = 'main'  # Overridden later
 
     def log(self, text: str):
         print(text)
@@ -409,7 +409,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         if not repo.startswith(('mediawiki/extensions/', 'mediawiki/skins/')):
             # Only MW extensions and skins
             return
-        if self.branch != 'master':
+        if not self.is_main():
             # TODO: once this auto-fixes newly failing rules, re-enable for release branches
             return
         if not os.path.exists('.eslintrc.json'):
@@ -751,8 +751,8 @@ class LibraryUpgrader(shell2.ShellMixin):
             run_fix = False
             for fname, value in phpcs_j['files'].items():
                 for message in value['messages']:
-                    # Only run auto-fix on master (TODO: find a better way to do this)
-                    if message['fixable'] and self.branch == 'master':
+                    # Only run auto-fix on master
+                    if message['fixable'] and self.is_main():
                         run_fix = True
                     else:
                         failing.add(message['source'])
@@ -944,8 +944,8 @@ class LibraryUpgrader(shell2.ShellMixin):
                 self.log(tb)
                 return
 
-        if self.branch == 'master':
-            # Only run auto-fix on master (TODO: find a better way to do this)
+        if self.is_main():
+            # Only run auto-fix on master
             self.check_call(['./node_modules/.bin/eslint'] + files + ['--fix'],
                             ignore_returncode=True)
         errors = json.loads(self.check_call([
@@ -1100,17 +1100,20 @@ class LibraryUpgrader(shell2.ShellMixin):
     def get_latest_patch(self):
         return self.check_call(['git', 'format-patch', 'HEAD~1', '--stdout'])
 
+    def is_main(self):
+        return self.git_branch in ("main", "master")
+
     def run(self, repo, output, branch):
         self.output = SaveDict({
             'repo': repo,
             'log': [],
         }, fname=output)
-        self.branch = branch
+        self.git_branch = branch
         # Output the date we run as first thing
         self.check_call(['date'])
-        self.clone(repo, internal=True, branch=self.branch)
+        self.clone(repo, internal=True, branch=self.git_branch)
         self.check_call(['grr', 'init'])  # Install commit-msg hook
-        self.output['sha1'] = self.git_sha1(branch=self.branch)
+        self.output['sha1'] = self.git_sha1(branch=self.git_branch)
 
         # Swap in the new php-parallel-lint package names
         self.fix_php_parallel_lint_migration()
@@ -1135,7 +1138,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.fix_remove_eslint_stylelint_if_grunt()
 
         # Try upgrades
-        planner = HTTPPlan(branch=self.branch)
+        planner = HTTPPlan(branch=self.git_branch)
         plan = planner.check(repo)
         self.npm_upgrade(plan)
         self.composer_upgrade(plan)

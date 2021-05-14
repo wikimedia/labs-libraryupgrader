@@ -35,14 +35,14 @@ app.conf.task_routes = {'libup.tasks.run_push': {'queue': 'push'}}
 @app.task
 def run_check(repo_name: str, branch: str):
     session = db.Session()
-    repo = session.query(model.Repository).filter_by(name=repo_name, branch=branch).first()
+    repo: model.Repository = session.query(model.Repository).filter_by(name=repo_name, branch=branch).first()
     # Update our local clone
-    gerrit.ensure_clone(repo.name, repo.branch)
+    gerrit.ensure_clone(repo.name, repo.get_git_branch())
     with tempfile.TemporaryDirectory(prefix="libup-extract") as tmpdir:
         with utils.cd(tmpdir):
             # TODO: Move this logic out of pusher?
-            pusher = push.Pusher(branch=repo.branch)
-            pusher.clone(repo.name, internal=True, branch=repo.branch)
+            pusher = push.Pusher()
+            pusher.clone(repo.name, internal=True, branch=repo.get_git_branch())
             deps = extract_dependencies(repo)
             db.update_dependencies(session, repo, deps)
 
@@ -66,7 +66,7 @@ def run_check(repo_name: str, branch: str):
                     GIT_ROOT: f'{GIT_ROOT}:ro'
                 },
                 rm=True,
-                extra_args=['runner', repo.name, '/out/output.json', f"--branch={repo.branch}"],
+                extra_args=['runner', repo.name, '/out/output.json', f"--branch={repo.get_git_branch()}"],
             )
         except subprocess.CalledProcessError:
             # Just print the traceback, we still need to save the log
@@ -132,7 +132,7 @@ def run_push(log_id, text_digest, patch_digest):
     repo = log.repository
     with tempfile.TemporaryDirectory() as tmpdir:
         with utils.cd(tmpdir):
-            pusher = push.Pusher(branch=repo.branch)
+            pusher = push.Pusher()
             pusher.run(log, repo)
 
     session.close()

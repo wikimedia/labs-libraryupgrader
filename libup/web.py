@@ -24,7 +24,7 @@ import os
 import re
 from sqlalchemy.orm import joinedload
 
-from . import BRANCHES, MANAGERS, plan
+from . import BRANCHES, MANAGERS, plan, utils
 from .db import sql_uri
 from .model import Advisories, Dependency, Dependencies, Log, Repository, Upstream
 
@@ -58,9 +58,9 @@ def inject_to_templates():
 
 
 def request_branch():
-    branch = request.args.get('branch', 'master')
+    branch = utils.normalize_branch(request.args.get('branch', 'main'))
     if branch not in BRANCHES:
-        # Default to master
+        # Default to main
         branch = BRANCHES[0]
     return branch
 
@@ -358,6 +358,7 @@ def plan_json():
         return jsonify(
             status="error",
             error="Missing repo or branch parameter")
+    branch = utils.normalize_branch(branch)
     repository = db.session.query(Repository)\
         .filter_by(name=repo, branch=branch)\
         .options(joinedload(Repository.dependencies))\

@@ -88,7 +88,10 @@ class Repository(Base):
     __tablename__ = "repositories"
     id = Column(Integer, primary_key=True)
     name = Column(String(80), nullable=False)
+    # Branch used in web UI, e.g. "master" is normalized to "main"
     branch = Column(String(80), nullable=False)
+    # Branch used in all Git operations
+    git_branch = Column(String(80), nullable=True)
     # Same as the most recent `log.is_error`, but in this table for speed
     is_error = Column(Boolean, nullable=False, default=False)
     # Whether bundled in the tarball
@@ -116,6 +119,12 @@ class Repository(Base):
             if advisory.manager == manager:
                 return advisory
         return None
+
+    def get_git_branch(self) -> str:
+        if self.git_branch is None:
+            # fallback to branch while column is populated
+            return self.branch
+        return self.git_branch
 
 
 class Log(Base):

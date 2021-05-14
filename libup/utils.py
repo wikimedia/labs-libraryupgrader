@@ -75,3 +75,9 @@ def maybe_decompress(data: bytes) -> str:
         return gzip.decompress(data[2:]).decode()
     else:
         return data.decode()
+
+
+def normalize_branch(branch: str) -> str:
+    if branch == "master":
+        return "main"
+    return branch

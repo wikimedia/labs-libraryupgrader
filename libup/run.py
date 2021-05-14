@@ -21,7 +21,7 @@ import argparse
 from datetime import datetime
 import wikimediaci_utils as ci_utils
 
-from . import BRANCHES, config, db, gerrit, monitoring, mw, phab
+from . import BRANCHES, GIT_BRANCHES, config, db, gerrit, monitoring, mw, phab, utils
 from .model import Monitoring, Repository
 from .tasks import run_check
 
@@ -38,11 +38,14 @@ def update_repositories(session):
     canaries = config.repositories()['canaries']
 
     for repo in mw.get_everything():
-        for branch in gerrit.repo_branches(repo):
-            if branch not in BRANCHES:
+        branches = gerrit.repo_branches(repo)
+        for git_branch in branches:
+            if git_branch not in GIT_BRANCHES:
                 # We don't care about this one
                 continue
-            new = Repository(name=repo, branch=branch)
+            # XXX: What if a repo has both "master" and "main" branches?
+            branch = utils.normalize_branch(git_branch)
+            new = Repository(name=repo, branch=branch, git_branch=git_branch)
             try:
                 # Exists, remove from list slated for deletion
                 obj = repositories.pop(new.key())
@@ -50,6 +53,8 @@ def update_repositories(session):
                 # Doesn't exist yet
                 to_add.append(new)
                 obj = new
+            # If a repo switches from master to main, update git_branch
+            obj.git_branch = git_branch
             # Update bundled, etc. status
             obj.is_bundled = obj.name in bundled
             obj.is_wm_deployed = obj.name in wm_deployed
@@ -145,11 +150,11 @@ def main():
     if args.branch:
         branches = [args.branch]
     elif args.auto:
-        # Only queue non-master jobs on Wed (3) and Sat (6)
+        # Only queue non-main jobs on Wed (3) and Sat (6)
         if datetime.utcnow().weekday() in (3, 6):
             branches = BRANCHES
         else:
-            branches = ['master']
+            branches = ['main']
     else:
         branches = BRANCHES
     print(f"Limiting to branches: {', '.join(branches)}")

@@ -28,8 +28,9 @@ def client():
     # Create all the tables
     model.Base.metadata.create_all(web.db.engine)
     # Seed some data
-    web.db.session.add(model.Repository(name='test/errors', branch='master', is_error=True))
-    web.db.session.add(model.Repository(name='test/ok', branch='master', is_error=False))
+    web.db.session.add(model.Repository(name='test/errors', branch='main', is_error=True))
+    web.db.session.add(model.Repository(name='test/ok', branch='main', is_error=False))
+    web.db.session.add(model.Repository(name='test/master', branch='main', git_branch='master', is_error=False))
     # repo_id=2 --> test/ok
     log = model.Log(repo_id=2, time='20210419042355', is_error=True)
     log.set_text("foobarbaz")
@@ -57,6 +58,14 @@ def test_r(client):
     assert '/logs2/1"' in rv.data.decode()
     rv = client.get('/r/test/does-not-exist')
     assert 'Sorry, I don\'t know this repository' in rv.data.decode()
+
+
+def test_r_main(client):
+    rv = client.get("/r/test/master")
+    # Looks like main branch in web UI
+    assert '<h1>test/master (main)</h1>' in rv.data.decode()
+    # Gerrit links go to main
+    assert 'heads/master' in rv.data.decode()
 
 
 def test_r_index(client):

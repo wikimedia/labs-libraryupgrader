@@ -41,7 +41,7 @@ class ShellMixin:
     def git_sha1(self, branch: str) -> str:
         return self.check_call(['git', 'show-ref', f'refs/heads/{branch}']).split(' ')[0]
 
-    def clone(self, repo, branch='master', internal=False):
+    def clone(self, repo, branch='main', internal=False):
         url = utils.gerrit_url(repo, internal=internal)
         self.check_call(['git', 'clone', url, 'repo', '--depth=1', '-b', branch])
         os.chdir('repo')

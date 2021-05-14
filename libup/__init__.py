@@ -36,7 +36,8 @@ GIT_EMAIL = 'tools.libraryupgrader@tools.wmflabs.org'
 PACKAGIST_MIRROR = 'https://repo.packagist.org'
 SSH_AUTH_SOCK = '/tmp/ssh-agent.socket'
 # TODO: pull this from somewhere else, like ExtensionDistributor
-BRANCHES = ['master', 'REL1_36', 'REL1_35', 'REL1_31']
+BRANCHES = ['main', 'REL1_36', 'REL1_35', 'REL1_31']
+GIT_BRANCHES = ["master"] + BRANCHES
 
 
 session = requests.Session()
