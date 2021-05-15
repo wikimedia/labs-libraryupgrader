@@ -134,6 +134,8 @@ class Log(Base):
     repo_id = Column(Integer, ForeignKey('repositories.id'))
     # Time of entry in mw time format
     time = Column(String(15), nullable=False)
+    # How long it took in seconds
+    duration = Column(Integer, nullable=False, default=0)
     # The actual log text (possibly compressed)
     text = Column(LargeBinary().with_variant(MEDIUMBLOB, 'mysql'), nullable=False)  # type: ignore
     # The patch file, if any (possibly compressed)

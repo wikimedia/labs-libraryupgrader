@@ -23,6 +23,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import traceback
 
 from . import GIT_ROOT, MANAGERS, db, docker, gerrit, model, push, utils, ssh
@@ -37,6 +38,7 @@ def run_check(repo_name: str, branch: str):
     session = db.Session()
     repo: model.Repository = session.query(model.Repository).filter_by(name=repo_name, branch=branch).first()
     # Update our local clone
+    start = time.monotonic()
     gerrit.ensure_clone(repo.name, repo.get_git_branch())
     with tempfile.TemporaryDirectory(prefix="libup-extract") as tmpdir:
         with utils.cd(tmpdir):
@@ -74,10 +76,12 @@ def run_check(repo_name: str, branch: str):
         with open(os.path.join(tmpdir, 'output.json')) as f:
             data = json.load(f)
 
+    end = time.monotonic()
     log = model.Log(
         time=utils.to_mw_time(datetime.utcnow()),
         is_error='done' not in data,
         sha1=data['sha1'],
+        duration=int(end - start),
     )
     # TODO: Get this from `docker logs` instead
     log.set_text('\n'.join(data.get('log', [])))
