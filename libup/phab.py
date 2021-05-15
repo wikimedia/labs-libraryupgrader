@@ -15,13 +15,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import json
-from pathlib import Path
 from phabricator import Phabricator
 from typing import List
 
+from . import config
+
 
 def get_phab() -> Phabricator:
-    token = Path('/etc/phab_token').read_text().strip()
+    token = config.private()["phab_token"]
     phab = Phabricator(host="https://phabricator.wikimedia.org/api/", token=token)
     phab.update_interfaces()
     return phab

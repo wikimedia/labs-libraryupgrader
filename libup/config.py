@@ -19,6 +19,7 @@ import json
 from pathlib import Path
 import os
 import subprocess
+import toml
 
 from . import CONFIG_REPO, MONITORING, RELEASES, REPOSITORIES
 
@@ -61,3 +62,12 @@ def monitoring(pull=False) -> dict:
 def should_push(pull=True) -> bool:
     """whether to push changes"""
     return releases(pull=pull)['push']
+
+
+def private() -> dict:
+    """private libup config"""
+    path = Path("/etc/libup.toml")
+    if path.exists():
+        return toml.loads(path.read_text())["libup"]
+    else:
+        return {}

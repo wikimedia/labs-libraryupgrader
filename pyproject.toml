@@ -18,6 +18,7 @@ wikimediaci-utils = "^1"
 alembic = "^1"
 sqlalchemy = {extras=["pymysql"], version="^1"}
 phabricator = "*"
+toml = "*"
 
 
 [tool.poetry.dev-dependencies]

@@ -15,12 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import os
-from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from . import metadata
+from . import config, metadata
 from .model import Dependency, Dependencies, Repository, Upstream
 
 
@@ -28,17 +26,11 @@ Session = sessionmaker()
 
 
 def sql_uri() -> str:
-    connf = Path('/etc/mariadb_connection')
-    if connf.exists():
-        return connf.read_text().strip()
-
-    if os.path.exists('/etc/mariadb_password'):
-        with open('/etc/mariadb_password') as f:
-            pw = f.read().strip()
-    else:
-        pw = "password"
     # Keep in sync with alembic.ini (TODO: is there a better way to do this?)
-    return f"mysql+pymysql://libup:{pw}@localhost/libup?charset=utf8mb4"
+    try:
+        return config.private()["mariadb_connection"]
+    except KeyError:
+        return "mysql+pymysql://libup:password@localhost/libup?charset=utf8mb4"
 
 
 def connect():
