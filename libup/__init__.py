@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
 import requests
+import toolforge
 
 if os.path.exists('/srv/data'):
     DATA_ROOT = '/srv/data'
@@ -39,5 +40,6 @@ SSH_AUTH_SOCK = '/tmp/ssh-agent.socket'
 BRANCHES = ['main', 'REL1_36', 'REL1_35', 'REL1_31']
 GIT_BRANCHES = ["master"] + BRANCHES
 
+toolforge.set_user_agent("libraryupgrader", url="https://libraryupgrader2.wmcloud.org/")
 
 session = requests.Session()

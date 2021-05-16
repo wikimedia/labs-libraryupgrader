@@ -350,6 +350,9 @@ sqlalchemy==1.4.15; (python_version >= "2.7" and python_full_version < "3.0.0") 
 toml==0.10.2; (python_version >= "2.6" and python_full_version < "3.0.0") or (python_full_version >= "3.3.0") \
     --hash=sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b \
     --hash=sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f
+toolforge==4.4.0; python_version >= "3.4" \
+    --hash=sha256:7ea8b0e0df2a5a454c561d77bccbe2646b7b3f28bff3cbafedd5303b3bd44ba9 \
+    --hash=sha256:9d0f954e0fcce3ee7044b7ef3d7241c5573694c75ec84125269069a2ed3bf8fc
 typed-ast==1.4.3; python_version >= "3.5" \
     --hash=sha256:2068531575a125b87a41802130fa7e29f26c09a2833fea68d9a40cf33902eba6 \
     --hash=sha256:c907f561b1e83e93fad565bac5ba9c22d96a54e7ea0267c708bffe863cbe4075 \
