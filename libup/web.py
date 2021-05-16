@@ -18,10 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from collections import defaultdict, OrderedDict
 from flask import Flask, jsonify, render_template, make_response, request
 from flask_sqlalchemy import SQLAlchemy
-import json
 from markdown import markdown
-import os
-import re
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import func
 
@@ -223,29 +220,6 @@ def logs2(log_id):
         'logs2.html',
         log=log,
         repo=log.repository,
-    )
-
-
-@app.get('/logs/<date>/<logname>')
-def logs(date, logname):
-    """deprecated logs, should be removed after Jan. 2021"""
-    # Input validation to prevent against directory traversal attacks
-    if not re.match(r'^\d{4}-\d{2}-\d{2}$', date):
-        return make_response('Invalid date', 404)
-    if not re.match(r'^[A-z]{15}$', logname):
-        return make_response('Invalid filename', 404)
-    path = os.path.join('/srv/data/logs', date, f'{logname}.json')
-    if not os.path.exists(path):
-        return make_response('Can\'t find log file', 404)
-
-    with open(path) as f:
-        info = json.load(f)
-    return render_template(
-        'logs.html',
-        success=info.get('done'),
-        log='\n'.join(info.get('log', [])),
-        patch=info.get('patch'),
-        repo=info.get('repo'),
     )
 
 
