@@ -16,8 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import json
-import semver
-import semver.exceptions
 
 from . import PACKAGIST_MIRROR, session
 
@@ -29,29 +27,18 @@ def get_composer_metadata(package: str) -> dict:
             'latest': '0.0.0',
             'description': 'Unknown package',
         }
-    r = session.get(f'{PACKAGIST_MIRROR}/packages/{package}.json')
+    r = session.get(f'{PACKAGIST_MIRROR}/p2/{package}.json')
     try:
-        resp = r.json()['package']
+        resp = r.json()['packages'][package]
     except (KeyError, json.decoder.JSONDecodeError):
         return {
             'latest': '0.0.0',
             'description': 'Unknown package',
         }
-    normalized = set()
-    for ver in resp['versions']:
-        if not ver.startswith('dev-') and not ver.endswith('-dev'):
-            if ver.startswith('v'):
-                normalized.add(ver[1:])
-            else:
-                normalized.add(ver)
-    version = max(normalized)
-    for normal in normalized:
-        try:
-            if semver.Version.parse(normal) > semver.Version.parse(version):
-                version = normal
-        except semver.exceptions.ParseVersionError:
-            # TODO: log these exceptions
-            pass
+    version = resp[0]["version"]
+    # Potentially strip v prefix
+    if version.startswith("v"):
+        version = version[1:]
     parts = version.split('.')
     if len(parts) == 2:
         # see T242276
@@ -59,7 +46,7 @@ def get_composer_metadata(package: str) -> dict:
     # print('Latest %s: %s' % (package, version))
     return {
         'latest': version,
-        'description': resp['description'],
+        'description': resp[0]['description'],
     }
 
 
