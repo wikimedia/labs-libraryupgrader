@@ -1,3 +1,4 @@
 #!/bin/bash
 
-timeout 1800 /venv/bin/$@
+# 45 minutes
+timeout 2700 /venv/bin/$@
