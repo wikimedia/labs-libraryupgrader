@@ -3,6 +3,9 @@
 {% block main %}
 <h1>{{macros.repo_link(repo, icons=False)}}: {{repo.branch}} (log #{{log.id}})</h1>
 <a href="https://gerrit.wikimedia.org/g/{{repo.name}}/+/refs/heads/{{repo.get_git_branch()}}">source</a> • <a href="https://gerrit.wikimedia.org/r/q/project:{{repo.name}}+branch:{{repo.get_git_branch()}}">patches</a>
+{% if log.duration %}
+<p>This run took {{log.duration}} seconds.</p>
+{% endif %}
 {% if log.patch %}
 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#patch" aria-expanded="false" aria-controls="patch">
   View proposed patch
