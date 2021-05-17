@@ -27,8 +27,10 @@ import shutil
 import subprocess
 import tempfile
 import traceback
-from typing import List
+from typing import List, Tuple
 from xml.etree import ElementTree
+
+from pathlib import Path
 
 import requests
 
@@ -395,15 +397,16 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.msg_fixes.append('Set `private: true` in package.json.')
 
     def fix_root_eslintrc(self):
-        if not os.path.exists('.eslintrc.json'):
+        try:
+            source, data = self._get_eslint_config()
+        except RuntimeError:
             return
-        data = load_ordered_json('.eslintrc.json')
         if 'root' in data:
             return
         data['root'] = True
         data.move_to_end('root', last=False)
-        save_pretty_json(data, '.eslintrc.json')
-        self.msg_fixes.append('Set `root: true` in .eslintrc.json (T206485).')
+        self._save_eslint_config(source, data)
+        self.msg_fixes.append('Set `root: true` in ESLint config (T206485).')
 
     def fix_eslintrc_use_mediawiki_profile(self, repo):
         if not repo.startswith(('mediawiki/extensions/', 'mediawiki/skins/')):
@@ -412,7 +415,9 @@ class LibraryUpgrader(shell2.ShellMixin):
         if not self.is_main():
             # TODO: once this auto-fixes newly failing rules, re-enable for release branches
             return
-        if not os.path.exists('.eslintrc.json'):
+        try:
+            source, data = self._get_eslint_config()
+        except RuntimeError:
             return
         pkg = PackageJson('package.json')
         cfg_version = pkg.get_version('eslint-config-wikimedia')
@@ -422,7 +427,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         elif not library.is_greater_than_or_equal_to("0.15.0", cfg_version):
             # wikimedia/mediawiki profile introduced in 0.15.0
             return
-        data = load_ordered_json('.eslintrc.json')
+
         if 'extends' not in data:
             # Something's wrong. Let's do nothing rather than make things worse.
             return
@@ -468,7 +473,7 @@ class LibraryUpgrader(shell2.ShellMixin):
                 del data['globals']
                 self.msg_fixes.append('eslint: Dropped the empty global definition.')
 
-        save_pretty_json(data, '.eslintrc.json')
+        self._save_eslint_config(source, data)
 
     def fix_eslint_config(self):
         if not os.path.exists('Gruntfile.js'):
@@ -975,7 +980,7 @@ class LibraryUpgrader(shell2.ShellMixin):
             self.remove_eslint_disable(fname, disabled_rules)
 
         if disable:
-            eslint_cfg = load_ordered_json('.eslintrc.json')
+            source, eslint_cfg = self._get_eslint_config()
             msg = 'The following rules are failing and were disabled:\n'
 
             if 'rules' not in eslint_cfg:
@@ -989,8 +994,25 @@ class LibraryUpgrader(shell2.ShellMixin):
                 del eslint_cfg['rules']
                 self.msg_fixes.append('eslint: Dropping empty `rules` definition.')
 
-            save_pretty_json(eslint_cfg, '.eslintrc.json')
+            self._save_eslint_config(source, eslint_cfg)
             update.reason = msg
+
+    def _get_eslint_config(self) -> Tuple[str, OrderedDict]:
+        if Path(".eslintrc.json").exists():
+            return ".eslintrc.json", load_ordered_json(".eslintrc.json")
+        if Path("package.json").exists():
+            pkg = load_ordered_json("package.json")
+            if "eslintConfig" in pkg:
+                return "package.json", pkg["eslintConfig"]
+        raise RuntimeError("Cannot find eslint config")
+
+    def _save_eslint_config(self, source: str, cfg: dict):
+        if source == ".eslintrc.json":
+            save_pretty_json(cfg, ".eslintrc.json")
+        elif source == "package.json":
+            pkg = load_ordered_json("package.json")
+            pkg["eslintConfig"] = cfg
+            save_pretty_json(pkg, "package.json")
 
     def remove_eslint_disable(self, fname: str, disabled_rules):
         with open(fname) as f:

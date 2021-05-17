@@ -310,7 +310,7 @@ def test_root_eslintrc_real(tempfs):
     tempfs.create_file('.eslintrc.json', contents='{}')
     libup.fix_root_eslintrc()
     assert {'root': True} == tempfs.json_contents('.eslintrc.json')
-    assert libup.msg_fixes == ['Set `root: true` in .eslintrc.json (T206485).']
+    assert libup.msg_fixes == ['Set `root: true` in ESLint config (T206485).']
 
 
 @pytest.mark.parametrize('scripts,expected', (
