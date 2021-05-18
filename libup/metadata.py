@@ -28,6 +28,11 @@ def get_composer_metadata(package: str) -> dict:
             'description': 'Unknown package',
         }
     r = session.get(f'{PACKAGIST_MIRROR}/p2/{package}.json')
+    if not r.ok:
+        return {
+            'latest': '0.0.0',
+            'description': f'Unknown package (HTTP {r.status_code})'
+        }
     try:
         resp = r.json()['packages'][package]
     except (KeyError, json.decoder.JSONDecodeError):
