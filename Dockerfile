@@ -1,6 +1,6 @@
 FROM rust:latest AS rust-builder
-RUN apt-get update && apt-get install -y libssl-dev
 RUN cargo install gerrit-grr
+RUN cargo install package-lock-lint
 
 FROM docker-registry.wikimedia.org/wikimedia-buster
 ENV LANG C.UTF-8
@@ -30,6 +30,7 @@ RUN git clone --depth 1 https://gerrit.wikimedia.org/r/integration/npm.git /srv/
     && rm -rf /srv/composer/.git \
     && ln -s /srv/composer/vendor/bin/composer /usr/bin/composer
 COPY --from=rust-builder /usr/local/cargo/bin/grr /usr/bin/grr
+COPY --from=rust-builder /usr/local/cargo/bin/package-lock-lint /usr/bin/package-lock-lint
 COPY files/gitconfig /etc/gitconfig
 COPY files/timeout-wrapper.sh /usr/local/bin/timeout-wrapper
 RUN gem install --no-rdoc --no-ri jsduck

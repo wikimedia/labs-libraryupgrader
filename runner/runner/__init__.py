@@ -95,6 +95,7 @@ class LibraryUpgrader(shell2.ShellMixin):
     def ensure_package_lock(self):
         if not os.path.exists('package-lock.json'):
             self.check_call(['npm', 'i', '--package-lock-only'])
+            self.check_package_lock()
             self.log('Editing .gitignore to remove package-lock.json')
             # We want to commit these now, so remove it from gitignore if it's in there
             if os.path.exists('.gitignore'):
@@ -196,6 +197,8 @@ class LibraryUpgrader(shell2.ShellMixin):
 
         current.save()
 
+        self.check_package_lock()
+
         # Verify that tests still pass
         self.log('Verifying that tests still pass')
         self.check_call(['npm', 'ci'])
@@ -249,6 +252,10 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.ensure_package_lock()
         self.check_call(['npm', 'ci'])
         self.check_call(['npm', 'test'])
+
+    def check_package_lock(self):
+        if Path('package-lock.json').exists():
+            self.check_call(['package-lock-lint', 'package-lock.json'])
 
     def composer_test(self):
         if not self.has_composer:
@@ -571,6 +578,7 @@ class LibraryUpgrader(shell2.ShellMixin):
             if os.path.isdir('node_modules'):
                 shutil.rmtree('node_modules')
             self.check_call(['npm', 'install'])
+            self.check_package_lock()
 
     def fix_php_parallel_lint_migration(self):
         if not self.has_composer:
@@ -862,6 +870,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         if not updates:
             return
         self.check_call(['npm', 'install'])
+        self.check_package_lock()
         hooks = {
             'eslint-config-wikimedia': [self._bump_eslint, self._handle_eslint],
             'stylelint-config-wikimedia': [self._handle_stylelint],
@@ -884,6 +893,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         if grunt_eslint:
             # Force re-install grunt-eslint to make eslint dedupe properly (T273680)
             self.check_call(['npm', 'install', f'grunt-eslint@{grunt_eslint}', '--save-exact'])
+        self.check_package_lock()
 
     def _handle_stylelint(self, update: Update):
         pkg = PackageJson('package.json')
@@ -1189,6 +1199,9 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.fix_add_vendor_node_modules_to_gitignore(repo)
         self.fix_phpunit_result_cache()
         self.fix_phan_taint_check_plugin_merge_to_phan()
+
+        # Final check in case we missed something
+        self.check_package_lock()
 
         # Commit
         msg = self.build_message()
