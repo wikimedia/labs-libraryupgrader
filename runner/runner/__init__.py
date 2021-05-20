@@ -669,6 +669,26 @@ class LibraryUpgrader(shell2.ShellMixin):
             f.write(ignore)
         self.msg_fixes.append('.gitignore: Added .phpunit.result.cache (T242727).')
 
+    def fix_composer_irc(self):
+        if not self.has_composer:
+            return
+
+        data = load_ordered_json('composer.json')
+
+        try:
+            old = data['support']['irc']
+        except KeyError:
+            return
+
+        if 'irc.freenode.net' not in old:
+            return
+
+        new = old.replace('irc.freenode.net', 'irc.libera.chat')
+
+        data['support']['irc'] = new
+        save_pretty_json(data, 'composer.json')
+        self.msg_fixes.append('Updated composer IRC support URL to use Libera Chat (T283273)')
+
     def composer_upgrade(self, plan: list):
         if not self.has_composer:
             return
@@ -1199,6 +1219,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.fix_add_vendor_node_modules_to_gitignore(repo)
         self.fix_phpunit_result_cache()
         self.fix_phan_taint_check_plugin_merge_to_phan()
+        self.fix_composer_irc()
 
         # Final check in case we missed something
         self.check_package_lock()

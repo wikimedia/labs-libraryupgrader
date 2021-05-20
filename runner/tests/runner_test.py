@@ -550,6 +550,21 @@ def test_fix_phan_taint_check_plugin_merge_to_phan_current(tempfs):
     assert 'extra' not in composer
 
 
+def test_fix_composer_irc(tempfs):
+    tempfs.create_file('composer.json',
+                       contents="""
+    {
+        "support": {
+            "irc": "irc://irc.freenode.net/mediawiki"
+        }
+    }
+    """)
+    libup = LibraryUpgrader()
+    libup.fix_composer_irc()
+    composer = tempfs.json_contents('composer.json')
+    assert composer['support']['irc'] == "irc://irc.libera.chat/mediawiki"
+
+
 def test_fix_eslintrc_use_clientes5_profile(tempfs):
     tempfs.create_file('package.json',
                        contents="""
