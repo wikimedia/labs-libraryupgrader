@@ -725,10 +725,11 @@ class LibraryUpgrader(shell2.ShellMixin):
         except KeyError:
             info = None
         if info and dep["resolved"] == "":
+            old_version = dep["version"]
             dep["version"] = info["version"]
             dep["resolved"] = f"https://registry.npmjs.org/{name}/-/{name}-{info['version']}.tgz"
             dep["integrity"] = info["integrity"]
-            self.log_update(Update(manager="npm", name=name, old=dep["version"], new=info["version"]))
+            self.log_update(Update(manager="npm", name=name, old=old_version, new=info["version"]))
             self.weight += 10
         for name, subdep in dep.get("dependencies", {}).items():
             self._recurse_dependencies(name, subdep)
