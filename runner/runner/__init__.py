@@ -81,6 +81,7 @@ class LibraryUpgrader(shell2.ShellMixin):
             self.output.save()
 
     def log_update(self, upd: Update):
+        self.updates.append(upd)
         self.log('Upgrading %s:%s from %s -> %s'
                  % (upd.manager[0], upd.name, upd.old, upd.new))
 
@@ -242,7 +243,6 @@ class LibraryUpgrader(shell2.ShellMixin):
                 reason
             )
             self.log_update(upd)
-            self.updates.append(upd)
             # Force a patch to be pushed
             self.weight += 10
 
@@ -756,7 +756,6 @@ class LibraryUpgrader(shell2.ShellMixin):
             )
             self.log_update(update)
             updates.append(update)
-            self.updates.append(update)
             self.weight += weight
 
         new.save()
@@ -928,7 +927,6 @@ class LibraryUpgrader(shell2.ShellMixin):
             )
             self.log_update(update)
             updates.append(update)
-            self.updates.append(update)
             self.weight += weight
 
         new.save()
