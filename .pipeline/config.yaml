@@ -1,0 +1,15 @@
+pipelines:
+  test:
+    blubberfile: blubber.yaml
+    stages:
+      - name: web
+        build: web
+
+  publish:
+    blubberfile: blubber.yaml
+    stages:
+      - name: web
+        build: web
+        publish:
+          image:
+            tags: [web]
