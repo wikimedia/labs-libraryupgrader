@@ -66,7 +66,9 @@ def should_push(pull=True) -> bool:
 
 def private() -> dict:
     """private libup config"""
-    path = Path("/etc/libup.toml")
+    path = Path("/etc/libup/config.toml")
+    if not path.exists():
+        path = Path("/etc/libup.toml")
     if path.exists():
         return toml.loads(path.read_text())["libup"]
     else:
