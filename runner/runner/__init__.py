@@ -725,6 +725,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         except KeyError:
             info = None
         if info and dep["resolved"] == "":
+            dep["version"] = info["version"]
             dep["resolved"] = f"https://registry.npmjs.org/{name}/-/{name}-{info['version']}.tgz"
             dep["integrity"] = info["integrity"]
             self.log_update(Update(manager="npm", name=name, old=dep["version"], new=info["version"]))
