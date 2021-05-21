@@ -689,6 +689,49 @@ class LibraryUpgrader(shell2.ShellMixin):
         save_pretty_json(data, 'composer.json')
         self.msg_fixes.append('Updated composer IRC support URL to use Libera Chat (T283273)')
 
+    def fix_stupid_npm_resolved(self):
+        if not Path('package-lock.json').exists():
+            return
+        pkglock = load_ordered_json("package-lock.json")
+        if pkglock['lockfileVersion'] != 1:
+            return
+
+        for name, dep in pkglock['dependencies'].items():
+            self._recurse_dependencies(name, dep)
+        save_pretty_json(pkglock, "package-lock.json")
+
+    def _recurse_dependencies(self, name, dep):
+        integrity = {
+            "hosted-git-info": {
+                "2.8.8": {
+                    "version": "2.8.9",
+                    "integrity": "sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==",  # noqa
+                },
+                "3.0.7": {
+                    "version": "3.0.8",
+                    "integrity": "sha512-aXpmwoOhRBrw6X3j0h5RloK4x1OzsxMPyxqIHyNfSe2pypkVTZFpEiRoSipPEPlMrh0HW/XsjkJ5WgnCirpNUw==",  # noqa
+                }
+            },
+            "ua-parser-js": {
+                "0.7.21": {
+                    "version": "0.7.21",
+                    "integrity": "sha512-6Gurc1n//gjp9eQNXjD9O3M/sMwVtN5S8Lv9bvOYBfKfDNiIIhqiyi01vMBO45u4zkDE420w/e0se7Vs+sIg+g==",  # noqa
+                }
+            }
+        }
+
+        try:
+            info = integrity[name][dep['version']]
+        except KeyError:
+            info = None
+        if info and dep["resolved"] == "":
+            dep["resolved"] = f"https://registry.npmjs.org/{name}/-/{name}-{info['version']}.tgz"
+            dep["integrity"] = info["integrity"]
+            self.log_update(Update(manager="npm", name=name, old=dep["version"], new=info["version"]))
+            self.weight += 10
+        for name, subdep in dep.get("dependencies", {}).items():
+            self._recurse_dependencies(name, subdep)
+
     def composer_upgrade(self, plan: list):
         if not self.has_composer:
             return
@@ -1173,6 +1216,9 @@ class LibraryUpgrader(shell2.ShellMixin):
         # Collect current dependencies
         self.output['npm-deps'] = self.npm_deps()
         self.output['composer-deps'] = self.composer_deps()
+
+        # Fix the stupid npm resolved issue
+        self.fix_stupid_npm_resolved()
 
         # audits
         self.output['audits'] = {
