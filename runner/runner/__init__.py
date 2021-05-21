@@ -712,6 +712,12 @@ class LibraryUpgrader(shell2.ShellMixin):
                     "integrity": "sha512-aXpmwoOhRBrw6X3j0h5RloK4x1OzsxMPyxqIHyNfSe2pypkVTZFpEiRoSipPEPlMrh0HW/XsjkJ5WgnCirpNUw==",  # noqa
                 }
             },
+            "lodash": {
+                "4.17.20": {
+                    "version": "4.17.21",
+                    "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==",  # noqa
+                }
+            },
             "ua-parser-js": {
                 "0.7.21": {
                     "version": "0.7.21",
