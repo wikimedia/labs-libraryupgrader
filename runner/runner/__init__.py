@@ -726,6 +726,13 @@ class LibraryUpgrader(shell2.ShellMixin):
             }
         }
 
+        if dep["resolved"].startswith("http://registry.npmjs.org"):
+            dep["resolved"] = dep["resolved"].replace("http://", "https://")
+            msg = "Changed package-lock.json dependencies to use HTTPS"
+            # Only add the msg fix once
+            if msg not in self.msg_fixes:
+                self.msg_fixes.append(msg)
+
         try:
             info = integrity[name][dep['version']]
         except KeyError:
