@@ -726,24 +726,26 @@ class LibraryUpgrader(shell2.ShellMixin):
             }
         }
 
-        if dep["resolved"].startswith("http://registry.npmjs.org"):
-            dep["resolved"] = dep["resolved"].replace("http://", "https://")
-            msg = "Changed package-lock.json dependencies to use HTTPS"
-            # Only add the msg fix once
-            if msg not in self.msg_fixes:
-                self.msg_fixes.append(msg)
+        if "resolved" in dep:
+            if dep["resolved"].startswith("http://registry.npmjs.org"):
+                dep["resolved"] = dep["resolved"].replace("http://", "https://")
+                msg = "Changed package-lock.json dependencies to use HTTPS"
+                # Only add the msg fix once
+                if msg not in self.msg_fixes:
+                    self.msg_fixes.append(msg)
 
-        try:
-            info = integrity[name][dep['version']]
-        except KeyError:
-            info = None
-        if info and dep["resolved"] == "":
-            old_version = dep["version"]
-            dep["version"] = info["version"]
-            dep["resolved"] = f"https://registry.npmjs.org/{name}/-/{name}-{info['version']}.tgz"
-            dep["integrity"] = info["integrity"]
-            self.log_update(Update(manager="npm", name=name, old=old_version, new=info["version"]))
-            self.weight += 10
+            try:
+                info = integrity[name][dep['version']]
+            except KeyError:
+                info = None
+            if info and dep["resolved"] == "":
+                old_version = dep["version"]
+                dep["version"] = info["version"]
+                dep["resolved"] = f"https://registry.npmjs.org/{name}/-/{name}-{info['version']}.tgz"
+                dep["integrity"] = info["integrity"]
+                self.log_update(Update(manager="npm", name=name, old=old_version, new=info["version"]))
+                self.weight += 10
+
         for name, subdep in dep.get("dependencies", {}).items():
             self._recurse_dependencies(name, subdep)
 
