@@ -198,6 +198,7 @@ class LibraryUpgrader(shell2.ShellMixin):
 
         current.save()
 
+        self.fix_stupid_npm_resolved()
         self.check_package_lock()
 
         # Verify that tests still pass
