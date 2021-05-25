@@ -304,6 +304,10 @@ class LibraryUpgrader(shell2.ShellMixin):
             PHP5_RE = re.compile(r"^(\s*<arg\s+name=\"extensions\"\s+value=\".*)(,php5)(.*\"\s*/>)$", re.MULTILINE)
             INC_RE = re.compile(r"^(\s*<arg\s+name=\"extensions\"\s+value=\".*)(,inc)(.*\"\s*/>)$", re.MULTILINE)
 
+            EXCLUDE_PATTERN_RE = re.compile(r"^\s*<exclude-pattern\s*(?:type=\"relative\")?>\^?\*?\/?"
+                                            "(?:\.git|coverage|node_modules|vendor)\/?\*?<\/exclude-pattern>(\r?\n|$)",
+                                            re.MULTILINE)
+
             with open('.phpcs.xml', 'r') as f:
                 phpcs_xml = f.read()
             changes = False
@@ -332,6 +336,15 @@ class LibraryUpgrader(shell2.ShellMixin):
                     phpcs_xml = re.sub(INC_RE, r'\1\3', phpcs_xml)
                     changes = True
                     self.msg_fixes.append('Dropped .inc files from .phpcs.xml (T200956).')
+
+            if self.has_composer:
+                composer = ComposerJson('composer.json')
+                codesnifferVersion = composer.get_version('mediawiki/mediawiki-codesniffer')
+                if library.is_greater_than_or_equal_to('36.0.0', codesnifferVersion) and \
+                        EXCLUDE_PATTERN_RE.search(phpcs_xml):
+                    phpcs_xml = re.sub(EXCLUDE_PATTERN_RE, r'', phpcs_xml)
+                    changes = True
+                    self.msg_fixes.append('Dropped default excluded folder(s) from .phpcs.xml (T274684).')
 
             if changes:
                 with open('.phpcs.xml', 'w') as f:

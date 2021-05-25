@@ -211,6 +211,75 @@ def test_fix_fix_phpcs_xml_configuration_encodingchange_and_filetypes_php5remova
     assert 'Dropped .php5 and .inc files from .phpcs.xml (T200956).' in libup.msg_fixes
 
 
+def test_fix_fix_phpcs_xml_configuration_exclude_pattern_not(tempfs):
+    tempfs.create_file('composer.json', contents=json.dumps({
+        'require-dev': {
+            'mediawiki/mediawiki-codesniffer': '35.0.0',
+        },
+        'scripts': {}
+    }))
+    tempfs.create_file(
+        '.phpcs.xml',
+        contents="<?xml version=\"1.0\" encoding=\"UTF-8\"?><ruleset>\n" +
+                 "\t<rule ref=\"./vendor/mediawiki/mediawiki-codesniffer/MediaWiki\"/>\n" +
+                 "\t<file>.</file>\n" +
+                 "\t<exclude-pattern>vendor</exclude-pattern>\n" +
+                 "\t<exclude-pattern>node_modules</exclude-pattern>\n" +
+                 "</ruleset>\n"
+    )
+    libup = LibraryUpgrader()
+    libup.fix_phpcs_xml_configuration()
+    assert '>vendor<' in tempfs.contents('.phpcs.xml')
+    assert '>node_modules<' in tempfs.contents('.phpcs.xml')
+    assert 'Dropped default excluded folder(s) from .phpcs.xml (T274684).' not in libup.msg_fixes
+
+
+def test_fix_fix_phpcs_xml_configuration_exclude_pattern_simple(tempfs):
+    tempfs.create_file('composer.json', contents=json.dumps({
+        'require-dev': {
+            'mediawiki/mediawiki-codesniffer': '36.0.0',
+        },
+        'scripts': {}
+    }))
+    tempfs.create_file(
+        '.phpcs.xml',
+        contents="<?xml version=\"1.0\" encoding=\"UTF-8\"?><ruleset>\n" +
+                 "\t<rule ref=\"./vendor/mediawiki/mediawiki-codesniffer/MediaWiki\"/>\n" +
+                 "\t<file>.</file>\n" +
+                 "\t<exclude-pattern>vendor</exclude-pattern>\n" +
+                 "\t<exclude-pattern>node_modules</exclude-pattern>\n" +
+                 "</ruleset>\n"
+    )
+    libup = LibraryUpgrader()
+    libup.fix_phpcs_xml_configuration()
+    assert '>vendor<' not in tempfs.contents('.phpcs.xml')
+    assert '>node_modules<' not in tempfs.contents('.phpcs.xml')
+    assert 'Dropped default excluded folder(s) from .phpcs.xml (T274684).' in libup.msg_fixes
+
+
+def test_fix_fix_phpcs_xml_configuration_exclude_pattern_complex(tempfs):
+    tempfs.create_file('composer.json', contents=json.dumps({
+        'require-dev': {
+            'mediawiki/mediawiki-codesniffer': '36.0.0',
+        },
+        'scripts': {}
+    }))
+    tempfs.create_file(
+        '.phpcs.xml',
+        contents="<?xml version=\"1.0\" encoding=\"UTF-8\"?><ruleset>\n" +
+                 "\t<rule ref=\"./vendor/mediawiki/mediawiki-codesniffer/MediaWiki\"/>\n" +
+                 "\t<file>.</file>\n" +
+                 "\t<exclude-pattern type=\"relative\">^vendor/</exclude-pattern>\n" +
+                 "\t<exclude-pattern type=\"relative\">^node_modules/*</exclude-pattern>\n" +
+                 "</ruleset>\n"
+    )
+    libup = LibraryUpgrader()
+    libup.fix_phpcs_xml_configuration()
+    assert '^vendor' not in tempfs.contents('.phpcs.xml')
+    assert '^node_modules' not in tempfs.contents('.phpcs.xml')
+    assert 'Dropped default excluded folder(s) from .phpcs.xml (T274684).' in libup.msg_fixes
+
+
 def test_fix_phpcs_xml_location_exists(tempfs, mocker):
     # Now if a .phpcs.xml exists
     tempfs.create_file('.phpcs.xml')
