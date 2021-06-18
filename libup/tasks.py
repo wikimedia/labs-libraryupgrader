@@ -91,7 +91,7 @@ def run_check(repo_name: str, branch: str):
     repo.is_error = log.is_error
     for manager in MANAGERS:
         advisories = repo.get_advisories(manager)
-        new = data.get(f"{manager}-audit")
+        new = data["audits"].get(manager)
         if advisories and new:
             # Update existing row
             advisories.set_data(new)

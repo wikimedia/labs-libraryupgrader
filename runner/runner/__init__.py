@@ -167,6 +167,15 @@ class LibraryUpgrader(shell2.ShellMixin):
         req.raise_for_status()
         return req.json()
 
+    def cargo_audit(self):
+        if not Path("Cargo.lock").exists():
+            return {}
+        try:
+            output = subprocess.check_output(["cargo-audit", "audit", "--json"]).decode()
+        except subprocess.CalledProcessError as e:
+            output = e.output.decode()
+        return json.loads(output)
+
     def npm_audit_fix(self, audit: dict):
         if not self.has_npm or not audit:
             return
@@ -1240,10 +1249,8 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.output['audits'] = {
             'npm': self.npm_audit(),
             'composer': self.composer_audit(),
+            'cargo': self.cargo_audit(),
         }
-        # Deprecated keys
-        self.output['npm-audit'] = self.output['audits']['npm']
-        self.output['composer-audit'] = self.output['audits']['composer']
 
         # Now let's fix and upgrade stuff!
 

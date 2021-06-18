@@ -1,6 +1,7 @@
 FROM rust:latest AS rust-builder
 RUN cargo install gerrit-grr
 RUN cargo install package-lock-lint
+RUN cargo install cargo-audit
 
 FROM docker-registry.wikimedia.org/wikimedia-buster
 ENV LANG C.UTF-8
@@ -31,6 +32,7 @@ RUN git clone --depth 1 https://gerrit.wikimedia.org/r/integration/npm.git /srv/
     && ln -s /srv/composer/vendor/bin/composer /usr/bin/composer
 COPY --from=rust-builder /usr/local/cargo/bin/grr /usr/bin/grr
 COPY --from=rust-builder /usr/local/cargo/bin/package-lock-lint /usr/bin/package-lock-lint
+COPY --from=rust-builder /usr/local/cargo/bin/cargo-audit /usr/bin/cargo-audit
 COPY files/gitconfig /etc/gitconfig
 COPY files/timeout-wrapper.sh /usr/local/bin/timeout-wrapper
 RUN gem install --no-rdoc --no-ri jsduck
