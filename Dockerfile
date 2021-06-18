@@ -3,7 +3,7 @@ RUN cargo install gerrit-grr
 RUN cargo install package-lock-lint
 RUN cargo install cargo-audit
 
-FROM docker-registry.wikimedia.org/wikimedia-buster
+FROM docker-registry.wikimedia.org/buster:latest
 ENV LANG C.UTF-8
 ENV CHROME_BIN /usr/bin/chromium
 ENV CHROMIUM_FLAGS "--no-sandbox"
