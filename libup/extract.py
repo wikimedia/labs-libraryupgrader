@@ -17,6 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import json
 import os
+import toml
+from pathlib import Path
 
 from .model import Dependency, Repository
 
@@ -63,5 +65,50 @@ def extract_dependencies(repo: Repository):
                 mode="dev",
                 **kwargs
             ))
+    cargo_toml = Path("Cargo.toml")
+    if cargo_toml.exists():
+        pkg = toml.loads(cargo_toml.read_text())
+        for name, info in pkg.get("dependencies", {}).items():
+            deps.append(Dependency(
+                name=name,
+                version=determine_rust_version(info),
+                manager="cargo",
+                mode="prod",
+                **kwargs
+            ))
+        for name, info in pkg.get("build-dependencies", {}).items():
+            deps.append(Dependency(
+                name=name,
+                version=determine_rust_version(info),
+                manager="cargo",
+                # XXX: Should we differentiate between build deps and prod
+                mode="prod",
+                **kwargs
+            ))
+        for name, info in pkg.get("dev-dependencies", {}).items():
+            deps.append(Dependency(
+                name=name,
+                version=determine_rust_version(info),
+                manager="cargo",
+                mode="dev",
+                **kwargs
+            ))
 
     return deps
+
+
+def determine_rust_version(info) -> str:
+    # Wow I wish I could write this in Rust instead
+    if isinstance(info, str):
+        return info
+    if isinstance(info, dict):
+        if "version" in info:
+            return info["version"]
+        elif "git" in info:
+            version = info["git"]
+            for key in ["branch", "rev"]:
+                if key in info:
+                    version += f"@{info[key]}"
+            return version
+    # TODO: Skip path deps?
+    raise RuntimeError("Unable to determine version from: {}".format(json.dumps(info)))
