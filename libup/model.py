@@ -214,6 +214,8 @@ class Upstream(Base):
             return f"https://packagist.org/packages/{self.name}"
         elif self.manager == 'npm':
             return f"https://www.npmjs.com/package/{self.name}"
+        elif self.manager == "cargo":
+            return f"https://crates.io/crates/{self.name}"
         else:
             raise RuntimeError(f"Unsupported manager: {self.manager}")
 

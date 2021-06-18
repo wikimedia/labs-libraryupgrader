@@ -71,10 +71,26 @@ def get_npm_metadata(package: str) -> dict:
     }
 
 
+def get_cargo_metadata(package: str) -> dict:
+    r = session.get(f"https://crates.io/api/v1/crates/{package}")
+    resp = r.json()["crate"]
+    # Get highest stable version if available, otherwise get highest version
+    # regardless of alpha/rc/etc. status
+    version = resp.get("max_stable_version")
+    if version is None:
+        version = resp["max_version"]
+    return {
+        "latest": version,
+        "description": resp["description"]
+    }
+
+
 def get_metadata(manager: str, name: str) -> dict:
     if manager == "composer":
         return get_composer_metadata(name)
     elif manager == "npm":
         return get_npm_metadata(name)
+    elif manager == "cargo":
+        return get_cargo_metadata(name)
     else:
         raise RuntimeError(f"Unknown manager: {manager}")
