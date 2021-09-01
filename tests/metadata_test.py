@@ -23,6 +23,8 @@ def test_composer_metadata():
     data = metadata.get_composer_metadata("mediawiki/core")
     assert data["latest"] == "1.34.0"
     assert data["description"].startswith("Free software wiki application")
+    # Verify this doesn't throw an exception (it used to)
+    metadata.get_composer_metadata("roave/security-advisories")
 
 
 def test_cargo_metadata():

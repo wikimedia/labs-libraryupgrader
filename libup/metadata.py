@@ -40,6 +40,11 @@ def get_composer_metadata(package: str) -> dict:
             'latest': '0.0.0',
             'description': 'Unknown package',
         }
+    if not resp:
+        return {
+            'latest': '0.0.0',
+            'description': 'Unknown package',
+        }
     version = resp[0]["version"]
     # Potentially strip v prefix
     if version.startswith("v"):
