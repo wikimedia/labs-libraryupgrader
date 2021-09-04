@@ -32,6 +32,7 @@ AUTO_APPROVE_FILES = {
     '.eslintrc',
     '.eslintrc.json',
     '.eslintrc => .eslintrc.json',
+    '.stylelintrc.json',
     '.stylelintrc => .stylelintrc.json',
     'CODE_OF_CONDUCT.md',
     '.gitignore',
