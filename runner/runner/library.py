@@ -37,7 +37,7 @@ def is_greater_than(first, second) -> bool:
         return False
 
 
-def is_greater_than_or_equal_to(first, second) -> bool:
+def is_greater_than_or_equal_to(first: str, second: str) -> bool:
     """if second >= first"""
     # Try and detect some operators to see if the current is a multi-constraint
     if re.search(r'[|,]', first):

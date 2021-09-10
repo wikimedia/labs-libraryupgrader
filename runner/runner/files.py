@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from collections import OrderedDict
 import json
+from typing import Optional
 
 
 def load_ordered_json(fname) -> OrderedDict:
@@ -88,7 +89,7 @@ class ComposerJson:
         self.fname = fname
         self.data = load_ordered_json(self.fname)
 
-    def get_version(self, package):
+    def get_version(self, package) -> Optional[str]:
         if package in self.data.get('require-dev', {}):
             return self.data['require-dev'][package]
         if 'extra' in self.data:

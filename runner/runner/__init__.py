@@ -339,8 +339,8 @@ class LibraryUpgrader(shell2.ShellMixin):
 
             if self.has_composer:
                 composer = ComposerJson('composer.json')
-                codesnifferVersion = composer.get_version('mediawiki/mediawiki-codesniffer')
-                if library.is_greater_than_or_equal_to('36.0.0', codesnifferVersion) and \
+                cs_version = composer.get_version('mediawiki/mediawiki-codesniffer')
+                if cs_version and library.is_greater_than_or_equal_to('36.0.0', cs_version) and \
                         EXCLUDE_PATTERN_RE.search(phpcs_xml):
                     phpcs_xml = re.sub(EXCLUDE_PATTERN_RE, r'', phpcs_xml)
                     changes = True
