@@ -783,7 +783,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         changes = False
         j = composer.data
 
-        phpcs_command = 'phpcs -sp --cache"'
+        phpcs_command = 'phpcs -sp --cache'
 
         for script in j['scripts']['test']:
             if script.startswith('phpcs'):
