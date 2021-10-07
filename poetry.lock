@@ -664,14 +664,14 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "toolforge"
-version = "4.4.0"
+version = "5.0.0"
 description = "Small library for common tasks on Wikimedia Toolforge"
 category = "main"
 optional = false
 python-versions = ">=3.4"
 
 [package.dependencies]
-pymysql = {version = "*", markers = "python_version >= \"3.5\""}
+pymysql = {version = "*", markers = "python_version >= \"3.6\""}
 requests = "*"
 
 [[package]]
@@ -781,7 +781,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "3.7.*"
-content-hash = "d316ebaf227e8607eb34320e20f57dd31f5e06d0ff310c3be85c152d4bc71471"
+content-hash = "3c0af2fad2e1420de3e26d78a63ee204bd9e250205671df3b179de5cfb21a48f"
 
 [metadata.files]
 alembic = [
@@ -1192,8 +1192,8 @@ tomli = [
     {file = "tomli-1.2.1.tar.gz", hash = "sha256:a5b75cb6f3968abb47af1b40c1819dc519ea82bcc065776a866e8d74c5ca9442"},
 ]
 toolforge = [
-    {file = "toolforge-4.4.0-py3-none-any.whl", hash = "sha256:7ea8b0e0df2a5a454c561d77bccbe2646b7b3f28bff3cbafedd5303b3bd44ba9"},
-    {file = "toolforge-4.4.0.tar.gz", hash = "sha256:9d0f954e0fcce3ee7044b7ef3d7241c5573694c75ec84125269069a2ed3bf8fc"},
+    {file = "toolforge-5.0.0-py3-none-any.whl", hash = "sha256:280793ebef3e06b2ee76969a1edaf3ab11be169ed5a9b8ed315c207aa85986e6"},
+    {file = "toolforge-5.0.0.tar.gz", hash = "sha256:c8fbd199437faf7db6597c8cb1072de97f01fed706cd83740edf7a9ac9831065"},
 ]
 typed-ast = [
     {file = "typed_ast-1.4.3-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:2068531575a125b87a41802130fa7e29f26c09a2833fea68d9a40cf33902eba6"},

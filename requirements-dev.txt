@@ -355,9 +355,9 @@ toml==0.10.2; (python_version >= "2.6" and python_full_version < "3.0.0") or (py
 tomli==1.2.1; python_version >= "3.6" \
     --hash=sha256:8dd0e9524d6f386271a36b41dbf6c57d8e32fd96fd22b6584679dc569d20899f \
     --hash=sha256:a5b75cb6f3968abb47af1b40c1819dc519ea82bcc065776a866e8d74c5ca9442
-toolforge==4.4.0; python_version >= "3.4" \
-    --hash=sha256:7ea8b0e0df2a5a454c561d77bccbe2646b7b3f28bff3cbafedd5303b3bd44ba9 \
-    --hash=sha256:9d0f954e0fcce3ee7044b7ef3d7241c5573694c75ec84125269069a2ed3bf8fc
+toolforge==5.0.0; python_version >= "3.4" \
+    --hash=sha256:280793ebef3e06b2ee76969a1edaf3ab11be169ed5a9b8ed315c207aa85986e6 \
+    --hash=sha256:c8fbd199437faf7db6597c8cb1072de97f01fed706cd83740edf7a9ac9831065
 typed-ast==1.4.3; python_version < "3.8" and python_version >= "3.5" \
     --hash=sha256:2068531575a125b87a41802130fa7e29f26c09a2833fea68d9a40cf33902eba6 \
     --hash=sha256:c907f561b1e83e93fad565bac5ba9c22d96a54e7ea0267c708bffe863cbe4075 \

@@ -19,7 +19,7 @@ alembic = "^1"
 sqlalchemy = {extras=["pymysql"], version="^1"}
 phabricator = "*"
 toml = "*"
-toolforge = "^4.4.0"
+toolforge = "^5"
 
 
 [tool.poetry.dev-dependencies]

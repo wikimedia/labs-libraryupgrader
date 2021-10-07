@@ -255,9 +255,9 @@ sqlalchemy==1.4.25; (python_version >= "2.7" and python_full_version < "3.0.0") 
 toml==0.10.2; (python_version >= "2.6" and python_full_version < "3.0.0") or (python_full_version >= "3.3.0") \
     --hash=sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b \
     --hash=sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f
-toolforge==4.4.0; python_version >= "3.4" \
-    --hash=sha256:7ea8b0e0df2a5a454c561d77bccbe2646b7b3f28bff3cbafedd5303b3bd44ba9 \
-    --hash=sha256:9d0f954e0fcce3ee7044b7ef3d7241c5573694c75ec84125269069a2ed3bf8fc
+toolforge==5.0.0; python_version >= "3.4" \
+    --hash=sha256:280793ebef3e06b2ee76969a1edaf3ab11be169ed5a9b8ed315c207aa85986e6 \
+    --hash=sha256:c8fbd199437faf7db6597c8cb1072de97f01fed706cd83740edf7a9ac9831065
 typing-extensions==3.10.0.2; python_version < "3.8" and python_version >= "3.6" \
     --hash=sha256:d8226d10bc02a29bcc81df19a26e56a9647f8b0a6d4a83924139f4a8b01f17b7 \
     --hash=sha256:f1d25edafde516b146ecd0613dabcc61409817af4766fbbcfb8d1ad4ec441a34 \
