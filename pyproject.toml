@@ -24,10 +24,13 @@ toolforge = "^4.4.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "*"
-sqlalchemy-stubs = "*"
 pytest = "*"
-pytest-mock = "*"
 pytest-cov = "*"
+pytest-mock = "*"
+sqlalchemy-stubs = "*"
+types-markdown = "^3"
+types-requests = "*"
+types-toml = "*"
 
 
 [build-system]
