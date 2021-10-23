@@ -1,0 +1,3 @@
+# HELP libup_runs LibUp finished runs
+# TYPE libup_runs counter
+libup_runs {{max_log}}

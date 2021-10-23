@@ -23,6 +23,7 @@ from markdown import markdown
 import os
 import re
 from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import func
 
 from . import BRANCHES, MANAGERS, plan, utils
 from .db import sql_uri
@@ -381,6 +382,14 @@ def plan_json():
         status="ok",
         plan=ret
     )
+
+
+@app.route('/metrics')
+def metrics():
+    max_log = db.session.query(func.max(Log.id)).scalar()
+    resp = make_response(render_template('metrics.prom', max_log=max_log))
+    resp.headers['content-type'] = 'text/plain'
+    return resp
 
 
 if __name__ == '__main__':
