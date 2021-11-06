@@ -30,7 +30,8 @@ class Plan:
     def __init__(self, branch, pull=False):
         self.branch = branch
         self.canaries = config.repositories(pull=pull)['canaries']
-        self.releases = config.releases(pull=pull).get(branch, {})
+        # Don't bother pulling for this, we just did above
+        self.releases = config.releases(pull=False).get(branch, {})
 
     def safe_version(self, manager: str, name: str) -> Optional[str]:
         try:
