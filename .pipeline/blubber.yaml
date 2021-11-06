@@ -32,6 +32,9 @@ variants:
       - from: local
         source: .
         destination: .
+    apt:
+      packages:
+        - git
     entrypoint:
       - /bin/bash
       - -c
