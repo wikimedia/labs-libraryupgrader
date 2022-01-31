@@ -186,10 +186,8 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.log(json.dumps(dry_run))
         if dry_run['audit']['auditReportVersion'] != 2:
             raise RuntimeError(f"Unknown auditReportVersion: {dry_run['audit']['auditReportVersion']}")
-        # HACK: Sometimes you need to run it multiple times to get all the fixes (T282278)
-        for _ in range(3):
-            # When removing --only=dev also remove dev check to get all reasons
-            self.check_call(['npm', 'audit', 'fix', '--only=dev'])
+        # When removing --only=dev also remove dev check to get all reasons
+        self.check_call(['npm', 'audit', 'fix', '--only=dev'])
         current = PackageJson('package.json')
         current_lock = PackageLockJson('package-lock.json')
         for pkg in current.get_packages():
