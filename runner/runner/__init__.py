@@ -187,7 +187,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         if dry_run['audit']['auditReportVersion'] != 2:
             raise RuntimeError(f"Unknown auditReportVersion: {dry_run['audit']['auditReportVersion']}")
         # When removing --only=dev also remove dev check to get all reasons
-        self.check_call(['npm', 'audit', 'fix', '--only=dev'])
+        self.check_call(['npm', 'audit', 'fix', '--only=dev'], ignore_returncode=True)
         current = PackageJson('package.json')
         current_lock = PackageLockJson('package-lock.json')
         for pkg in current.get_packages():
