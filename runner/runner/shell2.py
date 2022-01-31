@@ -39,13 +39,20 @@ class ShellMixin:
             args,
             input=stdin.encode(),
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
             env=env,
         )
-        debug(res.stdout.decode())
+        stderr = res.stderr.decode().strip()
+        if stderr:
+            debug('--- stderr ---')
+            debug(stderr)
+        debug('--- stdout ---')
+        stdout = res.stdout.decode()
+        debug(stdout)
+        debug('--- end ---')
         if not ignore_returncode:
             res.check_returncode()
-        return res.stdout.decode()
+        return stdout
 
     def git_sha1(self, branch: str) -> str:
         return self.check_call(['git', 'show-ref', f'refs/heads/{branch}']).split(' ')[0]
