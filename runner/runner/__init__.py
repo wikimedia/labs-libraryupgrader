@@ -218,7 +218,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.check_call(['npm', 'ci'])
         self.check_call(['npm', 'test'])
 
-        def find_fixed(name):
+        def find_fixed(name: str) -> dict:
             """Recursively walk down "via" tree"""
             fixed = {}
             info = dry_run['audit']['vulnerabilities'][name]
@@ -228,7 +228,7 @@ class LibraryUpgrader(shell2.ShellMixin):
                     fixed[via["source"]] = via
                 else:
                     # type(via) == str
-                    fixed += find_fixed(via)
+                    fixed.update(find_fixed(via))
             return fixed
 
         for pkg, info in dry_run['audit']['vulnerabilities'].items():
