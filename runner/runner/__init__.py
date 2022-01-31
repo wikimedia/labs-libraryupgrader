@@ -236,8 +236,10 @@ class LibraryUpgrader(shell2.ShellMixin):
                 # Not fixable
                 continue
             if type(info['fixAvailable']) == dict:
-                if info['fixAvailable']['name'] == pkg \
-                        and info['fixAvailable']['isSemVerMajor']:
+                if info['fixAvailable']['name'] != pkg:
+                    # Not our package
+                    continue
+                if info['fixAvailable']['isSemVerMajor']:
                     # Our package but it's a semver major bump
                     continue
             # fixAvailable is either True, or our package and not a semver
