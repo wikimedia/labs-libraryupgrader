@@ -34,7 +34,7 @@ def sql_uri() -> str:
 
 
 def connect():
-    engine = create_engine(sql_uri(), pool_pre_ping=True)
+    engine = create_engine(sql_uri(), pool_pre_ping=True, pool_recycle=300)
     Session.configure(bind=engine)
     return engine
 
