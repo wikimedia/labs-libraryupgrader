@@ -53,6 +53,7 @@ def run_check(repo_name: str, branch: str):
     # Drop all the database-related stuff
     git_branch = repo.get_git_branch()
     del repo
+    session.close()
     del session
 
     container_name = repo_name.split('/')[-1] + '-' + branch
