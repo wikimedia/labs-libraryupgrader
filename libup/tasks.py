@@ -50,9 +50,12 @@ def run_check(repo_name: str, branch: str):
 
     # Commit everything, which should close the transaction
     session.commit()
+    # Drop all the database-related stuff
+    git_branch = repo.get_git_branch()
+    del repo
     del session
 
-    container_name = repo.name.split('/')[-1] + '-' + repo.branch
+    container_name = repo_name.split('/')[-1] + '-' + branch
     with tempfile.TemporaryDirectory(prefix="libup-container") as tmpdir:
         # We need to make the tmpdir insecure so the container
         # can write to it
@@ -72,7 +75,7 @@ def run_check(repo_name: str, branch: str):
                     GIT_ROOT: f'{GIT_ROOT}:ro'
                 },
                 rm=True,
-                extra_args=['runner', repo.name, '/out/output.json', f"--branch={repo.get_git_branch()}"],
+                extra_args=['runner', repo_name, '/out/output.json', f"--branch={git_branch}"],
             )
         except subprocess.CalledProcessError:
             # Just print the traceback, we still need to save the log
@@ -85,6 +88,7 @@ def run_check(repo_name: str, branch: str):
     # Open a new db connection and session
     db.connect()
     session = db.Session()
+    repo2: model.Repository = session.query(model.Repository).filter_by(name=repo_name, branch=branch).first()
     log = model.Log(
         time=utils.to_mw_time(datetime.utcnow()),
         is_error='done' not in data,
@@ -95,10 +99,10 @@ def run_check(repo_name: str, branch: str):
     log.set_text('\n'.join(data.get('log', [])))
     log.set_patch(data.get('patch'))
     log.set_hashtags(data.get('hashtags', []))
-    repo.logs.append(log)
-    repo.is_error = log.is_error
+    repo2.logs.append(log)
+    repo2.is_error = log.is_error
     for manager in MANAGERS:
-        advisories = repo.get_advisories(manager)
+        advisories = repo2.get_advisories(manager)
         new = data["audits"].get(manager)
         if advisories and new:
             # Update existing row
@@ -109,7 +113,7 @@ def run_check(repo_name: str, branch: str):
         elif new and not advisories:
             advisories = model.Advisories(manager=manager)
             advisories.set_data(new)
-            repo.advisories.append(advisories)
+            repo2.advisories.append(advisories)
         # else: not new and not advisories:
             # pass - nothing to do
 
@@ -121,9 +125,9 @@ def run_check(repo_name: str, branch: str):
         text_digest = log.text_digest()
         patch_digest = log.patch_digest()
         run_push.delay(log.id, text_digest, patch_digest)
-        print(f"Queuing patch for {repo.name} ({repo.branch})")
+        print(f"Queuing patch for {repo2.name} ({repo2.branch})")
     elif data.get('patch'):
-        print(f"Skipping pushing patch for {repo.name} ({repo.branch})")
+        print(f"Skipping pushing patch for {repo2.name} ({repo2.branch})")
 
     session.close()
 
