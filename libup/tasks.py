@@ -48,6 +48,9 @@ def run_check(repo_name: str, branch: str):
             deps = extract_dependencies(repo)
             db.update_dependencies(session, repo, deps)
 
+    # Commit everything, which should close the transaction
+    session.commit()
+
     container_name = repo.name.split('/')[-1] + '-' + repo.branch
     with tempfile.TemporaryDirectory(prefix="libup-container") as tmpdir:
         # We need to make the tmpdir insecure so the container
@@ -77,6 +80,9 @@ def run_check(repo_name: str, branch: str):
             data = json.load(f)
 
     end = time.monotonic()
+
+    # Open a new db session
+    session = db.Session()
     log = model.Log(
         time=utils.to_mw_time(datetime.utcnow()),
         is_error='done' not in data,
@@ -105,7 +111,7 @@ def run_check(repo_name: str, branch: str):
         # else: not new and not advisories:
             # pass - nothing to do
 
-    # COMMIT everything
+    # Commit everything
     session.commit()
 
     if data.get('push'):
