@@ -50,6 +50,7 @@ def run_check(repo_name: str, branch: str):
 
     # Commit everything, which should close the transaction
     session.commit()
+    del session
 
     container_name = repo.name.split('/')[-1] + '-' + repo.branch
     with tempfile.TemporaryDirectory(prefix="libup-container") as tmpdir:
@@ -81,7 +82,8 @@ def run_check(repo_name: str, branch: str):
 
     end = time.monotonic()
 
-    # Open a new db session
+    # Open a new db connection and session
+    db.connect()
     session = db.Session()
     log = model.Log(
         time=utils.to_mw_time(datetime.utcnow()),
