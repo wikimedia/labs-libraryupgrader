@@ -68,6 +68,9 @@ class PackageLockJson:
     def __init__(self, fname='package-lock.json'):
         self.fname = fname
         self.data = load_ordered_json(self.fname)
+        if self.data["lockfileVersion"] > 2:
+            # TODO: support lockfileVersion 3
+            raise RuntimeError("lockfileVersion > 2 is not supported")
 
     def get_version(self, package):
         try:

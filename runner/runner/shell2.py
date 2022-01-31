@@ -26,6 +26,13 @@ GIT_EMAIL = 'tools.libraryupgrader@tools.wmflabs.org'
 class ShellMixin:
     def check_call(self, args: list, stdin='', env=None,
                    ignore_returncode=False) -> str:
+        # Avoid CVE-2020-5252 style attacks by ensuring that `npm ...` or
+        # `composer ...` cannot be hijacked by forcing use of explicit binaries
+        # owned by root.
+        if args[0] == 'npm':
+            args[0] = '/usr/bin/npm'
+        elif args[0] == 'composer':
+            args[0] = '/usr/bin/composer'
         debug = self.log if hasattr(self, 'log') else print  # type: ignore
         debug('$ ' + ' '.join(args))
         res = subprocess.run(

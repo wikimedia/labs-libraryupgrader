@@ -140,16 +140,12 @@ class LibraryUpgrader(shell2.ShellMixin):
         if not self.has_npm:
             return {}
         self.ensure_package_lock()
+        output = self.check_call(['npm', 'audit', '--json'], ignore_returncode=True)
         try:
-            subprocess.check_output(['npm', 'audit', '--json'])
-            # If npm audit didn't fail, there are no vulnerable packages
-            return {}
-        except subprocess.CalledProcessError as e:
-            try:
-                return json.loads(e.output.decode())
-            except json.decoder.JSONDecodeError:
-                self.log('Error, invalid JSON from npm audit, skipping')
-                return {'error': e.output.decode()}
+            return json.loads(output)
+        except json.decoder.JSONDecodeError:
+            self.log('Error, invalid JSON from npm audit, skipping')
+            return {'error': output}
 
     def composer_audit(self):
         if not self.has_composer:
@@ -177,16 +173,25 @@ class LibraryUpgrader(shell2.ShellMixin):
         return json.loads(output)
 
     def npm_audit_fix(self, audit: dict):
-        if not self.has_npm or not audit:
+        if not self.has_npm or not audit.get("vulnerabilities"):
             return
         self.log('Attempting to npm audit fix')
         prior = PackageJson('package.json')
         prior_lock = PackageLockJson()
+        dry_run = json.loads(self.check_call(
+            ['npm', 'audit', 'fix', '--dry-run', '--only=dev', '--json'],
+            ignore_returncode=True
+        ))
+        # Debug what's going on (see T228173)
+        self.log(json.dumps(dry_run))
+        if dry_run['audit']['auditReportVersion'] != 2:
+            raise RuntimeError(f"Unknown auditReportVersion: {dry_run['audit']['auditReportVersion']}")
         # HACK: Sometimes you need to run it multiple times to get all the fixes (T282278)
         for _ in range(3):
             # When removing --only=dev also remove dev check to get all reasons
             self.check_call(['npm', 'audit', 'fix', '--only=dev'])
         current = PackageJson('package.json')
+        current_lock = PackageLockJson('package-lock.json')
         for pkg in current.get_packages():
             new_version = current.get_version(pkg)
             old_version = prior.get_version(pkg)
@@ -215,41 +220,53 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.check_call(['npm', 'ci'])
         self.check_call(['npm', 'test'])
 
-        if 'actions' not in audit:
-            # Debug what's going on (see T228173)
-            self.log(json.dumps(audit))
-
-        for action in audit['actions']:
-            if action.get('isMajor'):
-                # We don't auto-update major versions
-                continue
-            if action['action'] not in ['install', 'update']:
-                continue
-            reason = ''
-            # Skip 118, which is broken (T242703)
-            # only dev dependencies are updated due to --only=dev
-            resolves = {r['id'] for r in action['resolves'] if r['id'] != 118 and r.get('dev')}
-            if not resolves:
-                continue
-            for npm_id in sorted(resolves):
-                advisory_info = audit['advisories'][str(npm_id)]
-                if advisory_info.get('cves'):
-                    cves = ' (' + ', '.join(advisory_info['cves']) + ')'
-                    self.cves.update(advisory_info['cves'])
+        def find_fixed(name):
+            """Recursively walk down "via" tree"""
+            fixed = {}
+            info = dry_run['audit']['vulnerabilities'][name]
+            for via in info['via']:
+                if type(via) == dict:
+                    # An actual advisory
+                    fixed[via["source"]] = via
                 else:
-                    cves = ''
-                reason += f'* https://npmjs.com/advisories/{npm_id}{cves}\n'
+                    # type(via) == str
+                    fixed += find_fixed(via)
+            return fixed
+
+        for pkg, info in dry_run['audit']['vulnerabilities'].items():
+            if info['fixAvailable'] is False:
+                # Not fixable
+                continue
+            if type(info['fixAvailable']) == dict:
+                if info['fixAvailable']['name'] == pkg \
+                        and info['fixAvailable']['isSemVerMajor']:
+                    # Our package but it's a semver major bump
+                    continue
+            # fixAvailable is either True, or our package and not a semver
+            # major bump, so OK to continue
+            fixed = find_fixed(pkg)
+            self.log(json.dumps(fixed))
+            reason = ''
+            if not fixed:
+                continue
+            for _, adv_info in sorted(fixed.items()):
+                # FIXME: Add CVEs here
+                reason += f'* {adv_info["url"]}\n'
                 # TODO: line wrapping?
 
-            prior_version = prior.get_version(action['module'])
+            prior_version = prior.get_version(pkg)
             if prior_version is None:
                 # Try looking in the lockfile?
-                prior_version = prior_lock.get_version(action['module'])
+                prior_version = prior_lock.get_version(pkg)
+            new_version = current.get_version(pkg)
+            if new_version is None:
+                # Try looking in the lockfile?
+                new_version = current_lock.get_version(pkg)
             upd = Update(
                 'npm',
-                action['module'],
+                pkg,
                 prior_version,
-                action['target'],
+                new_version,
                 reason
             )
             self.log_update(upd)
@@ -1024,7 +1041,7 @@ class LibraryUpgrader(shell2.ShellMixin):
     def _bump_eslint(self, update: Update):
         # TODO: figure out how to update the commit message here
         # See T261520 for why we need to force update eslint sometimes
-        self.check_call(['npm', 'update', 'eslint', '-depth', '10'])
+        self.check_call(['npm', 'update', 'eslint'])
         grunt_eslint = PackageJson('package.json').get_version('grunt-eslint')
         if grunt_eslint:
             # Force re-install grunt-eslint to make eslint dedupe properly (T273680)

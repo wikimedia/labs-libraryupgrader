@@ -305,38 +305,36 @@ def vulns_npm():
         .options(joinedload(Advisories.repository))\
         .all()
     advisories = {}
-    affected = defaultdict(list)
     for obj in everything:
         report = obj.get_data()
         if 'error' in report:
             # TODO: Use proper logging
             print(obj.repository.name, report)
             continue
-        for a_id, a_info in report['advisories'].items():
-            affected[int(a_id)].append((obj.repository, a_info))
-            if a_id not in advisories:
-                advisories[a_id] = a_info
+        if report.get("auditReportVersion") != 2:
+            # old npm v6 report
+            continue
+        for info in report["vulnerabilities"].values():
+            for via in info["via"]:
+                if type(via) == dict:
+                    if via["source"] in advisories:
+                        advisories[via["source"]]["repos"].append(obj.repository)
+                    else:
+                        advisories[via["source"]] = {
+                            "info": via,
+                            "repos": [obj.repository],
+                        }
 
     advisories = OrderedDict(sorted(
         advisories.items(),
-        key=lambda x: (SEVERITIES.index(x[1]['severity']), x[0])
+        key=lambda x: (SEVERITIES.index(x[1]["info"]['severity']), x[0])
     ))
-
-    def via(findings):
-        ret = set()
-        for finding in findings:
-            for path in finding['paths']:
-                ret.add(path.split('>', 1)[0])
-
-        return sorted(ret)
 
     return render_template(
         'vulns_npm.html',
         advisories=advisories,
-        affected=affected,
         SEVERITIES=SEVERITIES,
         COLORS=COLORS,
-        via=via,
     )
 
 

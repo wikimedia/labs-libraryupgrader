@@ -3,39 +3,32 @@ RUN cargo install gerrit-grr
 RUN cargo install package-lock-lint
 RUN cargo install cargo-audit
 
-FROM docker-registry.wikimedia.org/buster:latest
+FROM docker-registry.wikimedia.org/bullseye:latest
 ENV LANG C.UTF-8
 ENV CHROME_BIN /usr/bin/chromium
 ENV CHROMIUM_FLAGS "--no-sandbox"
 RUN apt-get update && \
-    apt-get install -y nodejs git ssh curl unzip \
+    apt-get install -y firefox-esr chromium
+RUN apt-get install -y nodejs npm git ssh curl unzip \
     ruby ruby-dev rubygems-integration \
     python build-essential pkg-config \
     php-cli php-xml php-zip php-gd \
     php-gmp php-mbstring php-curl php-intl \
-    php-igbinary php-xdebug php-ldap php-redis \
+    php-igbinary php-xdebug php-ldap php-redis composer \
     python3 python3-dev python3-venv \
     # explicitly include libssl, for grr
     libssl1.1 \
     # for mathoid
     librsvg2-dev \
-    firefox-esr chromium \
     --no-install-recommends && rm -rf /var/lib/apt/lists/* && \
     # xdebug slows everything down, it'll be manually enabled as needed
     phpdismod xdebug
-RUN git clone --depth 1 https://gerrit.wikimedia.org/r/integration/npm.git /srv/npm \
-    && rm -rf /srv/npm/.git \
-    && ln -s /srv/npm/bin/npm-cli.js /usr/bin/npm \
-    # TODO: Use packaged composer once Debian's #934104 is fixed.
-    && git clone --depth 1 https://gerrit.wikimedia.org/r/integration/composer.git /srv/composer \
-    && rm -rf /srv/composer/.git \
-    && ln -s /srv/composer/vendor/bin/composer /usr/bin/composer
 COPY --from=rust-builder /usr/local/cargo/bin/grr /usr/bin/grr
 COPY --from=rust-builder /usr/local/cargo/bin/package-lock-lint /usr/bin/package-lock-lint
 COPY --from=rust-builder /usr/local/cargo/bin/cargo-audit /usr/bin/cargo-audit
 COPY files/gitconfig /etc/gitconfig
 COPY files/timeout-wrapper.sh /usr/local/bin/timeout-wrapper
-RUN gem install --no-rdoc --no-ri jsduck
+RUN gem install jsduck
 
 RUN install --owner=nobody --group=nogroup --directory /cache
 RUN install --owner=nobody --group=nogroup --directory /src
