@@ -40,13 +40,13 @@ class PackageJson:
     def get_packages(self):
         return list(self.data.get('devDependencies', {}))
 
-    def get_version(self, package):
+    def get_version(self, package: str) -> Optional[str]:
         try:
             return self.data['devDependencies'][package]
         except KeyError:
             return None
 
-    def set_version(self, package, version):
+    def set_version(self, package: str, version: str):
         if package in self.data.get('devDependencies', {}):
             self.data['devDependencies'][package] = version
             return
@@ -72,13 +72,13 @@ class PackageLockJson:
             # TODO: support lockfileVersion 3
             raise RuntimeError("lockfileVersion > 2 is not supported")
 
-    def get_version(self, package):
+    def get_version(self, package: str) -> Optional[str]:
         try:
             return self.data['dependencies'][package]['version']
         except KeyError:
             return None
 
-    def set_version(self, package, version):
+    def set_version(self, package: str, version: str):
         raise NotImplementedError
 
     def save(self):
@@ -92,7 +92,7 @@ class ComposerJson:
         self.fname = fname
         self.data = load_ordered_json(self.fname)
 
-    def get_version(self, package) -> Optional[str]:
+    def get_version(self, package: str) -> Optional[str]:
         if package in self.data.get('require-dev', {}):
             return self.data['require-dev'][package]
         if 'extra' in self.data:

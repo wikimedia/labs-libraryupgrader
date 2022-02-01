@@ -57,9 +57,6 @@ WB_FIND_RULE = re.compile(
     ')',
     re.DOTALL
 )
-# Can have up to 2-4 number parts, and can't have any
-# text like dev-master or -next
-VALID_NPM_VERSION = re.compile(r'^(\d+?\.?){2,4}$')
 ESLINT_DISABLE_RULE = re.compile(r"\(no problems were reported from '(.*?)'\)")
 ESLINT_DISABLE_LINE = re.compile(r'// eslint-disable-(next-)?line( (.*?))?$')
 
@@ -186,37 +183,6 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.log(json.dumps(dry_run))
         if dry_run['audit']['auditReportVersion'] != 2:
             raise RuntimeError(f"Unknown auditReportVersion: {dry_run['audit']['auditReportVersion']}")
-        # When removing --only=dev also remove dev check to get all reasons
-        self.check_call(['npm', 'audit', 'fix', '--only=dev'], ignore_returncode=True)
-        current = PackageJson('package.json')
-        current_lock = PackageLockJson('package-lock.json')
-        for pkg in current.get_packages():
-            new_version = current.get_version(pkg)
-            old_version = prior.get_version(pkg)
-            if new_version == old_version:
-                # No change
-                continue
-            if new_version.startswith('^'):
-                if old_version and not old_version.startswith('^'):
-                    # If the old version didn't start with ^, then strip
-                    # it when npm audit fix adds it.
-                    current.set_version(pkg, new_version[1:])
-                    # If there's no old version / or the old version is valid, the new version
-                    # must be valid too
-                    if (not old_version or VALID_NPM_VERSION.match(old_version)) \
-                            and not VALID_NPM_VERSION.match(current.get_version(pkg)):
-                        self.log('Error: {} version is not valid: {}'.format(pkg, current.get_version(pkg)))
-                        return
-
-        current.save()
-
-        self.fix_stupid_npm_resolved()
-        self.check_package_lock()
-
-        # Verify that tests still pass
-        self.log('Verifying that tests still pass')
-        self.check_call(['npm', 'ci'])
-        self.check_call(['npm', 'test'])
 
         def find_fixed(name: str) -> dict:
             """Recursively walk down "via" tree"""
@@ -231,19 +197,56 @@ class LibraryUpgrader(shell2.ShellMixin):
                     fixed.update(find_fixed(via))
             return fixed
 
+        # Before we actually fix, deps pinned in package.json need to be bumped
+        current = PackageJson('package.json')
         for pkg, info in dry_run['audit']['vulnerabilities'].items():
-            if info['fixAvailable'] is False:
+            prior_version = prior.get_version(pkg)
+            if prior_version is None:
+                continue
+            if type(info['fixAvailable']) == dict \
+                    and info['fixAvailable']['name'] == pkg \
+                    and not info['fixAvailable']['isSemVerMajor']:
+                # Our package and not a major semver bump
+                current.set_version(pkg, info['fixAvailable']['version'])
+                fixed = find_fixed(pkg)
+                self.log(json.dumps(fixed))
+                reason = ''
+                if not fixed:
+                    continue
+                for _, adv_info in sorted(fixed.items()):
+                    # FIXME: Add CVEs here
+                    reason += f'* {adv_info["url"]}\n'
+                    # TODO: line wrapping?
+
+                upd = Update(
+                    'npm',
+                    pkg,
+                    prior_version,
+                    info['fixAvailable']['version'],
+                    reason
+                )
+                self.log_update(upd)
+                # Force a patch to be pushed
+                self.weight += 10
+
+        current.save()
+
+        # When removing --only=dev also remove dev check to get all reasons
+        self.check_call(['npm', 'audit', 'fix', '--only=dev'], ignore_returncode=True)
+        current_lock = PackageLockJson('package-lock.json')
+
+        self.fix_stupid_npm_resolved()
+        self.check_package_lock()
+
+        # Verify that tests still pass
+        self.log('Verifying that tests still pass')
+        self.check_call(['npm', 'ci'])
+        self.check_call(['npm', 'test'])
+
+        for pkg, info in dry_run['audit']['vulnerabilities'].items():
+            if info['fixAvailable'] is not True:
                 # Not fixable
                 continue
-            if type(info['fixAvailable']) == dict:
-                if info['fixAvailable']['name'] != pkg:
-                    # Not our package
-                    continue
-                if info['fixAvailable']['isSemVerMajor']:
-                    # Our package but it's a semver major bump
-                    continue
-            # fixAvailable is either True, or our package and not a semver
-            # major bump, so OK to continue
             fixed = find_fixed(pkg)
             self.log(json.dumps(fixed))
             reason = ''
