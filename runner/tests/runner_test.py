@@ -352,12 +352,12 @@ def test_fix_stylelintrc_json_location_exists(tempfs, mocker):
         ('mediawiki/extensions/FooBar', '{"private": true}', False),
     ]
 )
-def test_fix_private_package_json(tempfs, repo, pkg, expected):
+def test_fix_package_json_metadata(tempfs, repo, pkg, expected):
     libup = LibraryUpgrader()
     if pkg is not None:
         tempfs.create_file('package.json', contents=pkg)
     e_fixes = ['Set `private: true` in package.json.'] if expected else []
-    libup.fix_private_package_json(repo)
+    libup.fix_package_json_metadata(repo)
     assert libup.msg_fixes == e_fixes
     if expected:
         assert tempfs.json_contents('package.json')['private'] is True

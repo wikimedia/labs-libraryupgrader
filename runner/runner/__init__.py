@@ -431,20 +431,25 @@ class LibraryUpgrader(shell2.ShellMixin):
             composerjson.data = j
             composerjson.save()
 
-    def fix_private_package_json(self, repo):
+    def fix_package_json_metadata(self, repo):
         if not repo.startswith(('mediawiki/extensions/', 'mediawiki/skins/')):
             # Only MW extensions and skins
             return
         if not self.has_npm:
             return
         pkg = PackageJson('package.json')
-        if 'private' in pkg.data:
-            return
-        pkg.data['private'] = True
-        # Move to top
-        pkg.data.move_to_end('private', last=False)
-        pkg.save()
-        self.msg_fixes.append('Set `private: true` in package.json.')
+        if 'private' not in pkg.data:
+            pkg.data['private'] = True
+            # Move to top (but likely below name)
+            pkg.data.move_to_end('private', last=False)
+            pkg.save()
+            self.msg_fixes.append('Set `private: true` in package.json.')
+        if 'name' not in pkg.data:
+            pkg.data['name'] = os.path.basename(repo)
+            # Move to top
+            pkg.data.move_to_end('name', last=False)
+            pkg.save()
+            self.msg_fixes.append('Set `name` in package.json.')
 
     def fix_root_eslintrc(self):
         try:
@@ -1325,6 +1330,8 @@ class LibraryUpgrader(shell2.ShellMixin):
         # We need to do this first because it can cause problems
         # with later eslint/stylelint upgrades
         self.fix_remove_eslint_stylelint_if_grunt()
+        # Also needs to be done early before we write to package-lock.json
+        self.fix_package_json_metadata(repo)
 
         # Try upgrades
         planner = HTTPPlan(branch=self.git_branch)
@@ -1347,7 +1354,6 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.fix_phpcs_xml_configuration()
         self.fix_composer_fix()
         self.fix_composer_phan()
-        self.fix_private_package_json(repo)
         self.fix_eslintrc_json_location()
         self.fix_stylelintrc_json_location()
         self.fix_root_eslintrc()
