@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import subprocess
 import urllib.parse
 
-from . import GERRIT_USER, SSH_AUTH_SOCK, config, gerrit, shell, utils
+from . import GERRIT_USER, SSH_AUTH_SOCK, config, db, gerrit, shell, utils
 from .model import Log, Repository
 
 
@@ -117,6 +117,8 @@ class Pusher(shell.ShellMixin):
             return
         # Flood control, don't overload zuul...
         gerrit.wait_for_zuul_test_gate(count=3)
+        # Something, something, ensure the DB connection doesn't go away
+        db.connect()
         # Update our local clone
         gerrit.ensure_clone(repo.name, repo.get_git_branch())
         self.clone(repo.name, branch=repo.get_git_branch(), internal=True)
