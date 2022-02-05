@@ -1286,7 +1286,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         for upd in self.updates:
             # We use a ; instead of : because the latter can't be used in git
             # commands apparently.
-            hashtags.append('{};{}={}'.format(upd.manager[0], upd.name, upd.new))
+            hashtags.append('{};{}={}'.format(upd.manager[0], upd.name, upd.new).replace('^', ''))
         hashtags.extend(list(self.cves))
         return hashtags
 
