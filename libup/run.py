@@ -31,6 +31,10 @@ def update_repositories(session):
     repositories = {}
     to_add = []
     for repo in session.query(Repository).all():
+        if repo.key() in repositories:
+            # Duplicate??
+            session.delete(repo)
+            continue
         repositories[repo.key()] = repo
 
     bundled = ci_utils.get_bundled_list()
