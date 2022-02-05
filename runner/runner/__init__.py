@@ -163,10 +163,7 @@ class LibraryUpgrader(shell2.ShellMixin):
     def cargo_audit(self):
         if not Path("Cargo.lock").exists():
             return {}
-        try:
-            output = subprocess.check_output(["cargo-audit", "audit", "--json"]).decode()
-        except subprocess.CalledProcessError as e:
-            output = e.output.decode()
+        output = self.check_call(["cargo-audit", "audit", "--json"], ignore_returncode=True)
         return json.loads(output)
 
     def npm_audit_fix(self, audit: dict):
