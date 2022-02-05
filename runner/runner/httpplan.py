@@ -24,14 +24,19 @@ class HTTPPlan:
         self.branch = branch
 
     def check(self, repo: str) -> list:
-        # TODO: should we hit localhost instead?
-        resp = requests.post(
-            'https://libraryupgrader2.wmcloud.org/plan.json',
-            params={
-                'repository': repo,
-                'branch': self.branch
-            }
-        )
+        # Retry this up to 5 times
+        for _ in range(5):
+            resp = requests.post(
+                'https://libraryupgrader2.wmcloud.org/plan.json',
+                params={
+                    'repository': repo,
+                    'branch': self.branch
+                }
+            )
+            if resp.ok:
+                # If it's OK, short-circuit
+                break
+        # If the last request was an error, raise it
         resp.raise_for_status()
         data = resp.json()
         if data['status'] != 'ok':
