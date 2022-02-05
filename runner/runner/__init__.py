@@ -188,6 +188,9 @@ class LibraryUpgrader(shell2.ShellMixin):
             """Recursively walk down "via" tree"""
             fixed = {}
             info = dry_run['audit']['vulnerabilities'][name]
+            if info['fixAvailable'] is not True:
+                # Fix not available, so it's not valid. Maybe?
+                return {}
             for via in info['via']:
                 if type(via) == dict:
                     # An actual advisory
