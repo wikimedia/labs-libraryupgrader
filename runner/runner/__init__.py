@@ -1373,6 +1373,7 @@ class LibraryUpgrader(shell2.ShellMixin):
 
         # Commit
         msg = self.build_message()
+        self.log(msg)
         try:
             self.commit(['.'], msg)
             self.output['patch'] = self.get_latest_patch()
