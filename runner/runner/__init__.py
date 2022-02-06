@@ -211,8 +211,6 @@ class LibraryUpgrader(shell2.ShellMixin):
                 fixed = find_fixed(pkg)
                 self.log(json.dumps(fixed))
                 reason = ''
-                if not fixed:
-                    continue
                 for _, adv_info in sorted(fixed.items()):
                     # FIXME: Add CVEs here
                     reason += f'* {adv_info["url"]}\n'
