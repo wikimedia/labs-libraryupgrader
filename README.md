@@ -7,7 +7,7 @@ To run libraryupgrader:
 To output libraryupgrader help:
 ```
 $ docker run libraryupgrader libup-ng -h
-usage: libup-ng [-h] repo output
+usage: libup-ng [-h] repo output [--branch BRANCH]
 
 next generation of libraryupgrader
 
@@ -17,7 +17,11 @@ positional arguments:
 
 optional arguments:
   -h, --help  show this help message and exit
+  --branch BRANCH  Git branch
 ```
 
-To upgrade mediawiki/core:
+To upgrade mediawiki/core (master branch):
 `$ docker run libraryupgrader libup-ng mediawiki/core /tmp/libup`
+
+To upgrade mediawiki/core (REL1_35 branch):
+`$ docker run libraryupgrader libup-ng mediawiki/core /tmp/libup --branch REL1_35`
