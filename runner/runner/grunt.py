@@ -241,7 +241,8 @@ def expand_glob(paths: list) -> list:
         else:
             include.extend(expand_braces(path))
     include_paths = set()
-    exclude_paths = set()
+    # Always ignore files under node_modules/ and vendor/
+    exclude_paths = {'node_modules/**', 'vendor/**'}
     for ipath in include:
         include_paths.update(set(glob.iglob(ipath, recursive=True)))
     for epath in exclude:
