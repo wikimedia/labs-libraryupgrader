@@ -137,6 +137,9 @@ def run_check(repo_name: str, branch: str):
 def run_push(log_id, text_digest, patch_digest):
     if not ssh.is_key_loaded():
         raise RuntimeError("ssh-agent isn't loaded")
+    # Flood control, don't overload zuul...
+    gerrit.wait_for_zuul_test_gate(count=3)
+    db.connect()
     session = db.Session()
     log = session.query(model.Log).filter_by(id=log_id).first()
     if log is None:
