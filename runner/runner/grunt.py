@@ -233,7 +233,7 @@ def expand_braces(path: str) -> list:
 def expand_glob(paths: list) -> list:
     """see https://gruntjs.com/api/grunt.file#grunt.file.expand"""
     include = []
-    exclude = []
+    exclude = ['node_modules/**', 'vendor/**']
     for path in paths:
         # We need to implement leading ! as exclude
         if path.startswith('!'):
@@ -242,7 +242,7 @@ def expand_glob(paths: list) -> list:
             include.extend(expand_braces(path))
     include_paths = set()
     # Always ignore files under node_modules/ and vendor/
-    exclude_paths = {'node_modules/**', 'vendor/**'}
+    exclude_paths = set()
     for ipath in include:
         include_paths.update(set(glob.iglob(ipath, recursive=True)))
     for epath in exclude:
