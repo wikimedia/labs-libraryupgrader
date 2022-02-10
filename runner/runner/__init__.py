@@ -1045,9 +1045,6 @@ class LibraryUpgrader(shell2.ShellMixin):
         self.npm_test()
 
     def _bump_eslint(self, update: Update):
-        # TODO: figure out how to update the commit message here
-        # See T261520 for why we need to force update eslint sometimes
-        self.check_call(['npm', 'update', 'eslint'])
         grunt_eslint = PackageJson('package.json').get_version('grunt-eslint')
         if grunt_eslint:
             # Force re-install grunt-eslint to make eslint dedupe properly (T273680)
