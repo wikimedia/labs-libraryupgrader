@@ -137,7 +137,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         if not self.has_npm:
             return {}
         self.ensure_package_lock()
-        output = self.check_call(['npm', 'audit', '--json'], ignore_returncode=True)
+        output = self.check_call(['npm', 'audit', '--json', '--legacy-peer-deps'], ignore_returncode=True)
         try:
             return json.loads(output)
         except json.decoder.JSONDecodeError:
@@ -173,7 +173,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         prior = PackageJson('package.json')
         prior_lock = PackageLockJson()
         dry_run = json.loads(self.check_call(
-            ['npm', 'audit', 'fix', '--dry-run', '--only=dev', '--json'],
+            ['npm', 'audit', 'fix', '--dry-run', '--only=dev', '--json', '--legacy-peer-deps'],
             ignore_returncode=True
         ))
         # Debug what's going on (see T228173)
@@ -230,7 +230,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         current.save()
 
         # When removing --only=dev also remove dev check to get all reasons
-        self.check_call(['npm', 'audit', 'fix', '--only=dev'], ignore_returncode=True)
+        self.check_call(['npm', 'audit', 'fix', '--only=dev', '--legacy-peer-deps'], ignore_returncode=True)
         current_lock = PackageLockJson('package-lock.json')
 
         self.fix_stupid_npm_resolved()
