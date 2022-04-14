@@ -738,6 +738,32 @@ def test_fix_eslintrc_use_clientes5_profile_noop(tempfs):
     assert 'wikimedia/client-es5' not in eslintrc['extends']
 
 
+def test_fix_eslintrc_use_mediawiki_profile_noop(tempfs):
+    tempfs.create_file('package.json',
+                       contents="""
+    {
+        "devDependencies": {
+            "eslint-config-wikimedia": "0.15.1"
+        }
+    }
+    """)
+    tempfs.create_file('.eslintrc.json',
+                       contents="""
+    {
+        "root": true,
+        "extends": [
+            "wikimedia/client"
+        ]
+    }
+    """)
+    libup = LibraryUpgrader()
+    libup.fix_eslintrc_use_mediawiki_profile('mediawiki/extensions/Test')
+    eslintrc = tempfs.json_contents('.eslintrc.json')
+    assert len(eslintrc) == 2
+    assert len(eslintrc['extends']) == 1
+    assert 'wikimedia/mediawiki' not in eslintrc['extends']
+
+
 def test_fix_eslintrc_use_mediawiki_profile(tempfs):
     tempfs.create_file('package.json',
                        contents="""

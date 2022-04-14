@@ -498,10 +498,6 @@ class LibraryUpgrader(shell2.ShellMixin):
             data['extends'].insert(pos, 'wikimedia/client-es5')
             self.msg_fixes.append('eslint: Renamed `wikimedia/client` profile to `client-es5` (T277085).')
 
-        if 'wikimedia/mediawiki' not in data['extends']:
-            data['extends'].append('wikimedia/mediawiki')
-            self.msg_fixes.append('eslint: Added `wikimedia/mediawiki` profile (T262222).')
-
         if 'globals' in data:
             fixed_mw_globals = []
             for fixable in ['mw', 'OO', 'require', 'module']:
@@ -515,6 +511,9 @@ class LibraryUpgrader(shell2.ShellMixin):
                 del data['globals']['$']
                 self.msg_fixes.append('eslint: Removed global `$`, included in `wikimedia/jquery` profile (T262222).')
             if fixed_mw_globals:
+                if 'wikimedia/mediawiki' not in data['extends']:
+                    data['extends'].append('wikimedia/mediawiki')
+                    self.msg_fixes.append('eslint: Added `wikimedia/mediawiki` profile (T262222).')
                 if len(fixed_mw_globals) == 1:
                     msg = 'eslint: Removed global `{}`, included via `wikimedia/mediawiki` profile (T262222).'.format(
                         fixed_mw_globals[0])
