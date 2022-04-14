@@ -21,7 +21,7 @@ from libup import metadata
 def test_composer_metadata():
     # Dead package, won't be updated again
     data = metadata.get_composer_metadata("mediawiki/core")
-    assert data["latest"] == "1.36.2"
+    assert data["latest"] == "1.37.1"
     assert data["description"].startswith("Free software wiki application")
     # Verify this doesn't throw an exception (it used to)
     metadata.get_composer_metadata("roave/security-advisories")
