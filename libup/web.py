@@ -25,7 +25,7 @@ import re
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import func
 
-from . import BRANCHES, MANAGERS, plan, utils
+from . import MANAGERS, config, plan, utils
 from .db import sql_uri
 from .model import Advisories, Dependency, Dependencies, Log, Repository, Upstream
 
@@ -53,16 +53,17 @@ TABLE_PRESETS = {
 def inject_to_templates():
     return {
         'markdown': markdown,
-        'BRANCHES': BRANCHES,
+        'branches': config.branches(),
         'gbranch': request_branch(),
     }
 
 
 def request_branch():
     branch = utils.normalize_branch(request.args.get('branch', 'main'))
-    if branch not in BRANCHES:
+    branches = config.branches()
+    if branch not in branches:
         # Default to main
-        branch = BRANCHES[0]
+        branch = branches[0]
     return branch
 
 
@@ -362,15 +363,16 @@ def plan_json():
         .filter_by(name=repo, branch=branch)\
         .options(joinedload(Repository.dependencies))\
         .first()
+    branches = config.branches()
     if repository is None:
         return jsonify(
             status="error",
             error="Repository not found"
         )
-    if branch not in BRANCHES:
+    if branch not in branches:
         return jsonify(
             status="error",
-            error="Invalid branch specified. Choose one of: " + ', '.join(BRANCHES)
+            error="Invalid branch specified. Choose one of: " + ', '.join(branches)
         )
     posted = request.method == 'POST'
     # If it was a POST request, git pull

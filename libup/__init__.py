@@ -36,9 +36,7 @@ GIT_NAME = 'libraryupgrader'
 GIT_EMAIL = 'tools.libraryupgrader@tools.wmflabs.org'
 PACKAGIST_MIRROR = 'https://repo.packagist.org'
 SSH_AUTH_SOCK = '/tmp/ssh-agent.socket'
-# TODO: pull this from somewhere else, like ExtensionDistributor
-BRANCHES = ['main', 'REL1_38', 'REL1_37', 'REL1_36', 'REL1_35']
-GIT_BRANCHES = ["master"] + BRANCHES
+BRANCHES = os.path.join(CONFIG_REPO, 'branches.json')
 
 toolforge.set_user_agent("libraryupgrader", url="https://libraryupgrader2.wmcloud.org/")
 

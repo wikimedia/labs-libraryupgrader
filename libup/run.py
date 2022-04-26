@@ -21,7 +21,7 @@ import argparse
 from datetime import datetime
 import wikimediaci_utils as ci_utils
 
-from . import BRANCHES, GIT_BRANCHES, config, db, gerrit, monitoring, mw, phab, utils
+from . import config, db, gerrit, monitoring, mw, phab, utils
 from .model import Monitoring, Repository
 from .tasks import run_check
 
@@ -40,11 +40,12 @@ def update_repositories(session):
     bundled = ci_utils.get_bundled_list()
     wm_deployed = ci_utils.get_wikimedia_deployed_list()
     canaries = config.repositories()['canaries']
+    git_branches = config.git_branches()
 
     for repo in mw.get_everything():
         branches = gerrit.repo_branches(repo)
         for git_branch in branches:
-            if git_branch not in GIT_BRANCHES:
+            if git_branch not in git_branches:
                 # We don't care about this one
                 continue
             # XXX: What if a repo has both "master" and "main" branches?
@@ -156,11 +157,11 @@ def main():
     elif args.auto:
         # Only queue non-main jobs on Wed (3) and Sat (6)
         if datetime.utcnow().weekday() in (3, 6):
-            branches = BRANCHES
+            branches = config.branches()
         else:
             branches = ['main']
     else:
-        branches = BRANCHES
+        branches = config.branches()
     print(f"Limiting to branches: {', '.join(branches)}")
     gen = sorted(gen, key=lambda r: (r.name, r.branch))
     for repo in gen:

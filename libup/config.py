@@ -21,7 +21,7 @@ import os
 import subprocess
 import toml
 
-from . import CONFIG_REPO, MONITORING, RELEASES, REPOSITORIES
+from . import BRANCHES, CONFIG_REPO, MONITORING, RELEASES, REPOSITORIES
 
 
 def ensure(pull=False):
@@ -57,6 +57,17 @@ def monitoring(pull=False) -> dict:
 
     text = Path(MONITORING).read_text()
     return json.loads(text)
+
+
+def branches(pull=False) -> list:
+    ensure(pull=pull)
+
+    text = Path(BRANCHES).read_text()
+    return json.loads(text)['list']
+
+
+def git_branches(pull=False) -> list:
+    return ["master"] + branches(pull=pull)
 
 
 def should_push(pull=True) -> bool:
