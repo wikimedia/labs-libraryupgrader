@@ -1278,9 +1278,9 @@ class LibraryUpgrader(shell2.ShellMixin):
     def get_hashtags(self) -> List[str]:
         hashtags = []
         for upd in self.updates:
-            # We use a ; instead of : because the latter can't be used in git
+            # We use a — instead of : or ; because those can't be used in git
             # commands apparently.
-            hashtags.append('{};{}={}'.format(upd.manager[0], upd.name, upd.new).replace('^', ''))
+            hashtags.append('{}—{}={}'.format(upd.manager[0], upd.name, upd.new).replace('^', ''))
         hashtags.extend(list(self.cves))
         return hashtags
 
