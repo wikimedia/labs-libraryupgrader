@@ -26,6 +26,7 @@ AUTO_APPROVE_FILES = {
     'composer.json',
     'package.json',
     'package-lock.json',
+    'app/package-lock.json',
     'phpcs.xml',
     '.phpcs.xml',
     'phpcs.xml => .phpcs.xml',
