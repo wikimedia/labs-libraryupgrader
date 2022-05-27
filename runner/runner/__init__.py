@@ -263,6 +263,11 @@ class LibraryUpgrader(shell2.ShellMixin):
             if new_version is None:
                 # Try looking in the lockfile?
                 new_version = current_lock.get_version(pkg)
+
+            if prior_version == new_version:
+                # Sometimes `npm audit fix` reports vulnerabilities as fixable that it can't actually fix
+                continue;
+
             upd = Update(
                 'npm',
                 pkg,
