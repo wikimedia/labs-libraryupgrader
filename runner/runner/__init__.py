@@ -153,7 +153,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         if not os.path.exists('composer.lock'):
             return {}
         req = requests.post(
-            'https://php-security-checker.wmcloud.org/check_lock',
+            'https://php-security-checker.toolforge.org/',
             files={'lock': open('composer.lock', 'rb')},
             headers={'Accept': 'application/json'}
         )
