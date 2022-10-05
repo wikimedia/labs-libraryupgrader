@@ -7,9 +7,10 @@ FROM docker-registry.wikimedia.org/bullseye:latest
 ENV LANG C.UTF-8
 ENV CHROME_BIN /usr/bin/chromium
 ENV CHROMIUM_FLAGS "--no-sandbox"
+RUN echo "deb http://apt.wikimedia.org/wikimedia bullseye-wikimedia thirdparty/node16" > /etc/apt/sources.list.d/nodejs.list
 RUN apt-get update && \
     apt-get install -y firefox-esr chromium
-RUN apt-get install -y nodejs npm git ssh curl unzip \
+RUN apt-get install -y nodejs git ssh curl unzip \
     ruby ruby-dev rubygems-integration \
     python build-essential pkg-config \
     php-cli php-xml php-zip php-gd \
