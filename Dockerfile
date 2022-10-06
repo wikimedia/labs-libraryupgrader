@@ -13,7 +13,7 @@ RUN apt-get update && \
 RUN apt-get install -y nodejs git ssh curl unzip \
     ruby ruby-dev rubygems-integration \
     python build-essential pkg-config \
-    php-cli php-xml php-zip php-gd \
+    php-ast php-cli php-xml php-zip php-gd \
     php-gmp php-mbstring php-curl php-intl \
     php-igbinary php-xdebug php-ldap php-redis composer \
     python3 python3-dev python3-venv \
