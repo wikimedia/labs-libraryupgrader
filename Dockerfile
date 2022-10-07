@@ -1,6 +1,6 @@
 FROM rust:latest AS rust-builder
 RUN cargo install gerrit-grr
-RUN cargo install package-lock-lint
+RUN cargo install package-lock-lint --locked --version 0.2.3
 RUN cargo install cargo-audit
 
 FROM docker-registry.wikimedia.org/bullseye:latest
