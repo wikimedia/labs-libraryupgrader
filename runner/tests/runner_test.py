@@ -348,8 +348,8 @@ def test_fix_stylelintrc_json_location_exists(tempfs, mocker):
         ('mediawiki/extensions/FooBar', None, False),
         ('mediawiki/core', None, False),
         ('mediawiki/core', '{}', False),
-        ('mediawiki/extensions/FooBar', '{}', True),
-        ('mediawiki/extensions/FooBar', '{"private": true}', False),
+        ('mediawiki/extensions/FooBar', '{"name": "FooBar"}', True),
+        ('mediawiki/extensions/FooBar', '{"name": "FooBar", "private": true}', False),
     ]
 )
 def test_fix_package_json_metadata(tempfs, repo, pkg, expected):

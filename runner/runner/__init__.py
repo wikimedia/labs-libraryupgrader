@@ -266,7 +266,7 @@ class LibraryUpgrader(shell2.ShellMixin):
 
             if prior_version == new_version:
                 # Sometimes `npm audit fix` reports vulnerabilities as fixable that it can't actually fix
-                continue;
+                continue
 
             upd = Update(
                 'npm',
@@ -328,7 +328,7 @@ class LibraryUpgrader(shell2.ShellMixin):
             INC_RE = re.compile(r"^(\s*<arg\s+name=\"extensions\"\s+value=\".*)(,inc)(.*\"\s*/>)$", re.MULTILINE)
 
             EXCLUDE_PATTERN_RE = re.compile(r"^\s*<exclude-pattern\s*(?:type=\"relative\")?>\^?\*?\/?"
-                                            "(?:\.git|coverage|node_modules|vendor)\/?\*?<\/exclude-pattern>(\r?\n|$)",
+                                            "(?:\\.git|coverage|node_modules|vendor)\/?\*?<\/exclude-pattern>(\r?\n|$)",
                                             re.MULTILINE)
 
             with open('.phpcs.xml', 'r') as f:
