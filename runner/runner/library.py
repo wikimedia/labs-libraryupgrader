@@ -45,6 +45,6 @@ def is_greater_than_or_equal_to(first: str, second: str) -> bool:
         return constraint.allows(semver.Version.parse(second))
 
     # Remove some constraint stuff because we just want versions
-    first = re.sub(r'[\^~><=]', '', first)
+    second = re.sub(r'[\^~><=]', '', second)
 
     return semver.Version.parse(second) >= semver.Version.parse(first)
