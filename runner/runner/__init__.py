@@ -238,7 +238,7 @@ class LibraryUpgrader(shell2.ShellMixin):
 
         # Verify that tests still pass
         self.log('Verifying that tests still pass')
-        self.check_call(['npm', 'ci'])
+        self.check_call(['npm', 'ci', '--legacy-peer-deps'])
         self.check_call(['npm', 'test'])
 
         for pkg, info in dry_run['audit']['vulnerabilities'].items():
@@ -283,7 +283,7 @@ class LibraryUpgrader(shell2.ShellMixin):
         if not self.has_npm:
             return
         self.ensure_package_lock()
-        self.check_call(['npm', 'ci'])
+        self.check_call(['npm', 'ci', '--legacy-peer-deps'])
         self.check_call(['npm', 'test'])
 
     def check_package_lock(self):
